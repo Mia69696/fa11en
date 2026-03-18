@@ -200,7 +200,7 @@ app.post('/api/settings', (req, res) => {
 app.post('/api/toggle', (req, res) => {
   const { key, value } = req.body;
   const allowed = ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks',
-    'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled'];
+    'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled','verificationEnabled'];
   if (!allowed.includes(key)) return res.status(400).json({ error: 'invalid key' });
   state[key] = value;
   saveState();
