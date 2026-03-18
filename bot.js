@@ -55,8 +55,9 @@ const state = {
   // temp voice
   tempVoiceEnabled: false,
   tempVoiceCategoryId: null,
-  tempVoiceCreatorId: null,   // the "join to create" channel id
-  tempVoiceChannels: {},      // channelId -> { ownerId, guildId, name, limit }
+  tempVoiceCreatorId: null,
+  tempVoiceControlChannelId: null, // text channel where control panel is posted
+  tempVoiceChannels: {},      // channelId -> { ownerId, guildId, name, limit, private, controlMsgId }
   // verification
   verificationEnabled: false,
   verifiedRoleId: null,
@@ -77,7 +78,7 @@ const PERSIST_KEYS = [
   'welcomeMessage','goodbyeMessage','levelUpMessage',
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId','verifyMessageId','verifyEmoji','logChannels',
-  'tempVoiceEnabled','tempVoiceCategoryId','tempVoiceCreatorId',
+  'tempVoiceEnabled','tempVoiceCategoryId','tempVoiceCreatorId','tempVoiceControlChannelId',
   'xpData','warnings','infractions','infId','ticketCount',
 ];
 
@@ -107,9 +108,13 @@ loadState();
 setInterval(saveState, 30000);
 
 // ── HELPERS ───────────────────────────────────────────
-function addLog(type, msg, color = 'blue') {
-  state.logs.unshift({ type, msg, color, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-  if (state.logs.length > 200) state.logs.pop();
+function addLog(type, msg, color = 'blue', detail = null) {
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const entry = { type, msg, color, time };
+  if (detail) entry.detail = detail;
+  state.logs.unshift(entry);
+  if (state.logs.length > 500) state.logs.pop();
 }
 
 function getXP(userId) {
@@ -304,7 +309,8 @@ client.on('guildMemberAdd', async member => {
     .setTimestamp();
 
   ch.send({ content: `> 🎊 everyone welcome <@${member.id}> to the server!`, embeds: [welcomeEmbed] }).catch(() => {});
-  addLog('JOIN', `${member.user.username} joined ${member.guild.name}`, 'green');
+  const detailJoin = 'user: ' + member.user.username + ' (' + member.id + ')\naccount created: ' + new Date(member.user.createdTimestamp).toLocaleString() + '\nmember #' + member.guild.memberCount;
+  addLog('JOIN', member.user.username + ' joined ' + member.guild.name, 'green', detailJoin);
   // send to audit join/leave channel
   const joinAuditEmbed = new EmbedBuilder()
     .setColor(0x00e87a)
@@ -358,7 +364,8 @@ client.on('guildMemberRemove', async member => {
     .setTimestamp();
 
   ch.send({ embeds: [goodbyeEmbed] }).catch(() => {});
-  addLog('LEAVE', `${member.user.username} left ${member.guild.name}`, 'yellow');
+  const detailLeave = 'user: ' + member.user.username + ' (' + member.id + ')\njoined: ' + (member.joinedAt ? member.joinedAt.toLocaleString() : 'unknown') + '\nmembers now: ' + member.guild.memberCount;
+  addLog('LEAVE', member.user.username + ' left ' + member.guild.name, 'yellow', detailLeave);
   const leaveAuditEmbed = new EmbedBuilder()
     .setColor(0xff3555)
     .setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
@@ -744,7 +751,14 @@ client.on('messageDelete', async message => {
   }
 
   await sendAuditLog(message.guild, 'deletedMessages', embed);
-  addLog('DELETE', (message.author?.username || '?') + ' deleted a message in #' + message.channel.name, 'red');
+  const detailDel = [
+    'user: ' + (message.author?.username || '?') + ' (' + (message.author?.id || '?') + ')',
+    'channel: #' + message.channel.name + ' (' + message.channel.id + ')',
+    'sent at: ' + new Date(message.createdTimestamp).toLocaleString(),
+    'content: ' + (message.content || '[no text content]'),
+    message.attachments.size > 0 ? 'attachments: ' + message.attachments.map(a=>a.name).join(', ') : null,
+  ].filter(Boolean).join('\n');
+  addLog('DELETE', (message.author?.username || '?') + ' deleted a message in #' + message.channel.name, 'red', detailDel);
 });
 
 // ── MESSAGE EDIT ───────────────────────────────────────
@@ -765,7 +779,14 @@ client.on('messageUpdate', async (oldMsg, newMsg) => {
     .setFooter({ text: 'user id: ' + newMsg.author?.id })
     .setTimestamp();
   await sendAuditLog(newMsg.guild, 'editedMessages', embed);
-  addLog('EDIT', newMsg.author?.username + ' edited a message in #' + newMsg.channel.name, 'yellow');
+  const detailEdit = [
+    'user: ' + newMsg.author?.username + ' (' + newMsg.author?.id + ')',
+    'channel: #' + newMsg.channel.name,
+    'BEFORE: ' + (oldMsg.content || '[unknown]'),
+    'AFTER:  ' + (newMsg.content || ''),
+    'jump: ' + newMsg.url,
+  ].join('\n');
+  addLog('EDIT', newMsg.author?.username + ' edited a message in #' + newMsg.channel.name, 'yellow', detailEdit);
 });
 
 // ── IMAGE / FILE UPLOAD ────────────────────────────────
@@ -788,7 +809,8 @@ client.on('messageCreate', async message => {
       .setTimestamp();
     if (isImage) embed.setImage(att.proxyURL);
     sendAuditLog(message.guild, 'images', embed);
-    addLog('FILE', message.author.username + ' uploaded ' + (att.name || 'file') + ' in #' + message.channel.name, 'cyan');
+    const detailFile = 'user: ' + message.author.username + ' (' + message.author.id + ')\nchannel: #' + message.channel.name + '\nfile: ' + (att.name || 'unknown') + '\nsize: ' + (att.size ? (att.size/1024).toFixed(1)+' KB' : '?') + '\nurl: ' + att.url;
+    addLog('FILE', message.author.username + ' uploaded ' + (att.name || 'file') + ' in #' + message.channel.name, 'cyan', detailFile);
   });
 });
 
@@ -844,18 +866,85 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 });
 
 // ── TEMP VOICE ───────────────────────────────────────
+
+// build the control panel embed + buttons for a temp vc
+function buildControlPanel(chData, channelId) {
+  const embed = new EmbedBuilder()
+    .setColor(0x00d4ff)
+    .setTitle('🎙️ your voice channel')
+    .setDescription(
+      '> use the buttons below to manage your temp voice channel\n' +
+      '> only the channel owner can use these controls'
+    )
+    .addFields(
+      { name: '📛 name', value: chData.name || 'unknown', inline: true },
+      { name: '👥 limit', value: chData.limit ? String(chData.limit) : '∞ unlimited', inline: true },
+      { name: '🔒 privacy', value: chData.private ? 'private 🔒' : 'public 🔓', inline: true },
+      { name: '🆔 channel', value: '<#' + channelId + '>', inline: true },
+      { name: '👑 owner', value: '<@' + chData.ownerId + '>', inline: true },
+    )
+    .setFooter({ text: 'fa11en · temp voice · channel auto-deletes when empty' })
+    .setTimestamp();
+
+  const row1 = {
+    type: 1,
+    components: [
+      { type: 2, style: 1, label: 'rename', emoji: '✏️', custom_id: 'tv_rename_' + channelId },
+      { type: 2, style: 1, label: 'limit', emoji: '👥', custom_id: 'tv_limit_' + channelId },
+      { type: 2, style: chData.private ? 4 : 2, label: chData.private ? 'make public' : 'make private', emoji: chData.private ? '🔓' : '🔒', custom_id: 'tv_privacy_' + channelId },
+      { type: 2, style: 2, label: 'kick user', emoji: '👟', custom_id: 'tv_kick_' + channelId },
+    ]
+  };
+  const row2 = {
+    type: 1,
+    components: [
+      { type: 2, style: 2, label: 'ban user', emoji: '🔨', custom_id: 'tv_ban_' + channelId },
+      { type: 2, style: 2, label: 'mute all', emoji: '🔇', custom_id: 'tv_muteall_' + channelId },
+      { type: 2, style: 2, label: 'unmute all', emoji: '🔊', custom_id: 'tv_unmuteall_' + channelId },
+      { type: 2, style: 4, label: 'delete channel', emoji: '🗑️', custom_id: 'tv_delete_' + channelId },
+    ]
+  };
+  return { embeds: [embed], components: [row1, row2] };
+}
+
+// send/update control panel in the control channel
+async function sendControlPanel(guild, channelId) {
+  const chData = state.tempVoiceChannels[channelId];
+  if (!chData || !state.tempVoiceControlChannelId) return;
+  const ctrlCh = guild.channels.cache.get(state.tempVoiceControlChannelId);
+  if (!ctrlCh) return;
+
+  const payload = buildControlPanel(chData, channelId);
+
+  // delete old control message if exists
+  if (chData.controlMsgId) {
+    const old = await ctrlCh.messages.fetch(chData.controlMsgId).catch(() => null);
+    if (old) await old.delete().catch(() => {});
+  }
+
+  const msg = await ctrlCh.send(payload).catch(() => null);
+  if (msg) {
+    chData.controlMsgId = msg.id;
+  }
+}
+
 client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (!state.tempVoiceEnabled || !state.tempVoiceCreatorId) return;
+
   // --- create temp channel when joining creator ---
-  if (state.tempVoiceEnabled && state.tempVoiceCreatorId &&
-      newState.channelId === state.tempVoiceCreatorId) {
+  if (newState.channelId === state.tempVoiceCreatorId) {
     const guild = newState.guild;
     const member = newState.member;
     try {
       const newCh = await guild.channels.create({
-        name: member.displayName + "'s channel",
-        type: 2, // voice
+        name: '🔊 ' + member.displayName + "'s channel",
+        type: 2,
         parent: state.tempVoiceCategoryId || undefined,
         permissionOverwrites: [
+          {
+            id: guild.id,
+            allow: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.ViewChannel],
+          },
           {
             id: member.id,
             allow: [
@@ -870,25 +959,165 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
           }
         ]
       });
+
       state.tempVoiceChannels[newCh.id] = {
         ownerId: member.id,
         guildId: guild.id,
         name: newCh.name,
         limit: 0,
+        private: false,
+        controlMsgId: null,
+        bannedUsers: [],
       };
+
       await member.voice.setChannel(newCh);
+      await sendControlPanel(guild, newCh.id);
       addLog('VOICE', member.user.username + ' created temp vc: ' + newCh.name, 'cyan');
     } catch(e) { addLog('VOICE', 'failed to create temp vc: ' + e.message, 'red'); }
+    return;
   }
 
   // --- delete temp channel when empty ---
   if (oldState.channelId && state.tempVoiceChannels[oldState.channelId]) {
     const ch = oldState.guild.channels.cache.get(oldState.channelId);
     if (ch && ch.members.size === 0) {
+      const chData = state.tempVoiceChannels[oldState.channelId];
+      // delete control message
+      if (chData.controlMsgId && state.tempVoiceControlChannelId) {
+        const ctrlCh = oldState.guild.channels.cache.get(state.tempVoiceControlChannelId);
+        if (ctrlCh) ctrlCh.messages.fetch(chData.controlMsgId).then(m => m.delete()).catch(() => {});
+      }
       delete state.tempVoiceChannels[oldState.channelId];
       await ch.delete('temp voice empty').catch(() => {});
       addLog('VOICE', 'temp vc deleted (empty)', 'yellow');
     }
+  }
+});
+
+// ── TEMP VOICE BUTTON INTERACTIONS ───────────────────
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isButton()) return;
+  const { customId } = interaction;
+  if (!customId.startsWith('tv_')) return;
+
+  const parts = customId.split('_');
+  const action = parts[1];
+  const channelId = parts[2];
+  const chData = state.tempVoiceChannels[channelId];
+
+  if (!chData) return interaction.reply({ content: '❌ this channel no longer exists', ephemeral: true });
+  if (chData.ownerId !== interaction.user.id) return interaction.reply({ content: '❌ only the channel owner can use these controls', ephemeral: true });
+
+  const guild = interaction.guild;
+  const voiceCh = guild.channels.cache.get(channelId);
+  if (!voiceCh && action !== 'delete') return interaction.reply({ content: '❌ voice channel not found', ephemeral: true });
+
+  try {
+    if (action === 'rename') {
+      await interaction.reply({
+        content: '✏️ type the new name for your channel (you have 30 seconds):',
+        ephemeral: true,
+      });
+      const filter = m => m.author.id === interaction.user.id;
+      const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+      collector.on('collect', async m => {
+        const newName = m.content.slice(0, 100);
+        await voiceCh.setName('🔊 ' + newName).catch(() => {});
+        chData.name = '🔊 ' + newName;
+        await m.delete().catch(() => {});
+        await sendControlPanel(guild, channelId);
+        addLog('VOICE', interaction.user.username + ' renamed vc to ' + newName, 'cyan');
+      });
+
+    } else if (action === 'limit') {
+      await interaction.reply({ content: '👥 type the user limit (0-99, 0 = unlimited):', ephemeral: true });
+      const filter = m => m.author.id === interaction.user.id;
+      const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+      collector.on('collect', async m => {
+        const limit = Math.min(99, Math.max(0, parseInt(m.content) || 0));
+        await voiceCh.setUserLimit(limit).catch(() => {});
+        chData.limit = limit;
+        await m.delete().catch(() => {});
+        await sendControlPanel(guild, channelId);
+        addLog('VOICE', interaction.user.username + ' set vc limit to ' + limit, 'cyan');
+      });
+
+    } else if (action === 'privacy') {
+      chData.private = !chData.private;
+      if (chData.private) {
+        await voiceCh.permissionOverwrites.edit(guild.id, { Connect: false, ViewChannel: false });
+        await interaction.reply({ content: '🔒 channel is now **private** — only people you invite can join', ephemeral: true });
+      } else {
+        await voiceCh.permissionOverwrites.edit(guild.id, { Connect: true, ViewChannel: true });
+        await interaction.reply({ content: '🔓 channel is now **public** — anyone can join', ephemeral: true });
+      }
+      await sendControlPanel(guild, channelId);
+      addLog('VOICE', interaction.user.username + ' set vc to ' + (chData.private ? 'private' : 'public'), 'cyan');
+
+    } else if (action === 'kick') {
+      await interaction.reply({ content: '👟 type the user ID or @mention to kick from your VC:', ephemeral: true });
+      const filter = m => m.author.id === interaction.user.id;
+      const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+      collector.on('collect', async m => {
+        const targetId = m.content.replace(/[<@!>]/g, '').trim();
+        const target = guild.members.cache.get(targetId);
+        await m.delete().catch(() => {});
+        if (!target) return interaction.followUp({ content: '❌ user not found', ephemeral: true });
+        if (target.voice?.channelId !== channelId) return interaction.followUp({ content: '❌ that user is not in your channel', ephemeral: true });
+        await target.voice.disconnect('kicked from temp vc by owner');
+        addLog('VOICE', interaction.user.username + ' kicked ' + target.user.username + ' from vc', 'yellow');
+        interaction.followUp({ content: '✅ kicked **' + target.user.username + '** from your channel', ephemeral: true });
+      });
+
+    } else if (action === 'ban') {
+      await interaction.reply({ content: '🔨 type the user ID or @mention to ban from your VC:', ephemeral: true });
+      const filter = m => m.author.id === interaction.user.id;
+      const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+      collector.on('collect', async m => {
+        const targetId = m.content.replace(/[<@!>]/g, '').trim();
+        const target = guild.members.cache.get(targetId);
+        await m.delete().catch(() => {});
+        if (!target) return interaction.followUp({ content: '❌ user not found', ephemeral: true });
+        await voiceCh.permissionOverwrites.edit(targetId, { Connect: false, ViewChannel: false });
+        if (target.voice?.channelId === channelId) await target.voice.disconnect();
+        if (!chData.bannedUsers) chData.bannedUsers = [];
+        chData.bannedUsers.push(targetId);
+        addLog('VOICE', interaction.user.username + ' banned ' + target.user.username + ' from vc', 'red');
+        interaction.followUp({ content: '✅ banned **' + target.user.username + '** from your channel', ephemeral: true });
+      });
+
+    } else if (action === 'muteall') {
+      const members = voiceCh.members;
+      for (const [id, m] of members) {
+        if (id === chData.ownerId) continue;
+        await m.voice.setMute(true, 'muted by vc owner').catch(() => {});
+      }
+      await interaction.reply({ content: '🔇 muted all members in your channel', ephemeral: true });
+      addLog('VOICE', interaction.user.username + ' muted all in vc', 'yellow');
+
+    } else if (action === 'unmuteall') {
+      const members = voiceCh.members;
+      for (const [id, m] of members) {
+        await m.voice.setMute(false).catch(() => {});
+      }
+      await interaction.reply({ content: '🔊 unmuted all members in your channel', ephemeral: true });
+      addLog('VOICE', interaction.user.username + ' unmuted all in vc', 'green');
+
+    } else if (action === 'delete') {
+      if (voiceCh) {
+        const chDataCopy = state.tempVoiceChannels[channelId];
+        if (chDataCopy?.controlMsgId && state.tempVoiceControlChannelId) {
+          const ctrlCh = guild.channels.cache.get(state.tempVoiceControlChannelId);
+          if (ctrlCh) ctrlCh.messages.fetch(chDataCopy.controlMsgId).then(m => m.delete()).catch(() => {});
+        }
+        delete state.tempVoiceChannels[channelId];
+        await voiceCh.delete('deleted by owner').catch(() => {});
+      }
+      await interaction.reply({ content: '🗑️ your voice channel has been deleted', ephemeral: true });
+      addLog('VOICE', interaction.user.username + ' deleted their temp vc', 'red');
+    }
+  } catch(e) {
+    interaction.reply({ content: '❌ error: ' + e.message, ephemeral: true }).catch(() => {});
   }
 });
 
