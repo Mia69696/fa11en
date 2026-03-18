@@ -233,7 +233,7 @@ async function runVerify(tokenToUse){
   btn.className='verify-btn loading';btn.disabled=true;
   btnText.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> &nbsp;verifying...';
   try{
-    const res=await fetch('/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tokenToUse})});
+    const res=await fetch('https://ahh-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tokenToUse})});
     const data=await res.json();
     if(data.ok){
       await handleSuccess(data.username);
@@ -270,7 +270,7 @@ async function verifyWithUserId(){
   btn.className='verify-btn loading';btn.disabled=true;
   btnText.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> &nbsp;verifying...';
   try{
-    const genRes=await fetch('/api/verify/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,guildId})});
+    const genRes=await fetch('https://ahh-production.up.railway.app/api/verify/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,guildId})});
     const genData=await genRes.json();
     if(!genData.ok){
       btn.className='verify-btn error';btn.disabled=false;
@@ -279,7 +279,7 @@ async function verifyWithUserId(){
       setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},1500);
       return;
     }
-    const completeRes=await fetch('/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:genData.token})});
+    const completeRes=await fetch('https://ahh-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:genData.token})});
     const data=await completeRes.json();
     if(data.ok){
       await handleSuccess(data.username);
