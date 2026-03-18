@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ahh — login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Syne',sans-serif;background:#000;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 50px,rgba(255,255,255,.015) 50px,rgba(255,255,255,.015) 51px),repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(255,255,255,.015) 50px,rgba(255,255,255,.015) 51px);pointer-events:none;}
+
+.box{
+  background:#0d0d0d;
+  border:1px solid #1a1a1a;
+  border-radius:14px;
+  padding:40px 36px;
+  width:360px;
+  position:relative;
+  z-index:1;
+}
+
+.logo{text-align:center;margin-bottom:32px;}
+.logo-icon{width:52px;height:52px;background:#111;border:1px solid #222;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 14px;}
+.logo-name{font-size:22px;font-weight:800;color:#fff;}
+.logo-sub{font-size:11px;color:#444;margin-top:4px;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.field input{
+  width:100%;background:#111;border:1px solid #222;border-radius:7px;
+  padding:10px 13px;color:#e0e0e0;font-size:13px;
+  font-family:'Syne',sans-serif;outline:none;transition:border .15s;
+}
+.field input:focus{border-color:rgba(255,255,255,.25);}
+.field input::placeholder{color:#333;}
+
+.btn-login{
+  width:100%;background:#fff;color:#000;border:none;
+  border-radius:7px;padding:11px;font-size:13px;font-weight:800;
+  cursor:pointer;font-family:'Syne',sans-serif;
+  transition:all .15s;margin-top:6px;
+}
+.btn-login:hover{background:#e0e0e0;}
+.btn-login:active{transform:scale(.98);}
+
+.err{
+  background:rgba(255,53,85,.1);border:1px solid rgba(255,53,85,.2);
+  border-radius:7px;padding:10px 13px;font-size:11px;color:#ff3555;
+  margin-bottom:14px;display:none;
+}
+
+.loading{opacity:.6;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">
+    <div class="logo-icon">a</div>
+    <div class="logo-name">ahh</div>
+    <div class="logo-sub">dashboard — sign in to continue</div>
+  </div>
+
+  <div class="err" id="err">wrong username or password</div>
+
+  <div class="field">
+    <label>Username</label>
+    <input type="text" id="user" placeholder="enter username" autocomplete="username">
+  </div>
+
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="pass" placeholder="enter password" autocomplete="current-password">
+  </div>
+
+  <button class="btn-login" id="btn" onclick="login()">sign in</button>
+</div>
+
+<script>
+document.addEventListener('keydown', e => { if(e.key === 'Enter') login(); });
+
+async function login() {
+  const user = document.getElementById('user').value.trim();
+  const pass = document.getElementById('pass').value;
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+
+  if(!user || !pass) { err.textContent = 'enter your username and password'; err.style.display = 'block'; return; }
+
+  btn.textContent = 'signing in...';
+  btn.classList.add('loading');
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    const data = await res.json();
+    if(data.ok) {
+      btn.textContent = '✓ welcome back';
+      setTimeout(() => window.location.href = '/', 500);
+    } else {
+      err.textContent = data.error || 'wrong username or password';
+      err.style.display = 'block';
+      btn.textContent = 'sign in';
+      btn.classList.remove('loading');
+      document.getElementById('pass').value = '';
+    }
+  } catch(e) {
+    err.textContent = 'server error — try again';
+    err.style.display = 'block';
+    btn.textContent = 'sign in';
+    btn.classList.remove('loading');
+  }
+}
+</script>
+</body>
+</html>
