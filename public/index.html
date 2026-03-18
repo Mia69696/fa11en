@@ -1110,7 +1110,7 @@ async function loadServers(){
 // ── MEMBERS ──────────────────────────────────────────
 function fillMemberPicker(){
   const sel = document.getElementById('memberGuildPicker');
-  sel.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+  if(sel) sel.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
 }
 
 async function loadMembers(){
@@ -1314,9 +1314,12 @@ async function loadLeaderboard(){
 
 // ── GUILD SELECTS ────────────────────────────────────
 function fillGuildSelects(){
-  ['actGuild','purgeGuild','msgGuild','infGuild','verifyGuild'].forEach(id=>{
+  const ids = ['actGuild','purgeGuild','msgGuild','infGuild','verifyGuild',
+                'tvSetupGuild','tvControlGuild','logGuildPicker','memberGuildPicker'];
+  const opts = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+  ids.forEach(id=>{
     const el = document.getElementById(id);
-    if(el) el.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+    if(el && !el.innerHTML.includes(guilds[0]?.id)) el.innerHTML = opts;
   });
 }
 
