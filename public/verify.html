@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>verify — ahh</title>
+<title>verify — fa11en</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
@@ -118,9 +118,9 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-hei
   <div class="card-accent"></div>
   <div class="card-body">
     <div class="server-header">
-      <div class="server-icon">a</div>
+      <div class="server-icon">f</div>
       <div>
-        <div class="server-name">ahh</div>
+        <div class="server-name">fa11en</div>
         <div class="server-sub">server verification</div>
       </div>
     </div>
@@ -129,7 +129,7 @@ body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);min-hei
   </div>
   <div class="card-footer">
     <div class="footer-badge"><span class="fdot"></span>secured · captcha protected</div>
-    <div class="footer-logo">ahh bot</div>
+    <div class="footer-logo">fa11en</div>
   </div>
 </div>
 
@@ -233,7 +233,7 @@ async function runVerify(tokenToUse){
   btn.className='verify-btn loading';btn.disabled=true;
   btnText.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> &nbsp;verifying...';
   try{
-    const res=await fetch('https://ahh-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tokenToUse})});
+    const res=await fetch('https://fa11en-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tokenToUse})});
     const data=await res.json();
     if(data.ok){
       await handleSuccess(data.username);
@@ -270,7 +270,7 @@ async function verifyWithUserId(){
   btn.className='verify-btn loading';btn.disabled=true;
   btnText.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> &nbsp;verifying...';
   try{
-    const genRes=await fetch('https://ahh-production.up.railway.app/api/verify/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,guildId})});
+    const genRes=await fetch('https://fa11en-production.up.railway.app/api/verify/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,guildId})});
     const genData=await genRes.json();
     if(!genData.ok){
       btn.className='verify-btn error';btn.disabled=false;
@@ -279,7 +279,7 @@ async function verifyWithUserId(){
       setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},1500);
       return;
     }
-    const completeRes=await fetch('https://ahh-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:genData.token})});
+    const completeRes=await fetch('https://fa11en-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:genData.token})});
     const data=await completeRes.json();
     if(data.ok){
       await handleSuccess(data.username);
