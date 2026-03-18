@@ -1,4 +1,6 @@
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const {
   Client, GatewayIntentBits, Partials,
   SlashCommandBuilder, Routes, EmbedBuilder,
@@ -45,6 +47,44 @@ const state = {
   verificationChannelId: null,
   pendingVerifications: {}, // token -> { userId, guildId, expires }
 };
+
+// ── PERSISTENCE ──────────────────────────────────────
+const SAVE_FILE = path.join(__dirname, 'data.json');
+
+// keys that should be saved to disk
+const PERSIST_KEYS = [
+  'blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks',
+  'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled',
+  'welcomeMessage','goodbyeMessage','levelUpMessage',
+  'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
+  'verificationEnabled','verifiedRoleId','verificationChannelId',
+  'xpData','warnings','infractions','infId','ticketCount',
+];
+
+function saveState() {
+  try {
+    const toSave = {};
+    PERSIST_KEYS.forEach(k => { toSave[k] = state[k]; });
+    fs.writeFileSync(SAVE_FILE, JSON.stringify(toSave, null, 2));
+  } catch(e) { console.error('save error:', e.message); }
+}
+
+function loadState() {
+  try {
+    if (!fs.existsSync(SAVE_FILE)) return;
+    const saved = JSON.parse(fs.readFileSync(SAVE_FILE, 'utf8'));
+    Object.keys(saved).forEach(k => {
+      if (PERSIST_KEYS.includes(k)) state[k] = saved[k];
+    });
+    console.log('✅ state loaded from disk');
+  } catch(e) { console.error('load error:', e.message); }
+}
+
+// load saved state immediately
+loadState();
+
+// auto-save every 30 seconds
+setInterval(saveState, 30000);
 
 // ── HELPERS ───────────────────────────────────────────
 function addLog(type, msg, color = 'blue') {
@@ -657,4 +697,4 @@ setInterval(() => {
 
 client.login(TOKEN).catch(e => console.error('❌ login failed:', e.message));
 
-module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification };
+module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState };
