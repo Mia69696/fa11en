@@ -535,35 +535,36 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ LOGS ══ -->
   <div class="page" id="page-logs">
-    <div class="sh"><div><h2>logs</h2><p>every action tracked — pick where each type goes in Discord</p></div>
+    <div class="sh"><div><h2>logs</h2><p>full audit trail — every deleted message, edit, join, command</p></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-g" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> refresh</button>
-        <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear</button>
+        <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear all</button>
       </div>
     </div>
 
     <!-- Log Channel Config -->
     <div class="card" style="margin-bottom:18px">
-      <div class="ch"><div><div class="ct">log channels</div><div class="cs">pick which Discord channel each log type gets sent to</div></div>
+      <div class="ch">
+        <div><div class="ct">log channels</div><div class="cs">each type can go to a different Discord channel</div></div>
         <div style="display:flex;gap:8px;align-items:center">
           <select class="inp" id="logGuildPicker" style="width:160px" onchange="loadLogChannels()"></select>
-          <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save all</button>
+          <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save</button>
         </div>
       </div>
       <div class="cb">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div>
-            <label class="fl">🗑️ deleted messages</label>
+            <label class="fl">🗑️ deleted messages — shows exact content</label>
             <select class="inp" id="lc-deletedMessages" style="margin-bottom:10px"><option value="">disabled</option></select>
-            <label class="fl">✏️ edited messages</label>
+            <label class="fl">✏️ edited messages — before &amp; after</label>
             <select class="inp" id="lc-editedMessages" style="margin-bottom:10px"><option value="">disabled</option></select>
             <label class="fl">👋 joins &amp; leaves</label>
             <select class="inp" id="lc-joinLeave" style="margin-bottom:10px"><option value="">disabled</option></select>
-            <label class="fl">🖼️ image / file uploads</label>
+            <label class="fl">🖼️ images &amp; file uploads</label>
             <select class="inp" id="lc-images"><option value="">disabled</option></select>
           </div>
           <div>
-            <label class="fl">🔨 mod actions</label>
+            <label class="fl">🔨 mod actions (ban/kick/warn/mute)</label>
             <select class="inp" id="lc-modActions" style="margin-bottom:10px"><option value="">disabled</option></select>
             <label class="fl">⌨️ commands used</label>
             <select class="inp" id="lc-commands" style="margin-bottom:10px"><option value="">disabled</option></select>
@@ -576,10 +577,29 @@ textarea.inp{resize:vertical;min-height:72px;}
       </div>
     </div>
 
-    <!-- Live Logs -->
+    <!-- Filter + Live Logs -->
     <div class="card">
-      <div class="ch"><div class="ct">live dashboard logs</div><span class="tag t-gray" id="logCount">0 entries</span></div>
-      <div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div>
+      <div class="ch">
+        <div><div class="ct">live logs</div><span class="tag t-gray" id="logCount">0 entries</span></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="inp" id="logFilter" style="width:140px" onchange="filterLogs()">
+            <option value="">all types</option>
+            <option value="DELETE">🗑️ deleted</option>
+            <option value="EDIT">✏️ edited</option>
+            <option value="JOIN">👋 joins</option>
+            <option value="LEAVE">📤 leaves</option>
+            <option value="MOD">🔨 mod</option>
+            <option value="AUTOMOD">🛡️ automod</option>
+            <option value="CMD">⌨️ commands</option>
+            <option value="VOICE">🎙️ voice</option>
+            <option value="ROLE">🏷️ roles</option>
+            <option value="FILE">📎 files</option>
+            <option value="VERIFY">✅ verify</option>
+            <option value="LEVEL">⭐ levels</option>
+          </select>
+        </div>
+      </div>
+      <div id="logsList" style="max-height:600px;overflow-y:auto"><div class="ld"><span></span><span></span><span></span></div></div>
     </div>
   </div>
 
@@ -799,10 +819,12 @@ textarea.inp{resize:vertical;min-height:72px;}
             <div><div style="font-size:12px;font-weight:700">Temp Voice Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">auto-create/delete voice channels</div></div>
             <div class="tog" id="tv-toggle" onclick="tvToggle(this)"></div>
           </div>
-          <label class="fl">Creator Channel ID <span style="color:var(--txt2)">(the "join to create" channel)</span></label>
+          <label class="fl">Creator Channel ID <span style="color:var(--txt2)">(the "join to create" voice channel)</span></label>
           <input class="inp" id="tvCreatorId" placeholder="paste channel id" style="margin-bottom:10px">
           <label class="fl">Category ID <span style="color:var(--txt2)">(temp channels go here)</span></label>
-          <input class="inp" id="tvCategoryId" placeholder="paste category id" style="margin-bottom:14px">
+          <input class="inp" id="tvCategoryId" placeholder="paste category id" style="margin-bottom:10px">
+          <label class="fl">Control Text Channel ID <span style="color:var(--txt2)">(where control panels get posted)</span></label>
+          <input class="inp" id="tvControlChannelId" placeholder="paste text channel id" style="margin-bottom:14px">
           <button class="btn btn-w" style="width:100%;margin-bottom:8px" onclick="saveTVSettings()"><i class="fas fa-check"></i> save settings</button>
           <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
             <div style="font-size:11px;color:var(--txt2);margin-bottom:10px">or let the bot create everything automatically:</div>
@@ -1128,14 +1150,54 @@ async function loadDashLogs(){
   catch(e){ document.getElementById('dashLogs').innerHTML = '<div class="empty">no logs yet</div>'; }
 }
 
+let allLogs = [];
+
 function renderLogs(logs, id){
+  allLogs = logs;
   const el = document.getElementById(id);
   if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet — actions will appear here automatically</div>'; return; }
-  const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan',white:'t-white'};
-  el.innerHTML = logs.map(l=>'<div class="lgi" style="opacity:0;transform:translateX(-8px)"><div class="lgt">'+l.time+'</div><div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span></div><div class="lgm">'+l.msg+'</div></div>').join('');
-  staggerAnimate(el, '.lgi');
+  displayLogs(logs, el);
   const countEl = document.getElementById('logCount');
   if(countEl) countEl.textContent = logs.length+' entries';
+}
+
+function displayLogs(logs, el) {
+  const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan',white:'t-white'};
+  const icons={DELETE:'🗑️',EDIT:'✏️',JOIN:'📥',LEAVE:'📤',MOD:'🔨',AUTOMOD:'🛡️',CMD:'⌨️',VOICE:'🎙️',ROLE:'🏷️',FILE:'📎',VERIFY:'✅',LEVEL:'⭐',START:'🟢',DASH:'⚙️',TICKET:'🎫'};
+  el.innerHTML = logs.map((l,i)=>{
+    const icon = icons[l.type] || '📋';
+    const hasDetail = l.detail;
+    return '<div class="lgi" style="opacity:0;transform:translateX(-8px);flex-direction:column;align-items:flex-start;gap:0;padding:10px 18px">'
+      + '<div style="display:flex;align-items:center;gap:10px;width:100%">'
+      + '<div class="lgt" style="width:52px;margin-top:0;font-size:9px">'+l.time+'</div>'
+      + '<div class="lgk" style="width:auto"><span class="tag '+(cls[l.color]||'t-gray')+'">'+icon+' '+l.type+'</span></div>'
+      + '<div class="lgm" style="flex:1">'+l.msg+'</div>'
+      + (hasDetail ? '<button onclick="toggleDetail('+i+')" style="background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-size:9px;color:var(--txt2);cursor:pointer;flex-shrink:0">show more</button>' : '')
+      + '</div>'
+      + (hasDetail ? '<div id="detail-'+i+'" style="display:none;margin-top:8px;margin-left:62px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:11px;color:var(--txt2);word-break:break-all;white-space:pre-wrap;max-width:100%">'+escHtml(l.detail)+'</div>' : '')
+      + '</div>';
+  }).join('');
+  staggerAnimate(el, '.lgi');
+}
+
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function toggleDetail(i){
+  const el = document.getElementById('detail-'+i);
+  if(!el) return;
+  const btn = el.previousElementSibling?.querySelector('button');
+  if(el.style.display==='none'){ el.style.display='block'; if(btn) btn.textContent='hide'; }
+  else { el.style.display='none'; if(btn) btn.textContent='show more'; }
+}
+
+function filterLogs(){
+  const filter = document.getElementById('logFilter')?.value || '';
+  const filtered = filter ? allLogs.filter(l=>l.type===filter) : allLogs;
+  const el = document.getElementById('logsList');
+  if(!el) return;
+  displayLogs(filtered, el);
+  const countEl = document.getElementById('logCount');
+  if(countEl) countEl.textContent = filtered.length+' entries'+(filter?' (filtered)':'');
 }
 
 async // ── LOG CHANNELS ─────────────────────────────────────
@@ -1438,6 +1500,7 @@ async function loadTVSettings(){
     if(tog) tog.classList.toggle('on', !!s.tempVoiceEnabled);
     if(s.tempVoiceCreatorId) document.getElementById('tvCreatorId').value = s.tempVoiceCreatorId;
     if(s.tempVoiceCategoryId) document.getElementById('tvCategoryId').value = s.tempVoiceCategoryId;
+    if(s.tempVoiceControlChannelId) document.getElementById('tvControlChannelId').value = s.tempVoiceControlChannelId;
     renderTVChannels(s.activeChannels || []);
   } catch(e){}
 }
@@ -1476,8 +1539,9 @@ function tvToggle(el){
 async function saveTVSettings(){
   const creatorId = document.getElementById('tvCreatorId').value.trim()||null;
   const categoryId = document.getElementById('tvCategoryId').value.trim()||null;
+  const controlChannelId = document.getElementById('tvControlChannelId').value.trim()||null;
   try {
-    await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceCreatorId:creatorId,tempVoiceCategoryId:categoryId})});
+    await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceCreatorId:creatorId,tempVoiceCategoryId:categoryId,tempVoiceControlChannelId:controlChannelId})});
     t('temp voice settings saved','green');
   } catch(e){ t('save failed: '+e.message,'red'); }
 }
@@ -1490,7 +1554,10 @@ async function tvAutoSetup(){
     document.getElementById('tvCreatorId').value = res.creatorId;
     document.getElementById('tvCategoryId').value = res.categoryId;
     document.getElementById('tv-toggle').classList.add('on');
-    t('temp voice setup complete! category + creator channel created','green');
+    if(res.creatorId) document.getElementById('tvCreatorId').value = res.creatorId;
+    if(res.categoryId) document.getElementById('tvCategoryId').value = res.categoryId;
+    if(res.controlChannelId) document.getElementById('tvControlChannelId').value = res.controlChannelId;
+    t('setup complete! category + voice + control channel created','green');
   } catch(e){ t('setup failed: '+e.message,'red'); }
 }
 
