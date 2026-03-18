@@ -27,7 +27,10 @@ function isAuth(req) {
   return match && sessions.has(match[1]);
 }
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://mia69696.github.io', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 
 // ── PUBLIC ROUTES (no auth needed) ───────────────────
@@ -345,9 +348,7 @@ app.post('/api/verify/generate', (req, res) => {
   const { userId, guildId } = req.body;
   if (!userId || !guildId) return res.status(400).json({ error: 'userId and guildId required' });
   const token = createVerifyToken(userId, guildId);
-  const link = (process.env.RAILWAY_PUBLIC_DOMAIN
-    ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
-    : 'http://localhost:' + PORT) + '/verify?token=' + token;
+  const link = 'https://mia69696.github.io/verify/?token=' + token;
   res.json({ ok: true, token, link });
 });
 
@@ -386,9 +387,7 @@ app.post('/api/verify/send-panel', async (req, res) => {
     const channel = guild.channels.cache.get(channelId);
     if (!channel) return res.status(404).json({ error: 'channel not found' });
     const { EmbedBuilder } = require('discord.js');
-    const siteUrl = process.env.RAILWAY_PUBLIC_DOMAIN
-      ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
-      : 'http://localhost:' + PORT;
+    const siteUrl = 'https://mia69696.github.io/verify/';
     const embed = new EmbedBuilder()
       .setColor(0x00e87a)
       .setTitle('✅  verify yourself')
@@ -411,7 +410,7 @@ app.post('/api/verify/send-panel', async (req, res) => {
           type: 2,
           style: 5,
           label: '✅  verify me',
-          url: siteUrl + '/verify-start?guild=' + guildId,
+          url: 'https://mia69696.github.io/verify/?guild=' + guildId,
         }]
       }]
     });
@@ -425,7 +424,7 @@ app.get('/verify-start', (req, res) => {
   // This is a placeholder — in production you'd need Discord OAuth to get the userId
   // For now redirect to the verify page with the guildId
   const { guild } = req.query;
-  res.redirect('/verify?guild=' + (guild || ''));
+  res.redirect('https://mia69696.github.io/verify/?guild=' + (guild || ''));
 });
 
 // ── FALLBACK ──────────────────────────────────────────
