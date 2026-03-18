@@ -207,7 +207,38 @@ client.on('guildMemberAdd', async member => {
     .replace(/{user}/g, `<@${member.id}>`)
     .replace(/{count}/g, member.guild.memberCount)
     .replace(/{server}/g, member.guild.name);
-  ch.send({ embeds: [makeEmbed(0x111111, '👋 welcome!', msg).setThumbnail(member.user.displayAvatarURL())] }).catch(() => {});
+  const accountAge = `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`;
+  const joinNumber = member.guild.memberCount;
+
+  // animated-style welcome with dividers and rich layout
+  const welcomeEmbed = new EmbedBuilder()
+    .setColor(0x00e87a)
+    .setAuthor({
+      name: `✦ ${member.guild.name} ✦`,
+      iconURL: member.guild.iconURL({ dynamic: true }) || undefined,
+    })
+    .setTitle(`welcome, ${member.user.username}! 🎉`)
+    .setDescription(
+      `> ${msg}\n\n` +
+      `\`\`\`\nYou are member #${joinNumber} — glad you're here.\n\`\`\``
+    )
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 512 }))
+    .addFields(
+      { name: '⸻ 👤 user', value: `<@${member.id}>`, inline: true },
+      { name: '⸻ 🔢 member #', value: `**${joinNumber}**`, inline: true },
+      { name: '⸻ 📅 account age', value: accountAge, inline: true },
+      { name: '⸻ 🏠 server', value: `**${member.guild.name}**`, inline: true },
+      { name: '⸻ 👥 total members', value: `**${joinNumber}**`, inline: true },
+      { name: '⸻ 📌 joined', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+    )
+    .setImage(member.user.bannerURL({ size: 1024 }) || null)
+    .setFooter({
+      text: `id: ${member.id} · welcome to the family`,
+      iconURL: member.guild.iconURL({ dynamic: true }) || undefined,
+    })
+    .setTimestamp();
+
+  ch.send({ content: `> 🎊 everyone welcome <@${member.id}> to the server!`, embeds: [welcomeEmbed] }).catch(() => {});
   addLog('JOIN', `${member.user.username} joined ${member.guild.name}`, 'green');
 });
 
@@ -220,7 +251,34 @@ client.on('guildMemberRemove', async member => {
   const msg = state.goodbyeMessage
     .replace(/{user}/g, member.user.username)
     .replace(/{server}/g, member.guild.name);
-  ch.send({ embeds: [makeEmbed(0x222222, '👋 goodbye', msg)] }).catch(() => {});
+  const timeInServer = member.joinedTimestamp
+    ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>`
+    : 'unknown';
+
+  const goodbyeEmbed = new EmbedBuilder()
+    .setColor(0xff3555)
+    .setAuthor({
+      name: `${member.guild.name}`,
+      iconURL: member.guild.iconURL({ dynamic: true }) || undefined,
+    })
+    .setTitle(`${member.user.username} left the server 👋`)
+    .setDescription(
+      `> ${msg}\n\n` +
+      `\`\`\`\nWe're down to ${member.guild.memberCount} members. They will be missed.\n\`\`\``
+    )
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 512 }))
+    .addFields(
+      { name: '⸻ 👤 user', value: `**${member.user.username}**`, inline: true },
+      { name: '⸻ 🔢 members left', value: `**${member.guild.memberCount}**`, inline: true },
+      { name: '⸻ 📅 joined server', value: timeInServer, inline: true },
+    )
+    .setFooter({
+      text: `id: ${member.id} · goodbye`,
+      iconURL: member.user.displayAvatarURL({ dynamic: true }) || undefined,
+    })
+    .setTimestamp();
+
+  ch.send({ embeds: [goodbyeEmbed] }).catch(() => {});
   addLog('LEAVE', `${member.user.username} left ${member.guild.name}`, 'yellow');
 });
 
@@ -394,16 +452,55 @@ client.on('interactionCreate', async interaction => {
       const user = interaction.options.getUser('user') || interaction.user;
       const d = getXP(user.id);
       const needed = d.level * 100;
-      const filled = Math.floor((d.xp / needed) * 10);
-      const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
-      await interaction.reply({ embeds: [makeEmbed(0x111111, `📊 ${user.username}'s rank`, `**level:** ${d.level}\n**xp:** ${d.xp}/${needed}\n\`${bar}\``).setThumbnail(user.displayAvatarURL())] });
+      const percent = Math.floor((d.xp / needed) * 100);
+      const filledBars = Math.floor((d.xp / needed) * 20);
+      const progressBar = '█'.repeat(filledBars) + '░'.repeat(20 - filledBars);
+      const rankPos = Object.entries(state.xpData)
+        .sort((a,b) => b[1].level - a[1].level || b[1].xp - a[1].xp)
+        .findIndex(([id]) => id === user.id) + 1;
+      const tier = d.level >= 50 ? '💎 diamond' : d.level >= 30 ? '🥇 gold' : d.level >= 20 ? '🥈 silver' : d.level >= 10 ? '🥉 bronze' : '🌱 newcomer';
+      const rankEmbed = new EmbedBuilder()
+        .setColor(d.level >= 50 ? 0x00d4ff : d.level >= 30 ? 0xffb700 : d.level >= 20 ? 0xaaaaaa : d.level >= 10 ? 0xcd7f32 : 0x00e87a)
+        .setAuthor({ name: `${user.username}'s rank card`, iconURL: user.displayAvatarURL({ dynamic: true }) })
+        .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }))
+        .setDescription(
+          `**rank** \`#${rankPos}\` · **tier** ${tier}\n\n` +
+          `**level ${d.level}** → **level ${d.level + 1}**\n` +
+          `\`${progressBar}\` **${percent}%**`
+        )
+        .addFields(
+          { name: '⭐ level', value: `\`${d.level}\``, inline: true },
+          { name: '✨ total xp', value: `\`${d.xp + (d.level * (d.level - 1) * 50)}\``, inline: true },
+          { name: '🏆 server rank', value: `\`#${rankPos}\``, inline: true },
+          { name: '📈 xp this level', value: `\`${d.xp} / ${needed}\``, inline: true },
+          { name: '⚡ xp needed', value: `\`${needed - d.xp}\``, inline: true },
+          { name: '🎖️ tier', value: tier, inline: true },
+        )
+        .setFooter({ text: `${needed - d.xp} more xp to level up · keep chatting!` })
+        .setTimestamp();
+      await interaction.reply({ embeds: [rankEmbed] });
     }
 
     else if (cmd === 'leaderboard') {
       const sorted = Object.entries(state.xpData).sort((a, b) => b[1].level - a[1].level || b[1].xp - a[1].xp).slice(0, 10);
       const medals = ['🥇', '🥈', '🥉'];
-      const desc = sorted.length ? sorted.map(([id, d], i) => `${medals[i] || `**${i + 1}.**`} <@${id}> — level **${d.level}** (${d.xp} xp)`).join('\n') : 'no xp yet — start chatting!';
-      await interaction.reply({ embeds: [makeEmbed(0x111111, '🏆 leaderboard', desc)] });
+      const rows = sorted.length
+        ? sorted.map(([id, d], i) => {
+            const bar = '▰'.repeat(Math.floor((d.xp / (d.level * 100)) * 8)) + '▱'.repeat(8 - Math.floor((d.xp / (d.level * 100)) * 8));
+            return `${medals[i] || `\`${String(i+1).padStart(2,'0')}.\``} <@${id}>
+┗ **lvl ${d.level}** · \`${bar}\` · ${d.xp} xp`;
+          }).join('
+
+')
+        : 'no xp yet — start chatting!';
+      const lbEmbed = new EmbedBuilder()
+        .setColor(0xffb700)
+        .setTitle('🏆  server leaderboard')
+        .setDescription(rows)
+        .setFooter({ text: `${sorted.length} ranked members · earn xp by chatting` })
+        .setTimestamp();
+      if (interaction.guild.iconURL()) lbEmbed.setThumbnail(interaction.guild.iconURL());
+      await interaction.reply({ embeds: [lbEmbed] });
     }
 
     else if (cmd === 'serverinfo') {
