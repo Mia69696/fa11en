@@ -252,14 +252,19 @@ async function runVerify(tokenToUse){
 }
 
 async function verifyWithUserId(){
-  const userId=document.getElementById('userIdInput')?.value.trim();
-  const btn=document.getElementById('verifyBtn');
-  const btnText=document.getElementById('btnText');
-  if(!userId||userId.length<15){setStatus('enter your Discord user ID (enable developer mode → right-click your name → copy ID)','fail');return;}
-  if(!checked){setStatus('please agree to the rules first','fail');return;}
-  const inputVal=document.getElementById('captchaInput').value.toUpperCase().trim();
-  if(!inputVal){setStatus('type the captcha code','fail');return;}
-  if(inputVal!==captchaCode){
+  const userId = document.getElementById('userIdInput')?.value.trim();
+  const btn = document.getElementById('verifyBtn');
+  const btnText = document.getElementById('btnText');
+
+  // validations
+  if(!userId || userId.length < 15){
+    setStatus('enter your Discord user ID — enable developer mode in Discord settings → right-click your name → Copy User ID','fail');
+    return;
+  }
+  if(!checked){setStatus('please tick the checkbox to agree to the rules first','fail');return;}
+  const inputVal = document.getElementById('captchaInput').value.toUpperCase().trim();
+  if(!inputVal){setStatus('type the captcha code shown above','fail');return;}
+  if(inputVal !== captchaCode){
     setStatus('wrong captcha — try again','fail');
     btn.className='verify-btn error';
     btnText.innerHTML='<i class="fas fa-times"></i> &nbsp;wrong code';
@@ -267,33 +272,62 @@ async function verifyWithUserId(){
     setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},1500);
     return;
   }
-  btn.className='verify-btn loading';btn.disabled=true;
+
+  btn.className='verify-btn loading'; btn.disabled=true;
   btnText.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> &nbsp;verifying...';
-  try{
-    const genRes=await fetch('https://fa11en-production.up.railway.app/api/verify/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId,guildId})});
-    const genData=await genRes.json();
-    if(!genData.ok){
-      btn.className='verify-btn error';btn.disabled=false;
+
+  const RAILWAY = 'https://fa11en-production.up.railway.app';
+
+  try {
+    // step 1 — generate token
+    setStatus('step 1/2 — generating token...','ok');
+    const genRes = await fetch(RAILWAY+'/api/verify/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({userId, guildId})
+    });
+
+    if(!genRes.ok){
+      throw new Error('server returned '+genRes.status+' — railway may be down');
+    }
+
+    const genData = await genRes.json();
+    if(!genData.ok || !genData.token){
+      btn.className='verify-btn error'; btn.disabled=false;
       btnText.innerHTML='<i class="fas fa-times"></i> &nbsp;failed';
-      setStatus(genData.error||'failed','fail');shakeCard();
-      setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},1500);
+      setStatus('error: '+(genData.error||'could not generate token'),'fail');
+      shakeCard();
+      setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;try again';},1500);
       return;
     }
-    const completeRes=await fetch('https://fa11en-production.up.railway.app/api/verify/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:genData.token})});
-    const data=await completeRes.json();
+
+    // step 2 — complete verification
+    setStatus('step 2/2 — assigning role...','ok');
+    const completeRes = await fetch(RAILWAY+'/api/verify/complete', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token: genData.token})
+    });
+
+    if(!completeRes.ok){
+      throw new Error('server returned '+completeRes.status+' on complete');
+    }
+
+    const data = await completeRes.json();
     if(data.ok){
       await handleSuccess(data.username);
     } else {
-      btn.className='verify-btn error';btn.disabled=false;
+      btn.className='verify-btn error'; btn.disabled=false;
       btnText.innerHTML='<i class="fas fa-times"></i> &nbsp;failed';
-      setStatus(data.error||'make sure your user ID is correct and you are in the server','fail');
+      setStatus('❌ '+( data.error || 'verification failed'),'fail');
       shakeCard();
-      setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;try again';},1500);
+      setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;try again';},2000);
     }
   } catch(e){
-    btn.className='verify-btn error';btn.disabled=false;
-    setStatus('server error — try again','fail');
-    setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},1500);
+    btn.className='verify-btn error'; btn.disabled=false;
+    btnText.innerHTML='<i class="fas fa-times"></i> &nbsp;error';
+    setStatus('❌ network error: '+e.message,'fail');
+    setTimeout(()=>{btn.className='verify-btn';btnText.innerHTML='<i class="fas fa-shield-halved"></i> &nbsp;verify me';},2000);
   }
 }
 
