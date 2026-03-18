@@ -482,24 +482,38 @@ client.on('interactionCreate', async interaction => {
     }
 
     else if (cmd === 'leaderboard') {
-      const sorted = Object.entries(state.xpData).sort((a, b) => b[1].level - a[1].level || b[1].xp - a[1].xp).slice(0, 10);
-      const medals = ['🥇', '🥈', '🥉'];
+      const sorted = Object.entries(state.xpData)
+        .sort((a, b) => b[1].level - a[1].level || b[1].xp - a[1].xp)
+        .slice(0, 10);
+      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+      const tiers = (lvl) => lvl >= 50 ? '💎' : lvl >= 30 ? '🥇' : lvl >= 20 ? '🥈' : lvl >= 10 ? '🥉' : '🌱';
       const rows = sorted.length
         ? sorted.map(([id, d], i) => {
-            const bar = '▰'.repeat(Math.floor((d.xp / (d.level * 100)) * 8)) + '▱'.repeat(8 - Math.floor((d.xp / (d.level * 100)) * 8));
-            return `${medals[i] || `\`${String(i+1).padStart(2,'0')}.\``} <@${id}>
-┗ **lvl ${d.level}** · \`${bar}\` · ${d.xp} xp`;
-          }).join('
-
-')
-        : 'no xp yet — start chatting!';
+            const pct = Math.floor((d.xp / (d.level * 100)) * 10);
+            const bar = '█'.repeat(pct) + '░'.repeat(10 - pct);
+            const totalXP = d.xp + (d.level * (d.level - 1) * 50);
+            const line1 = medals[i] + ' <@' + id + '> ' + tiers(d.level);
+            const line2 = '┗ **lvl ' + d.level + '** \u00b7 `' + bar + '` \u00b7 ' + totalXP.toLocaleString() + ' xp';
+            return line1 + '\n' + line2;
+          }).join('\n\n')
+        : '> no one has earned xp yet — start chatting!';
+      const topUser = sorted[0];
       const lbEmbed = new EmbedBuilder()
         .setColor(0xffb700)
-        .setTitle('🏆  server leaderboard')
+        .setAuthor({
+          name: interaction.guild.name + ' — leaderboard',
+          iconURL: interaction.guild.iconURL({ dynamic: true }) || undefined,
+        })
+        .setTitle('🏆  top members')
         .setDescription(rows)
-        .setFooter({ text: `${sorted.length} ranked members · earn xp by chatting` })
+        .addFields(
+          { name: '👥 ranked members', value: '**' + sorted.length + '**', inline: true },
+          { name: '🌟 top level', value: topUser ? '**' + topUser[1].level + '**' : '—', inline: true },
+          { name: '⚡ earn xp by', value: 'chatting (1min cooldown)', inline: true },
+        )
+        .setThumbnail(interaction.guild.iconURL({ dynamic: true }) || null)
+        .setFooter({ text: 'use /rank to see your own stats · updated live' })
         .setTimestamp();
-      if (interaction.guild.iconURL()) lbEmbed.setThumbnail(interaction.guild.iconURL());
       await interaction.reply({ embeds: [lbEmbed] });
     }
 
