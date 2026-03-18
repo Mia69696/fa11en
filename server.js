@@ -399,15 +399,17 @@ app.get('/api/tempvoice/settings', (req, res) => {
     tempVoiceEnabled: state.tempVoiceEnabled,
     tempVoiceCategoryId: state.tempVoiceCategoryId,
     tempVoiceCreatorId: state.tempVoiceCreatorId,
+    tempVoiceControlChannelId: state.tempVoiceControlChannelId,
     activeChannels: Object.entries(state.tempVoiceChannels).map(([id, d]) => ({ id, ...d })),
   });
 });
 
 app.post('/api/tempvoice/settings', (req, res) => {
-  const { tempVoiceEnabled, tempVoiceCategoryId, tempVoiceCreatorId } = req.body;
+  const { tempVoiceEnabled, tempVoiceCategoryId, tempVoiceCreatorId, tempVoiceControlChannelId } = req.body;
   if (tempVoiceEnabled !== undefined) state.tempVoiceEnabled = tempVoiceEnabled;
   if (tempVoiceCategoryId !== undefined) state.tempVoiceCategoryId = tempVoiceCategoryId || null;
   if (tempVoiceCreatorId !== undefined) state.tempVoiceCreatorId = tempVoiceCreatorId || null;
+  if (tempVoiceControlChannelId !== undefined) state.tempVoiceControlChannelId = tempVoiceControlChannelId || null;
   saveState();
   addLog('DASH', 'temp voice settings saved', 'blue');
   res.json({ ok: true });
@@ -433,12 +435,21 @@ app.post('/api/tempvoice/setup', async (req, res) => {
       parent: category.id,
     });
 
+    // create control text channel
+    const controlCh = await guild.channels.create({
+      name: '🎛️-vc-controls',
+      type: 0, // text
+      parent: category.id,
+      topic: 'control your temp voice channel here',
+    });
+
     state.tempVoiceCategoryId = category.id;
     state.tempVoiceCreatorId = creator.id;
+    state.tempVoiceControlChannelId = controlCh.id;
     state.tempVoiceEnabled = true;
     saveState();
     addLog('DASH', 'temp voice setup complete in ' + guild.name, 'green');
-    res.json({ ok: true, categoryId: category.id, creatorId: creator.id });
+    res.json({ ok: true, categoryId: category.id, creatorId: creator.id, controlChannelId: controlCh.id });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
