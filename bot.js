@@ -39,6 +39,11 @@ const state = {
   logs: [],
   tickets: {},
   ticketCount: 0,
+  // verification
+  verificationEnabled: false,
+  verifiedRoleId: null,
+  verificationChannelId: null,
+  pendingVerifications: {}, // token -> { userId, guildId, expires }
 };
 
 // ── HELPERS ───────────────────────────────────────────
@@ -602,6 +607,47 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+// ── VERIFICATION HELPERS ─────────────────────────────
+function createVerifyToken(userId, guildId) {
+  const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  state.pendingVerifications[token] = {
+    userId,
+    guildId,
+    expires: Date.now() + 10 * 60 * 1000, // 10 min
+  };
+  return token;
+}
+
+async function completeVerification(token) {
+  const data = state.pendingVerifications[token];
+  if (!data) return { ok: false, error: 'invalid or expired token' };
+  if (Date.now() > data.expires) {
+    delete state.pendingVerifications[token];
+    return { ok: false, error: 'token expired — please click verify again' };
+  }
+  if (!state.verifiedRoleId) return { ok: false, error: 'verified role not configured — ask an admin' };
+  try {
+    const guild = client.guilds.cache.get(data.guildId);
+    if (!guild) return { ok: false, error: 'server not found' };
+    const member = await guild.members.fetch(data.userId);
+    if (!member) return { ok: false, error: 'member not found' };
+    await member.roles.add(state.verifiedRoleId);
+    delete state.pendingVerifications[token];
+    addLog('VERIFY', member.user.username + ' completed verification', 'green');
+    return { ok: true, username: member.user.username };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// cleanup expired tokens every 5 min
+setInterval(() => {
+  const now = Date.now();
+  Object.keys(state.pendingVerifications).forEach(t => {
+    if (state.pendingVerifications[t].expires < now) delete state.pendingVerifications[t];
+  });
+}, 5 * 60 * 1000);
+
 client.login(TOKEN).catch(e => console.error('❌ login failed:', e.message));
 
-module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction };
+module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification };
