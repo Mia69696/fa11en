@@ -350,6 +350,7 @@ textarea.inp{resize:vertical;min-height:72px;}
     <div class="ni" data-page="tickets"><i class="fas fa-ticket"></i> Tickets</div>
     <div class="ni" data-page="verify"><i class="fas fa-shield-halved"></i> Verification</div>
     <div class="ni" data-page="commands"><i class="fas fa-terminal"></i> Commands</div>
+    <div class="ni" data-page="tempvoice"><i class="fas fa-headphones"></i> Temp Voice</div>
     <div class="ni" data-page="send"><i class="fas fa-paper-plane"></i> Send Message</div>
   </div>
   <div class="sb-sec">
@@ -787,6 +788,97 @@ textarea.inp{resize:vertical;min-height:72px;}
     </div>
   </div>
 
+  <!-- ══ TEMP VOICE ══ -->
+  <div class="page" id="page-tempvoice">
+    <div class="sh"><div><h2>temp voice</h2><p>users join a channel → bot creates their own private vc</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">setup</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div><div style="font-size:12px;font-weight:700">Temp Voice Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">auto-create/delete voice channels</div></div>
+            <div class="tog" id="tv-toggle" onclick="tvToggle(this)"></div>
+          </div>
+          <label class="fl">Creator Channel ID <span style="color:var(--txt2)">(the "join to create" channel)</span></label>
+          <input class="inp" id="tvCreatorId" placeholder="paste channel id" style="margin-bottom:10px">
+          <label class="fl">Category ID <span style="color:var(--txt2)">(temp channels go here)</span></label>
+          <input class="inp" id="tvCategoryId" placeholder="paste category id" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%;margin-bottom:8px" onclick="saveTVSettings()"><i class="fas fa-check"></i> save settings</button>
+          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+            <div style="font-size:11px;color:var(--txt2);margin-bottom:10px">or let the bot create everything automatically:</div>
+            <select class="inp" id="tvSetupGuild" style="margin-bottom:8px"></select>
+            <button class="btn btn-gr" style="width:100%" onclick="tvAutoSetup()"><i class="fas fa-magic"></i> auto setup (creates category + channel)</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">how it works</div></div>
+        <div class="cb">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">➕</div>
+              <div><div style="font-size:11px;font-weight:700">user joins "Join to Create"</div><div style="font-size:10px;color:var(--txt2)">the special creator channel</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">🤖</div>
+              <div><div style="font-size:11px;font-weight:700">bot creates their own VC</div><div style="font-size:10px;color:var(--txt2)">named after them, they are owner</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">👑</div>
+              <div><div style="font-size:11px;font-weight:700">owner controls the channel</div><div style="font-size:10px;color:var(--txt2)">rename, limit, kick, lock</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">🗑️</div>
+              <div><div style="font-size:11px;font-weight:700">auto-deleted when empty</div><div style="font-size:10px;color:var(--txt2)">no clutter left behind</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Channels -->
+    <div class="card">
+      <div class="ch"><div class="ct">active temp channels</div><button class="btn btn-g" style="font-size:11px;padding:5px 10px" onclick="loadTVChannels()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+      <div id="tvChannelList"><div class="empty">no active temp voice channels</div></div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card">
+      <div class="ch"><div class="ct">control a channel</div><span class="tag t-cyan">dashboard control</span></div>
+      <div class="cb">
+        <div class="fr">
+          <div><label class="fl">Server</label><select class="inp" id="tvControlGuild"></select></div>
+          <div><label class="fl">Channel ID</label><input class="inp" id="tvControlChannel" placeholder="paste channel id"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label class="fl">Rename to</label>
+            <div style="display:flex;gap:6px">
+              <input class="inp" id="tvNewName" placeholder="new name">
+              <button class="btn btn-g" style="flex-shrink:0" onclick="tvControl('rename',document.getElementById('tvNewName').value)"><i class="fas fa-pen"></i></button>
+            </div>
+          </div>
+          <div>
+            <label class="fl">User limit (0 = unlimited)</label>
+            <div style="display:flex;gap:6px">
+              <input class="inp" id="tvLimit" type="number" placeholder="0" min="0" max="99">
+              <button class="btn btn-g" style="flex-shrink:0" onclick="tvControl('limit',document.getElementById('tvLimit').value)"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          <button class="btn btn-g" onclick="tvControl('lock')"><i class="fas fa-lock"></i> lock</button>
+          <button class="btn btn-g" onclick="tvControl('unlock')"><i class="fas fa-lock-open"></i> unlock</button>
+          <div style="display:flex;gap:6px;grid-column:span 2">
+            <input class="inp" id="tvKickUser" placeholder="user id to kick">
+            <button class="btn btn-y" style="flex-shrink:0;white-space:nowrap" onclick="tvControl('kick',document.getElementById('tvKickUser').value)"><i class="fas fa-sign-out-alt"></i> kick</button>
+            <button class="btn btn-r" style="flex-shrink:0;white-space:nowrap" onclick="tvControl('delete')"><i class="fas fa-trash"></i> delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ COMMANDS ══ -->
   <div class="page" id="page-commands">
     <div class="sh"><div><h2>commands</h2><p>auto-registered slash commands</p></div></div>
@@ -1079,7 +1171,7 @@ async function saveLogChannels(){
   } catch(e){ t('save failed: '+e.message,'red'); }
 }
 
-function clearLogs(){
+async function clearLogs(){
   await api('/api/logs',{method:'DELETE'});
   document.getElementById('logsList').innerHTML = '<div class="empty">logs cleared</div>';
   t('logs cleared','green');
@@ -1336,6 +1428,82 @@ async function sendVerifyPanel(){
 function copyVerifyLink(){
   const link = 'https://mia69696.github.io/verify/';
   navigator.clipboard.writeText(link).then(()=>t('verify link copied: '+link,'green')).catch(()=>t('copy failed','red'));
+}
+
+// ── TEMP VOICE ───────────────────────────────────────
+async function loadTVSettings(){
+  try {
+    const s = await api('/api/tempvoice/settings');
+    const tog = document.getElementById('tv-toggle');
+    if(tog) tog.classList.toggle('on', !!s.tempVoiceEnabled);
+    if(s.tempVoiceCreatorId) document.getElementById('tvCreatorId').value = s.tempVoiceCreatorId;
+    if(s.tempVoiceCategoryId) document.getElementById('tvCategoryId').value = s.tempVoiceCategoryId;
+    renderTVChannels(s.activeChannels || []);
+  } catch(e){}
+}
+
+function renderTVChannels(channels){
+  const el = document.getElementById('tvChannelList');
+  if(!el) return;
+  if(!channels.length){ el.innerHTML = '<div class="empty">no active temp voice channels right now</div>'; return; }
+  el.innerHTML = channels.map(ch=>`
+    <div class="svr" onclick="document.getElementById('tvControlChannel').value='${ch.id}'">
+      <div class="svr-ico" style="background:var(--bg4);font-size:16px">🎙️</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${ch.name}</div>
+        <div style="font-size:10px;color:var(--txt2)">owner: ${ch.ownerId} · limit: ${ch.limit||'∞'} · id: ${ch.id}</div>
+      </div>
+      <span class="tag t-cyan">active</span>
+    </div>`).join('');
+}
+
+async function loadTVChannels(){
+  try {
+    const s = await api('/api/tempvoice/settings');
+    renderTVChannels(s.activeChannels || []);
+    t('refreshed','green');
+  } catch(e){ t('failed: '+e.message,'red'); }
+}
+
+function tvToggle(el){
+  el.classList.toggle('on');
+  const value = el.classList.contains('on');
+  api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceEnabled:value})})
+    .then(()=>t('temp voice '+(value?'enabled':'disabled'),value?'green':'yellow'))
+    .catch(e=>t('failed: '+e.message,'red'));
+}
+
+async function saveTVSettings(){
+  const creatorId = document.getElementById('tvCreatorId').value.trim()||null;
+  const categoryId = document.getElementById('tvCategoryId').value.trim()||null;
+  try {
+    await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceCreatorId:creatorId,tempVoiceCategoryId:categoryId})});
+    t('temp voice settings saved','green');
+  } catch(e){ t('save failed: '+e.message,'red'); }
+}
+
+async function tvAutoSetup(){
+  const guildId = document.getElementById('tvSetupGuild').value;
+  if(!guildId){t('select a server','yellow');return;}
+  try {
+    const res = await api('/api/tempvoice/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId})});
+    document.getElementById('tvCreatorId').value = res.creatorId;
+    document.getElementById('tvCategoryId').value = res.categoryId;
+    document.getElementById('tv-toggle').classList.add('on');
+    t('temp voice setup complete! category + creator channel created','green');
+  } catch(e){ t('setup failed: '+e.message,'red'); }
+}
+
+async function tvControl(action, value){
+  const guildId = document.getElementById('tvControlGuild').value;
+  const channelId = document.getElementById('tvControlChannel').value.trim();
+  if(!channelId){t('enter a channel id','yellow');return;}
+  if(action==='delete' && !confirm('delete this temp voice channel?')) return;
+  try {
+    await api('/api/tempvoice/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId,channelId,action,value})});
+    t(action+' done','green');
+    loadTVChannels();
+  } catch(e){ t('failed: '+e.message,'red'); }
 }
 
 // ── COUNT UP ANIMATION ────────────────────────────────
