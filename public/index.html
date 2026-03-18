@@ -1243,7 +1243,7 @@ async function sendVerifyPanel(){
 }
 
 function copyVerifyLink(){
-  const link = window.location.origin + '/verify';
+  const link = 'https://mia69696.github.io/verify/';
   navigator.clipboard.writeText(link).then(()=>t('verify link copied: '+link,'green')).catch(()=>t('copy failed','red'));
 }
 
