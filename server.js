@@ -357,7 +357,25 @@ app.post('/api/verify/complete', async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: 'token required' });
   const result = await completeVerification(token);
+  if (!result.ok) {
+    addLog('VERIFY', 'verification failed: ' + result.error, 'red');
+  }
   res.json(result);
+});
+
+// debug — check if a token is valid (so user can see why it failed)
+app.get('/api/verify/check/:token', (req, res) => {
+  const data = state.pendingVerifications[req.params.token];
+  if (!data) return res.json({ valid: false, reason: 'token not found or already used' });
+  if (Date.now() > data.expires) return res.json({ valid: false, reason: 'token expired' });
+  res.json({
+    valid: true,
+    userId: data.userId,
+    guildId: data.guildId,
+    roleId: data.roleId || state.verifiedRoleId || null,
+    roleConfigured: !!(data.roleId || state.verifiedRoleId),
+    expiresIn: Math.floor((data.expires - Date.now()) / 1000) + 's',
+  });
 });
 
 // get/save verification settings
