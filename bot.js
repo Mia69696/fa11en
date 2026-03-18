@@ -146,6 +146,9 @@ const commands = [
   new SlashCommandBuilder().setName('ticket').setDescription('Open a support ticket'),
   new SlashCommandBuilder().setName('closeticket').setDescription('Close this ticket')
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+  new SlashCommandBuilder().setName('ticketpanel').setDescription('Post a ticket panel with a button')
+    .addChannelOption(o=>o.setName('channel').setDescription('Channel to post in (default: current)'))
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
   new SlashCommandBuilder().setName('say').setDescription('Make the bot say something')
     .addStringOption(o=>o.setName('message').setDescription('Message').setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
@@ -314,7 +317,21 @@ client.on('guildMemberAdd', async member => {
   const ch = state.welcomeChannelId ? member.guild.channels.cache.get(state.welcomeChannelId) : member.guild.systemChannel;
   if (!ch) return;
   const msg = state.welcomeMessage.replace(/{user}/g,`<@${member.id}>`).replace(/{count}/g,member.guild.memberCount).replace(/{server}/g,member.guild.name);
-  ch.send({ embeds:[new EmbedBuilder().setColor(0x00e87a).setAuthor({name:member.guild.name,iconURL:member.guild.iconURL()||undefined}).setTitle('welcome to the server! 🎉').setDescription('> '+msg).setThumbnail(member.user.displayAvatarURL({size:256})).addFields({name:'👤 user',value:`<@${member.id}>`,inline:true},{name:'🔢 member #',value:`${member.guild.memberCount}`,inline:true},{name:'📅 account age',value:`<t:${Math.floor(member.user.createdTimestamp/1000)}:R>`,inline:true}).setFooter({text:'id: '+member.id}).setTimestamp()]}).catch(()=>{});
+  const welcomeEmbed = new EmbedBuilder()
+    .setColor(0x00e87a)
+    .setAuthor({ name: member.guild.name, iconURL: member.guild.iconURL({ dynamic:true }) || undefined })
+    .setTitle('welcome to the server! 🎉')
+    .setDescription('> ' + msg + '\n\u200b')
+    .setThumbnail(member.user.displayAvatarURL({ dynamic:true, size:512 }))
+    .setImage(member.user.bannerURL({ size:1024 }) || null)
+    .addFields(
+      { name: '👤 user',       value: `<@${member.id}>`, inline: true },
+      { name: '🔢 member #',  value: `**${member.guild.memberCount}**`, inline: true },
+      { name: '📅 acc age',   value: `<t:${Math.floor(member.user.createdTimestamp/1000)}:R>`, inline: true },
+    )
+    .setFooter({ text: 'fa11en · id: '+member.id, iconURL: member.guild.iconURL({ dynamic:true }) || undefined })
+    .setTimestamp();
+  ch.send({ content: `> 👋 welcome <@${member.id}>!`, embeds: [welcomeEmbed] }).catch(()=>{});
   sendAuditLog(member.guild,'joinLeave',new EmbedBuilder().setColor(0x00e87a).setAuthor({name:member.user.username+' joined',iconURL:member.user.displayAvatarURL()}).addFields({name:'👤 user',value:`<@${member.id}>`,inline:true},{name:'🔢 member count',value:`${member.guild.memberCount}`,inline:true},{name:'📅 account created',value:`<t:${Math.floor(member.user.createdTimestamp/1000)}:R>`,inline:true}).setThumbnail(member.user.displayAvatarURL()).setFooter({text:'id: '+member.id}).setTimestamp());
   addLog('JOIN',member.user.username+' joined '+member.guild.name,'green',`user: ${member.user.username} (${member.id})\naccount created: ${new Date(member.user.createdTimestamp).toLocaleString()}\nmember #${member.guild.memberCount}`);
 });
@@ -324,7 +341,20 @@ client.on('guildMemberRemove', async member => {
   const ch = state.welcomeChannelId ? member.guild.channels.cache.get(state.welcomeChannelId) : member.guild.systemChannel;
   if (!ch) return;
   const msg = state.goodbyeMessage.replace(/{user}/g,member.user.username).replace(/{server}/g,member.guild.name);
-  ch.send({ embeds:[new EmbedBuilder().setColor(0xff3555).setAuthor({name:member.guild.name,iconURL:member.guild.iconURL()||undefined}).setTitle(member.user.username+' left the server').setDescription('> '+msg).setThumbnail(member.user.displayAvatarURL({size:256})).addFields({name:'👤 user',value:member.user.username,inline:true},{name:'🔢 members left',value:`${member.guild.memberCount}`,inline:true},{name:'📅 joined',value:member.joinedTimestamp?`<t:${Math.floor(member.joinedTimestamp/1000)}:R>`:'—',inline:true}).setFooter({text:'id: '+member.id}).setTimestamp()]}).catch(()=>{});
+  const goodbyeEmbed = new EmbedBuilder()
+    .setColor(0xff3555)
+    .setAuthor({ name: member.guild.name, iconURL: member.guild.iconURL({ dynamic:true }) || undefined })
+    .setTitle(member.user.username + ' left the server 👋')
+    .setDescription('> ' + msg + '\n\u200b')
+    .setThumbnail(member.user.displayAvatarURL({ dynamic:true, size:512 }))
+    .addFields(
+      { name: '👤 user',          value: member.user.username, inline: true },
+      { name: '🔢 members left',  value: `**${member.guild.memberCount}**`, inline: true },
+      { name: '📅 joined',        value: member.joinedTimestamp ? `<t:${Math.floor(member.joinedTimestamp/1000)}:R>` : '—', inline: true },
+    )
+    .setFooter({ text: 'fa11en · id: '+member.id, iconURL: member.guild.iconURL({ dynamic:true }) || undefined })
+    .setTimestamp();
+  ch.send({ embeds: [goodbyeEmbed] }).catch(()=>{});
   sendAuditLog(member.guild,'joinLeave',new EmbedBuilder().setColor(0xff3555).setAuthor({name:member.user.username+' left',iconURL:member.user.displayAvatarURL()}).addFields({name:'👤 user',value:member.user.username,inline:true},{name:'🔢 members remaining',value:`${member.guild.memberCount}`,inline:true}).setThumbnail(member.user.displayAvatarURL()).setFooter({text:'id: '+member.id}).setTimestamp());
   addLog('LEAVE',member.user.username+' left '+member.guild.name,'yellow',`user: ${member.user.username} (${member.id})\nmembers now: ${member.guild.memberCount}`);
 });
@@ -846,13 +876,7 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply({embeds:[new EmbedBuilder().setColor(0x111111).setTitle(user.username).setThumbnail(user.displayAvatarURL()).addFields({name:'id',value:user.id,inline:true},{name:'joined',value:member?`<t:${Math.floor(member.joinedTimestamp/1000)}:R>`:'—',inline:true},{name:'created',value:`<t:${Math.floor(user.createdTimestamp/1000)}:R>`,inline:true},{name:'level',value:`${d.level}`,inline:true},{name:'xp',value:`${d.xp}`,inline:true},{name:'warnings',value:`${getWarnings(interaction.guild.id,user.id)}`,inline:true}).setTimestamp()]});
     }
     else if (cmd==='ticket') {
-      if (!state.ticketsEnabled) return interaction.reply({content:'tickets are disabled.',ephemeral:true});
-      state.ticketCount++;
-      const num=String(state.ticketCount).padStart(4,'0');
-      const ch=await interaction.guild.channels.create({name:'ticket-'+num,permissionOverwrites:[{id:interaction.guild.id,deny:[PermissionFlagsBits.ViewChannel]},{id:interaction.user.id,allow:[PermissionFlagsBits.ViewChannel,PermissionFlagsBits.SendMessages]}]});
-      state.tickets[ch.id]={userId:interaction.user.id,ticketNum:num,opened:new Date().toISOString()};
-      await ch.send({embeds:[makeEmbed(0x111111,'🎫 ticket #'+num,`hey <@${interaction.user.id}>, staff will be with you shortly.\nuse \`/closeticket\` to close.`)]});
-      await interaction.reply({content:'ticket opened: <#'+ch.id+'>',ephemeral:true});
+      await openTicket(interaction.guild, interaction.user, interaction);
     }
     else if (cmd==='closeticket') {
       const ticket=state.tickets[interaction.channel.id];
@@ -860,6 +884,29 @@ client.on('interactionCreate', async interaction => {
       await interaction.reply({embeds:[makeEmbed(0x111111,'🔒 closed','deleting in 5 seconds.')]});
       delete state.tickets[interaction.channel.id];
       setTimeout(()=>interaction.channel.delete().catch(()=>{}),5000);
+    }
+    else if (cmd==='ticketpanel') {
+      const ch = interaction.options.getChannel('channel') || interaction.channel;
+      const botAvatar = client.user.displayAvatarURL({ dynamic:true, size:512 });
+      const panelEmbed = new EmbedBuilder()
+        .setColor(0x5865f2)
+        .setAuthor({ name: 'fa11en', iconURL: botAvatar })
+        .setTitle('🎫  create a ticket')
+        .setDescription('> by clicking the button below, a ticket will be opened for you.\n> our staff will assist you as soon as possible.')
+        .setThumbnail(botAvatar)
+        .addFields(
+          { name: '📋 how it works', value: '1. click **Create Ticket** below\n2. a private channel opens just for you\n3. describe your issue and wait for staff', inline: false },
+        )
+        .setFooter({ text: 'fa11en · support system', iconURL: botAvatar })
+        .setTimestamp();
+      await ch.send({
+        embeds: [panelEmbed],
+        components: [{ type:1, components:[
+          { type:2, style:1, label:'Create Ticket', emoji:'🎫', custom_id:'open_ticket' }
+        ]}]
+      });
+      await interaction.reply({ content: '✅ ticket panel posted in <#'+ch.id+'>', ephemeral:true });
+      addLog('TICKET','ticket panel posted in #'+ch.name,'cyan');
     }
     else if (cmd==='say') {
       const msg=interaction.options.getString('message');
@@ -877,6 +924,100 @@ client.on('interactionCreate', async interaction => {
     const r={content:'❌ error: '+e.message,ephemeral:true};
     if (interaction.replied||interaction.deferred) interaction.followUp(r).catch(()=>{});
     else interaction.reply(r).catch(()=>{});
+  }
+});
+
+// ── TICKET SYSTEM ────────────────────────────────────
+async function openTicket(guild, user, interaction) {
+  if (!state.ticketsEnabled) {
+    const r = { content:'❌ tickets are disabled', ephemeral:true };
+    if (interaction.replied||interaction.deferred) return interaction.followUp(r);
+    return interaction.reply(r);
+  }
+  // check if user already has a ticket open
+  const existing = Object.entries(state.tickets).find(([,t])=>t.userId===user.id);
+  if (existing) {
+    const r = { content:'❌ you already have a ticket open: <#'+existing[0]+'>', ephemeral:true };
+    if (interaction.replied||interaction.deferred) return interaction.followUp(r);
+    return interaction.reply(r);
+  }
+  state.ticketCount++;
+  const num = String(state.ticketCount).padStart(4,'0');
+  const botAvatar = client.user.displayAvatarURL({ dynamic:true, size:512 });
+
+  // find or create ticket category
+  let category = guild.channels.cache.find(c=>c.type===4 && c.name.toLowerCase().includes('ticket'));
+
+  const ch = await guild.channels.create({
+    name: 'ticket-'+num,
+    type: 0,
+    parent: category?.id || undefined,
+    permissionOverwrites: [
+      { id: guild.id,  deny:  [PermissionFlagsBits.ViewChannel] },
+      { id: user.id,   allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },
+      { id: client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels] },
+    ]
+  });
+
+  state.tickets[ch.id] = { userId: user.id, ticketNum: num, opened: new Date().toISOString() };
+  saveState();
+
+  const ticketEmbed = new EmbedBuilder()
+    .setColor(0x5865f2)
+    .setAuthor({ name: 'fa11en support', iconURL: botAvatar })
+    .setTitle('🎫 ticket #' + num)
+    .setDescription('> hey <@'+user.id+'>, thanks for opening a ticket!\n> staff will be with you shortly, please describe your issue.')
+    .setThumbnail(user.displayAvatarURL({ dynamic:true, size:256 }))
+    .addFields(
+      { name: '👤 opened by', value: '<@'+user.id+'>', inline: true },
+      { name: '🕐 opened at', value: '<t:'+Math.floor(Date.now()/1000)+':R>', inline: true },
+      { name: '🆔 ticket',    value: '#'+num, inline: true },
+    )
+    .setFooter({ text: 'fa11en · use the button below to close', iconURL: botAvatar })
+    .setTimestamp();
+
+  await ch.send({
+    content: '<@'+user.id+'>',
+    embeds: [ticketEmbed],
+    components: [{ type:1, components:[
+      { type:2, style:4, label:'Close Ticket', emoji:'🔒', custom_id:'close_ticket' }
+    ]}]
+  });
+
+  addLog('TICKET', user.username+' opened ticket #'+num, 'cyan');
+
+  const r = { content:'✅ ticket opened: <#'+ch.id+'>', ephemeral:true };
+  if (interaction.replied||interaction.deferred) interaction.followUp(r).catch(()=>{});
+  else interaction.reply(r).catch(()=>{});
+}
+
+// ticket button handler
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isButton()) return;
+
+  // open ticket button (from panel)
+  if (interaction.customId === 'open_ticket') {
+    await openTicket(interaction.guild, interaction.user, interaction);
+    return;
+  }
+
+  // close ticket button (inside ticket channel)
+  if (interaction.customId === 'close_ticket') {
+    const ticket = state.tickets[interaction.channel.id];
+    if (!ticket) return interaction.reply({ content:'❌ not a ticket channel', ephemeral:true });
+    const botAvatar = client.user.displayAvatarURL({ dynamic:true, size:512 });
+    await interaction.reply({ embeds:[new EmbedBuilder()
+      .setColor(0xff3555)
+      .setAuthor({ name:'fa11en support', iconURL:botAvatar })
+      .setTitle('🔒 ticket closed')
+      .setDescription('> this ticket will be deleted in **5 seconds**.')
+      .setFooter({ text:'closed by '+interaction.user.username })
+      .setTimestamp()
+    ]});
+    addLog('TICKET','ticket #'+ticket.ticketNum+' closed by '+interaction.user.username,'yellow');
+    delete state.tickets[interaction.channel.id];
+    saveState();
+    setTimeout(()=>interaction.channel.delete().catch(()=>{}), 5000);
   }
 });
 
