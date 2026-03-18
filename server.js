@@ -189,13 +189,25 @@ app.get('/api/settings', (req, res) => {
     levelUpMessage: state.levelUpMessage, welcomeChannelId: state.welcomeChannelId,
     logChannelId: state.logChannelId, autobanThreshold: state.autobanThreshold,
     prefix: state.prefix, muteMinutes: state.muteMinutes, badWordsList: state.badWordsList,
+    logChannels: state.logChannels,
   });
+});
+
+// get/save log channels specifically
+app.get('/api/logchannels', (req, res) => res.json(state.logChannels));
+
+app.post('/api/logchannels', (req, res) => {
+  const keys = ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges'];
+  keys.forEach(k => { if (req.body[k] !== undefined) state.logChannels[k] = req.body[k] || null; });
+  saveState();
+  addLog('DASH', 'log channels updated', 'blue');
+  res.json({ ok: true });
 });
 
 app.post('/api/settings', (req, res) => {
   const allowed = ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks',
     'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled','welcomeMessage','goodbyeMessage',
-    'levelUpMessage','welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList'];
+    'levelUpMessage','welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList','logChannels'];
   allowed.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k]; });
   saveState();
   addLog('DASH', 'settings updated', 'blue');
