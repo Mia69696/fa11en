@@ -52,6 +52,11 @@ const state = {
   logs: [],
   tickets: {},
   ticketCount: 0,
+  // temp voice
+  tempVoiceEnabled: false,
+  tempVoiceCategoryId: null,
+  tempVoiceCreatorId: null,   // the "join to create" channel id
+  tempVoiceChannels: {},      // channelId -> { ownerId, guildId, name, limit }
   // verification
   verificationEnabled: false,
   verifiedRoleId: null,
@@ -72,6 +77,7 @@ const PERSIST_KEYS = [
   'welcomeMessage','goodbyeMessage','levelUpMessage',
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId','verifyMessageId','verifyEmoji','logChannels',
+  'tempVoiceEnabled','tempVoiceCategoryId','tempVoiceCreatorId',
   'xpData','warnings','infractions','infId','ticketCount',
 ];
 
@@ -835,6 +841,55 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   await sendAuditLog(newMember.guild, 'roleChanges', embed);
   addLog('ROLE', newMember.user.username + ' roles changed', 'purple');
+});
+
+// ── TEMP VOICE ───────────────────────────────────────
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  // --- create temp channel when joining creator ---
+  if (state.tempVoiceEnabled && state.tempVoiceCreatorId &&
+      newState.channelId === state.tempVoiceCreatorId) {
+    const guild = newState.guild;
+    const member = newState.member;
+    try {
+      const newCh = await guild.channels.create({
+        name: member.displayName + "'s channel",
+        type: 2, // voice
+        parent: state.tempVoiceCategoryId || undefined,
+        permissionOverwrites: [
+          {
+            id: member.id,
+            allow: [
+              PermissionFlagsBits.ManageChannels,
+              PermissionFlagsBits.MoveMembers,
+              PermissionFlagsBits.MuteMembers,
+              PermissionFlagsBits.DeafenMembers,
+              PermissionFlagsBits.Connect,
+              PermissionFlagsBits.Speak,
+              PermissionFlagsBits.ViewChannel,
+            ]
+          }
+        ]
+      });
+      state.tempVoiceChannels[newCh.id] = {
+        ownerId: member.id,
+        guildId: guild.id,
+        name: newCh.name,
+        limit: 0,
+      };
+      await member.voice.setChannel(newCh);
+      addLog('VOICE', member.user.username + ' created temp vc: ' + newCh.name, 'cyan');
+    } catch(e) { addLog('VOICE', 'failed to create temp vc: ' + e.message, 'red'); }
+  }
+
+  // --- delete temp channel when empty ---
+  if (oldState.channelId && state.tempVoiceChannels[oldState.channelId]) {
+    const ch = oldState.guild.channels.cache.get(oldState.channelId);
+    if (ch && ch.members.size === 0) {
+      delete state.tempVoiceChannels[oldState.channelId];
+      await ch.delete('temp voice empty').catch(() => {});
+      addLog('VOICE', 'temp vc deleted (empty)', 'yellow');
+    }
+  }
 });
 
 // ── REACTION VERIFICATION ────────────────────────────────
