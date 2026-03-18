@@ -964,10 +964,13 @@ async function updateControlPanel(guild, channelId) {
 
 // ── VOICE STATE — create/delete ───────────────────────
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (!state.tempVoiceEnabled || !state.tempVoiceCreatorId) return;
+  // find creator channel for this guild
+  // support both global and per-guild (for now use global state)
+  const creatorId = state.tempVoiceCreatorId;
+  if (!state.tempVoiceEnabled || !creatorId) return;
 
   // JOIN CREATOR — create new temp vc
-  if (newState.channelId === state.tempVoiceCreatorId) {
+  if (newState.channelId === creatorId) {
     const guild = newState.guild;
     const member = newState.member;
     try {
