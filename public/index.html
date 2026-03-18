@@ -671,56 +671,63 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ VERIFICATION ══ -->
   <div class="page" id="page-verify">
-    <div class="sh"><div><h2>verification</h2><p>control who can join your server</p></div></div>
+    <div class="sh"><div><h2>verification</h2><p>reaction-based — user reacts → gets verified role instantly</p></div></div>
     <div class="g2">
       <div class="card">
-        <div class="ch"><div class="ct">settings</div><span class="tag t-green" id="verifyStatusTag">● configuring</span></div>
+        <div class="ch"><div class="ct">settings</div></div>
         <div class="cb">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <div><div style="font-size:12px;font-weight:700">Verification Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">users must verify to access channels</div></div>
+            <div><div style="font-size:12px;font-weight:700">Verification Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">react to message → get verified role</div></div>
             <div class="tog" id="vfy-verificationEnabled" data-key="verificationEnabled" onclick="toggle(this)"></div>
           </div>
-          <label class="fl">Verified Role ID</label>
-          <input class="inp" id="verifiedRoleId" placeholder="paste role id — this role gets assigned on verify" style="margin-bottom:10px">
-          <div style="font-size:10px;color:var(--txt3);margin-bottom:12px">to get a role id: enable developer mode in Discord → right-click the role → copy id</div>
-          <label class="fl">Verification Channel ID (optional)</label>
-          <input class="inp" id="verificationChannelId" placeholder="where the verify panel will be posted" style="margin-bottom:14px">
+          <label class="fl">Verified Role ID <span style="color:var(--red)">*</span></label>
+          <input class="inp" id="verifiedRoleId" placeholder="role given when user reacts" style="margin-bottom:10px">
+          <label class="fl">Unverified Role ID <span style="color:var(--txt2)">(optional — gets removed on verify)</span></label>
+          <input class="inp" id="unverifiedRoleId" placeholder="role taken away after verifying" style="margin-bottom:10px">
+          <label class="fl">Verify Emoji</label>
+          <input class="inp" id="verifyEmoji" placeholder="✅" value="✅" style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:14px">💡 to get a role id: enable developer mode → right-click the role → copy id</div>
           <button class="btn btn-w" style="width:100%" onclick="saveVerifySettings()"><i class="fas fa-check"></i> save settings</button>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ct">send verify panel</div><span class="tag t-white">bot posts it</span></div>
+        <div class="ch"><div class="ct">post verify message</div><span class="tag t-green">bot posts it</span></div>
         <div class="cb">
-          <div style="font-size:11px;color:var(--txt2);line-height:1.6;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px">
-            the bot will post a beautiful embed in the channel you choose with a <b style="color:var(--txt)">verify me</b> button. when someone clicks it, they get sent to the verification page.
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.6">
+            bot posts an embed with a ✅ reaction. user clicks it → gets <b style="color:var(--txt)">@verified</b> role → loses <b style="color:var(--txt)">@unverified</b> role. that's it.
           </div>
           <label class="fl">Server</label>
           <select class="inp" id="verifyGuild" style="margin-bottom:10px" onchange="loadVerifyChannels()"></select>
-          <label class="fl">Channel to post in</label>
+          <label class="fl">Channel</label>
           <select class="inp" id="verifyChannel" style="margin-bottom:14px"></select>
-          <button class="btn btn-w" style="width:100%;margin-bottom:8px" onclick="sendVerifyPanel()"><i class="fas fa-paper-plane"></i> post verification panel</button>
-          <button class="btn btn-g" style="width:100%" onclick="copyVerifyLink()"><i class="fas fa-link"></i> copy verify page link</button>
+          <button class="btn btn-w" style="width:100%" onclick="sendVerifyPanel()"><i class="fas fa-paper-plane"></i> post verify message</button>
+          <div style="margin-top:8px;font-size:10px;color:var(--txt3)">⚠️ save your settings first before posting</div>
         </div>
       </div>
     </div>
     <div class="card">
       <div class="ch"><div class="ct">how it works</div></div>
       <div class="cb">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:22px;margin-bottom:8px">1️⃣</div>
-            <div style="font-size:11px;font-weight:700;margin-bottom:4px">user clicks button</div>
-            <div style="font-size:10px;color:var(--txt2)">in the verification channel</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">📌</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">bot posts message</div>
+            <div style="font-size:10px;color:var(--txt2)">with ✅ reaction</div>
           </div>
-          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:22px;margin-bottom:8px">2️⃣</div>
-            <div style="font-size:11px;font-weight:700;margin-bottom:4px">solves captcha</div>
-            <div style="font-size:10px;color:var(--txt2)">on the verification page</div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">✅</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">user reacts</div>
+            <div style="font-size:10px;color:var(--txt2)">clicks the emoji</div>
           </div>
-          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:22px;margin-bottom:8px">3️⃣</div>
-            <div style="font-size:11px;font-weight:700;margin-bottom:4px">gets @verified role</div>
-            <div style="font-size:10px;color:var(--txt2)">assigned instantly by bot</div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">🎉</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">gets verified role</div>
+            <div style="font-size:10px;color:var(--txt2)">instantly assigned</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">🔓</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">full access</div>
+            <div style="font-size:10px;color:var(--txt2)">unverified role removed</div>
           </div>
         </div>
       </div>
@@ -1205,10 +1212,11 @@ function t(msg, type='green'){
 // ── VERIFICATION ─────────────────────────────────────
 async function saveVerifySettings(){
   const verifiedRoleId = document.getElementById('verifiedRoleId').value.trim() || null;
-  const verificationChannelId = document.getElementById('verificationChannelId').value.trim() || null;
+  const unverifiedRoleId = document.getElementById('unverifiedRoleId').value.trim() || null;
+  const verifyEmoji = document.getElementById('verifyEmoji').value.trim() || '✅';
   try {
-    await api('/api/verify/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({verifiedRoleId, verificationChannelId})});
-    t('verification settings saved','green');
+    await api('/api/verify/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({verifiedRoleId, unverifiedRoleId, verifyEmoji})});
+    t('verification settings saved ✓','green');
   } catch(e){ t('save failed: '+e.message,'red'); }
 }
 
@@ -1216,9 +1224,13 @@ async function loadVerifySettings(){
   try {
     const s = await api('/api/verify/settings');
     if(s.verifiedRoleId) document.getElementById('verifiedRoleId').value = s.verifiedRoleId;
-    if(s.verificationChannelId) document.getElementById('verificationChannelId').value = s.verificationChannelId;
+    if(s.unverifiedRoleId) document.getElementById('unverifiedRoleId').value = s.unverifiedRoleId;
+    if(s.verifyEmoji) document.getElementById('verifyEmoji').value = s.verifyEmoji;
     const tog = document.getElementById('vfy-verificationEnabled');
     if(tog) tog.classList.toggle('on', !!s.verificationEnabled);
+    if(s.verifyMessageId){
+      t('verify message active — id: '+s.verifyMessageId,'green');
+    }
   } catch(e){}
 }
 
