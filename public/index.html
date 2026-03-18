@@ -202,6 +202,123 @@ textarea.inp{resize:vertical;min-height:72px;}
 .modal-t span:hover{color:var(--txt);}
 .modal-b{font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.6;}
 .modal-b b{color:var(--txt);}
+
+/* ── ANIMATIONS ─────────────────────────────────────── */
+
+/* page fade in */
+@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.page.active{animation:fi .2s ease;}
+
+/* stat cards pop in staggered */
+@keyframes cardPop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.sc{animation:cardPop .35s ease both;}
+.sc:nth-child(1){animation-delay:.05s;}
+.sc:nth-child(2){animation-delay:.1s;}
+.sc:nth-child(3){animation-delay:.15s;}
+.sc:nth-child(4){animation-delay:.2s;}
+
+/* sidebar nav items slide in */
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.ni{animation:slideIn .25s ease both;}
+.ni:nth-child(1){animation-delay:.03s;}.ni:nth-child(2){animation-delay:.06s;}
+.ni:nth-child(3){animation-delay:.09s;}.ni:nth-child(4){animation-delay:.12s;}
+.ni:nth-child(5){animation-delay:.15s;}.ni:nth-child(6){animation-delay:.18s;}
+
+/* card reveal */
+@keyframes cardReveal{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card{animation:cardReveal .3s ease both;}
+
+/* banner shimmer */
+@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
+.banner-title{
+  background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#aaa 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 4s linear infinite;
+}
+
+/* toggle bounce */
+.tog{transition:background .2s cubic-bezier(.34,1.56,.64,1);}
+.tog::after{transition:left .25s cubic-bezier(.34,1.56,.64,1);}
+.tog.on{animation:togOn .25s cubic-bezier(.34,1.56,.64,1);}
+@keyframes togOn{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+
+/* button press */
+.btn{transition:all .15s cubic-bezier(.34,1.56,.64,1);}
+.btn:active{transform:scale(.94);}
+.btn-w:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.1);}
+
+/* log items slide in */
+@keyframes logSlide{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:translateX(0);}}
+.lgi{animation:logSlide .2s ease both;}
+
+/* table rows fade */
+@keyframes rowFade{from{opacity:0;}to{opacity:1;}}
+.tbl tbody tr{animation:rowFade .25s ease both;}
+.tbl tbody tr:nth-child(1){animation-delay:.03s;}
+.tbl tbody tr:nth-child(2){animation-delay:.06s;}
+.tbl tbody tr:nth-child(3){animation-delay:.09s;}
+.tbl tbody tr:nth-child(4){animation-delay:.12s;}
+.tbl tbody tr:nth-child(5){animation-delay:.15s;}
+.tbl tbody tr:nth-child(6){animation-delay:.18s;}
+.tbl tbody tr:nth-child(7){animation-delay:.21s;}
+.tbl tbody tr:nth-child(8){animation-delay:.24s;}
+
+/* ping pill pulse */
+@keyframes pingPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+.ping-pill{animation:pingPulse 2.5s ease infinite;}
+
+/* stat value count up flash */
+@keyframes valFlash{0%{color:#fff;}50%{color:var(--green);}100%{color:#fff;}}
+.sc-val.updated{animation:valFlash .6s ease;}
+
+/* server/member rows slide in */
+.svr{animation:slideIn .2s ease both;}
+.mrow{animation:slideIn .2s ease both;}
+
+/* active nav item glow pulse */
+@keyframes navGlow{0%,100%{box-shadow:none;}50%{box-shadow:inset 2px 0 8px rgba(255,255,255,.05);}}
+.ni.active{animation:navGlow 3s ease infinite;}
+
+/* modal pop */
+@keyframes modalPop{from{opacity:0;transform:scale(.95) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.mbg.open .modal{animation:modalPop .2s cubic-bezier(.34,1.56,.64,1);}
+
+/* toast slide */
+@keyframes toastIn{from{transform:translateY(80px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.toast.show{animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);}
+
+/* banner entrance */
+@keyframes bannerIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.banner{animation:bannerIn .4s ease;}
+
+/* sidebar footer bounce in */
+@keyframes footerIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.sb-foot{animation:footerIn .5s ease .3s both;}
+
+/* online dot breathe */
+@keyframes breathe{0%,100%{box-shadow:0 0 4px var(--green);}50%{box-shadow:0 0 10px var(--green),0 0 20px rgba(0,232,122,.3);}}
+.dot,.pd{animation:breathe 2s ease infinite;}
+
+/* stat bar fill animation */
+@keyframes barFill{from{width:0!important;}to{}}
+.sc-fill{animation:barFill .8s cubic-bezier(.4,0,.2,1) .3s both;}
+
+/* card hover lift */
+.card{transition:border-color .15s,transform .15s,box-shadow .15s;}
+.card:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+
+/* module item hover */
+.mi{transition:background .12s,padding-left .12s;}
+.mi:hover{padding-left:22px;}
+
+/* topbar slide down */
+@keyframes topbarIn{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+.topbar{animation:topbarIn .3s ease;}
+
+/* number count-up effect via JS hook */
+.counting{transition:all .3s ease;}
+
 </style>
 </head>
 <body>
@@ -257,6 +374,7 @@ textarea.inp{resize:vertical;min-height:72px;}
       <div class="ping-pill"><span class="pd"></span><span id="pingTxt">— ms</span></div>
       <div class="tb-btn" title="Refresh" onclick="initAll()"><i class="fas fa-rotate-right"></i></div>
       <div class="tb-btn" title="Invite Bot" onclick="inviteBot()"><i class="fas fa-plus"></i></div>
+      <div class="tb-btn" title="Logout" onclick="logout()" style="color:var(--red)"><i class="fas fa-sign-out-alt"></i></div>
     </div>
   </header>
 
@@ -690,15 +808,15 @@ async function initAll(){
     document.getElementById('iGuilds').textContent = guilds.length;
     document.getElementById('iApiPing').textContent = bot._ping+'ms';
     document.getElementById('iWsPing').textContent = bot._wsPing+'ms';
-    document.getElementById('s1v').textContent = guilds.length;
+    setStat('s1v', guilds.length);
     document.getElementById('s1b').textContent = guilds.length+' total';
-    document.getElementById('s3v').textContent = bot._ping+'ms';
+    setStat('s3v', bot._ping+'ms');
     document.getElementById('s4v').textContent = 'online';
     document.getElementById('statusTag').textContent = '● online';
     document.getElementById('statusTag').className = 'tag t-green';
 
     const total = guilds.reduce((a,g)=>a+(g.member_count||0),0);
-    if(total){ document.getElementById('s2v').textContent = total.toLocaleString(); document.getElementById('s2b').textContent = 'total'; }
+    if(total){ setStat('s2v', total); document.getElementById('s2b').textContent = 'total'; }
 
     if(bot.avatar){
       const url = 'https://cdn.discordapp.com/avatars/'+bot.id+'/'+bot.avatar+'.png?size=64';
@@ -759,6 +877,7 @@ async function loadServers(){
         return '<div class="svr"><div class="svr-ico">'+ico+'</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+g.name+'</div><div style="font-size:10px;color:var(--txt2)">'+g.id+(g.owner?' · <span style="color:var(--yellow)">owner</span>':'')+(g.member_count?' · '+g.member_count.toLocaleString()+' members':'')+'</div></div><span class="tag t-green">active</span></div>';
       }).join('');
       t(guilds.length+' servers loaded','green');
+      staggerAnimate(card, '.svr');
     } else card.innerHTML = '<div class="empty">no servers found</div>';
   } catch(e){ card.innerHTML = '<div class="empty" style="color:var(--red)">error: '+e.message+'</div>'; }
 }
@@ -787,6 +906,7 @@ async function loadMembers(){
       }).join('');
       card.innerHTML = '<div class="ch"><div class="ct">members — '+(g?g.name:id)+'</div><span class="tag t-white">'+data.length+' loaded</span></div><div class="scrollarea">'+rows+'</div>';
       t(data.length+' members loaded','green');
+      staggerAnimate(card, '.mrow');
     } else if(data&&data.message){
       card.innerHTML = '<div class="empty" style="color:var(--red)">'+data.message+'<br><small>enable Server Members Intent in Discord Developer Portal</small></div>';
     } else card.innerHTML = '<div class="empty">no members found</div>';
@@ -809,7 +929,8 @@ function renderLogs(logs, id){
   const el = document.getElementById(id);
   if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet</div>'; return; }
   const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
-  el.innerHTML = logs.map(l=>'<div class="lgi"><div class="lgt">'+l.time+'</div><div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span></div><div class="lgm">'+l.msg+'</div></div>').join('');
+  el.innerHTML = logs.map(l=>'<div class="lgi" style="opacity:0;transform:translateX(-8px)"><div class="lgt">'+l.time+'</div><div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span></div><div class="lgm">'+l.msg+'</div></div>').join('');
+  staggerAnimate(el, '.lgi');
 }
 
 async function clearLogs(){
@@ -987,6 +1108,11 @@ async function saveGeneral(){
 }
 
 // ── INVITE ───────────────────────────────────────────
+async function logout(){
+  await fetch("/api/logout",{method:"POST"});
+  window.location.href="/login";
+}
+
 function inviteBot(){
   if(clientId) window.open('https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot+applications.commands&permissions=8','_blank');
   else t('refresh first','yellow');
@@ -1016,6 +1142,50 @@ function t(msg, type='green'){
 }
 
 // ── AUTO REFRESH ─────────────────────────────────────
+// ── COUNT UP ANIMATION ────────────────────────────────
+function countUp(el, target, duration = 800) {
+  if (isNaN(target)) { el.textContent = target; return; }
+  const start = 0;
+  const startTime = performance.now();
+  el.classList.add('counting');
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(eased * target).toLocaleString();
+    if (progress < 1) requestAnimationFrame(update);
+    else { el.textContent = target.toLocaleString(); el.classList.remove('counting'); }
+  }
+  requestAnimationFrame(update);
+}
+
+// ── ANIMATED STAT UPDATE ──────────────────────────────
+function setStat(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('updated');
+  void el.offsetWidth; // reflow
+  el.classList.add('updated');
+  const num = parseInt(String(value).replace(/[^0-9]/g,''));
+  if (!isNaN(num) && num > 0) countUp(el, num);
+  else el.textContent = value;
+}
+
+// ── STAGGER ANIMATE CHILDREN ─────────────────────────
+function staggerAnimate(parentEl, childSelector = '.lgi, .svr, .mrow') {
+  if (!parentEl) return;
+  const children = parentEl.querySelectorAll(childSelector);
+  children.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-8px)';
+    setTimeout(() => {
+      el.style.transition = 'opacity .2s ease, transform .2s ease';
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(0)';
+    }, i * 40);
+  });
+}
+
 setInterval(loadDashLogs, 8000);
 setInterval(()=>{ api('/api/bot').then(b=>{ document.getElementById('pingTxt').textContent=b._ping+' ms'; document.getElementById('iApiPing').textContent=b._ping+'ms'; document.getElementById('iWsPing').textContent=b._wsPing+'ms'; }).catch(()=>{}); }, 30000);
 
