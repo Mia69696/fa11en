@@ -3,7 +3,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
-const { client, state, addLog, addWarning, clearWarnings, addInfraction } = require('./bot');
+const { client, state, addLog, addWarning, clearWarnings, addInfraction, createVerifyToken, completeVerification } = require('./bot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,6 +56,8 @@ app.post('/api/logout', (req, res) => {
 
 // ── AUTH MIDDLEWARE (protects everything below) ───────
 app.use((req, res, next) => {
+  // verify page and api are public — anyone can access
+  if (req.path === '/verify' || req.path.startsWith('/api/verify')) return next();
   if (!isAuth(req)) return res.redirect('/login');
   next();
 });
@@ -240,6 +242,72 @@ app.post('/api/action/purge', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── VERIFY SYSTEM ─────────────────────────────────────
+// tokens: { token -> { userId, guildId, expires } }
+const verifyTokens = {};
+
+// generate a verify link for a user
+app.post('/api/verify/create', (req, res) => {
+  const { userId, guildId } = req.body;
+  if (!userId || !guildId) return res.status(400).json({ error: 'userId and guildId required' });
+  const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  verifyTokens[token] = { userId, guildId, expires: Date.now() + 1000 * 60 * 60 }; // 1hr
+  const link = (process.env.RAILWAY_PUBLIC_DOMAIN
+    ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
+    : 'http://localhost:' + (process.env.PORT || 3000))
+    + '/verify?user=' + userId + '&guild=' + guildId + '&token=' + token;
+  res.json({ ok: true, link });
+});
+
+// called by verify page after captcha — gives user the role
+app.post('/api/verify', async (req, res) => {
+  const { userId, guildId, token } = req.body;
+  const entry = verifyTokens[token];
+  if (!entry) return res.status(400).json({ error: 'invalid or expired link — ask for a new one' });
+  if (entry.userId !== userId || entry.guildId !== guildId) return res.status(400).json({ error: 'token mismatch' });
+  if (Date.now() > entry.expires) {
+    delete verifyTokens[token];
+    return res.status(400).json({ error: 'link expired — ask for a new one' });
+  }
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in that server' });
+    const member = await guild.members.fetch(userId).catch(() => null);
+    if (!member) return res.status(404).json({ error: 'user not found in server' });
+
+    // find or create Verified role
+    let role = guild.roles.cache.find(r => r.name.toLowerCase() === 'verified');
+    if (!role) {
+      role = await guild.roles.create({ name: 'Verified', color: 0x00e87a, reason: 'ahh bot auto-created verify role' });
+    }
+    await member.roles.add(role);
+    delete verifyTokens[token];
+    addLog('VERIFY', member.user.username + ' verified in ' + guild.name, 'green');
+    res.json({ ok: true, message: 'role assigned!' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// get verify settings
+app.get('/api/verify/settings', (req, res) => {
+  res.json({
+    verifyEnabled: state.verifyEnabled || false,
+    verifyChannelId: state.verifyChannelId || null,
+    verifyRoleName: state.verifyRoleName || 'Verified',
+  });
+});
+
+// save verify settings
+app.post('/api/verify/settings', (req, res) => {
+  const { verifyEnabled, verifyChannelId, verifyRoleName } = req.body;
+  if (verifyEnabled !== undefined) state.verifyEnabled = verifyEnabled;
+  if (verifyChannelId !== undefined) state.verifyChannelId = verifyChannelId;
+  if (verifyRoleName !== undefined) state.verifyRoleName = verifyRoleName;
+  res.json({ ok: true });
+});
+
 // ── DATA ──────────────────────────────────────────────
 app.get('/api/infractions', (req, res) => res.json(state.infractions));
 app.delete('/api/infractions/:id', (req, res) => {
@@ -263,6 +331,101 @@ app.get('/api/stats', (req, res) => {
     totalTickets: state.ticketCount,
     wsPing: client.ws?.ping || 0,
   });
+});
+
+// ── VERIFICATION ─────────────────────────────────────
+
+// serve verify page publicly (no login needed — users visit this)
+app.get('/verify', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'verify.html'));
+});
+
+// generate a verify link for a specific user (dashboard calls this)
+app.post('/api/verify/generate', (req, res) => {
+  const { userId, guildId } = req.body;
+  if (!userId || !guildId) return res.status(400).json({ error: 'userId and guildId required' });
+  const token = createVerifyToken(userId, guildId);
+  const link = (process.env.RAILWAY_PUBLIC_DOMAIN
+    ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
+    : 'http://localhost:' + PORT) + '/verify?token=' + token;
+  res.json({ ok: true, token, link });
+});
+
+// called when user completes captcha on verify page
+app.post('/api/verify/complete', async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ error: 'token required' });
+  const result = await completeVerification(token);
+  res.json(result);
+});
+
+// get/save verification settings
+app.get('/api/verify/settings', (req, res) => {
+  res.json({
+    verificationEnabled: state.verificationEnabled,
+    verifiedRoleId: state.verifiedRoleId,
+    verificationChannelId: state.verificationChannelId,
+  });
+});
+
+app.post('/api/verify/settings', (req, res) => {
+  const { verificationEnabled, verifiedRoleId, verificationChannelId } = req.body;
+  if (verificationEnabled !== undefined) state.verificationEnabled = verificationEnabled;
+  if (verifiedRoleId !== undefined) state.verifiedRoleId = verifiedRoleId;
+  if (verificationChannelId !== undefined) state.verificationChannelId = verificationChannelId;
+  addLog('DASH', 'verification settings updated', 'blue');
+  res.json({ ok: true });
+});
+
+// send verify embed to a channel (bot posts the button message)
+app.post('/api/verify/send-panel', async (req, res) => {
+  const { guildId, channelId } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in that server' });
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) return res.status(404).json({ error: 'channel not found' });
+    const { EmbedBuilder } = require('discord.js');
+    const siteUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+      ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN
+      : 'http://localhost:' + PORT;
+    const embed = new EmbedBuilder()
+      .setColor(0x00e87a)
+      .setTitle('✅  verify yourself')
+      .setDescription(
+        '> click the button below to verify and gain access to all channels.\n\n' +
+        '```\n1. Click the link\n2. Solve the captcha\n3. Get the @verified role\n```'
+      )
+      .addFields(
+        { name: '⚡ instant', value: 'role assigned immediately', inline: true },
+        { name: '🔒 secure', value: 'captcha protected', inline: true },
+        { name: '✅ required', value: 'to access server', inline: true },
+      )
+      .setFooter({ text: 'ahh bot · verification system' })
+      .setTimestamp();
+    await channel.send({
+      embeds: [embed],
+      components: [{
+        type: 1,
+        components: [{
+          type: 2,
+          style: 5,
+          label: '✅  verify me',
+          url: siteUrl + '/verify-start?guild=' + guildId,
+        }]
+      }]
+    });
+    addLog('VERIFY', 'verification panel sent to #' + channel.name, 'green');
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// when user clicks button in Discord — generate their token and redirect to verify page
+app.get('/verify-start', (req, res) => {
+  // This is a placeholder — in production you'd need Discord OAuth to get the userId
+  // For now redirect to the verify page with the guildId
+  const { guild } = req.query;
+  res.redirect('/verify?guild=' + (guild || ''));
 });
 
 // ── FALLBACK ──────────────────────────────────────────
