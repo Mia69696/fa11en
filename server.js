@@ -392,6 +392,88 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
+// ── TEMP VOICE API ───────────────────────────────────
+
+app.get('/api/tempvoice/settings', (req, res) => {
+  res.json({
+    tempVoiceEnabled: state.tempVoiceEnabled,
+    tempVoiceCategoryId: state.tempVoiceCategoryId,
+    tempVoiceCreatorId: state.tempVoiceCreatorId,
+    activeChannels: Object.entries(state.tempVoiceChannels).map(([id, d]) => ({ id, ...d })),
+  });
+});
+
+app.post('/api/tempvoice/settings', (req, res) => {
+  const { tempVoiceEnabled, tempVoiceCategoryId, tempVoiceCreatorId } = req.body;
+  if (tempVoiceEnabled !== undefined) state.tempVoiceEnabled = tempVoiceEnabled;
+  if (tempVoiceCategoryId !== undefined) state.tempVoiceCategoryId = tempVoiceCategoryId || null;
+  if (tempVoiceCreatorId !== undefined) state.tempVoiceCreatorId = tempVoiceCreatorId || null;
+  saveState();
+  addLog('DASH', 'temp voice settings saved', 'blue');
+  res.json({ ok: true });
+});
+
+// setup: create the "join to create" channel automatically
+app.post('/api/tempvoice/setup', async (req, res) => {
+  const { guildId } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in that server' });
+
+    // create category
+    const category = await guild.channels.create({
+      name: '🔊 Temp Voice',
+      type: 4, // category
+    });
+
+    // create join-to-create channel
+    const creator = await guild.channels.create({
+      name: '➕ Join to Create',
+      type: 2, // voice
+      parent: category.id,
+    });
+
+    state.tempVoiceCategoryId = category.id;
+    state.tempVoiceCreatorId = creator.id;
+    state.tempVoiceEnabled = true;
+    saveState();
+    addLog('DASH', 'temp voice setup complete in ' + guild.name, 'green');
+    res.json({ ok: true, categoryId: category.id, creatorId: creator.id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// control a specific temp voice channel from dashboard
+app.post('/api/tempvoice/control', async (req, res) => {
+  const { guildId, channelId, action, value } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in that server' });
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) return res.status(404).json({ error: 'channel not found' });
+
+    if (action === 'rename') {
+      await channel.setName(value);
+      if (state.tempVoiceChannels[channelId]) state.tempVoiceChannels[channelId].name = value;
+    } else if (action === 'limit') {
+      await channel.setUserLimit(parseInt(value) || 0);
+      if (state.tempVoiceChannels[channelId]) state.tempVoiceChannels[channelId].limit = parseInt(value) || 0;
+    } else if (action === 'lock') {
+      await channel.permissionOverwrites.edit(guild.id, { Connect: false });
+    } else if (action === 'unlock') {
+      await channel.permissionOverwrites.edit(guild.id, { Connect: true });
+    } else if (action === 'delete') {
+      delete state.tempVoiceChannels[channelId];
+      await channel.delete('deleted from dashboard');
+    } else if (action === 'kick') {
+      const member = guild.members.cache.get(value);
+      if (member?.voice?.channelId === channelId) await member.voice.disconnect();
+    }
+
+    addLog('VOICE', 'temp vc ' + action + ' on #' + channel.name + ' from dashboard', 'cyan');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── FALLBACK ──────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
