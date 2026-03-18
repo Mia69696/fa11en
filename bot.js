@@ -613,29 +613,36 @@ function createVerifyToken(userId, guildId) {
   state.pendingVerifications[token] = {
     userId,
     guildId,
-    expires: Date.now() + 10 * 60 * 1000, // 10 min
+    roleId: state.verifiedRoleId, // snapshot the role id at creation time
+    expires: Date.now() + 15 * 60 * 1000, // 15 min
   };
   return token;
 }
 
-async function completeVerification(token) {
+async function completeVerification(token, overrideRoleId) {
   const data = state.pendingVerifications[token];
-  if (!data) return { ok: false, error: 'invalid or expired token' };
+  if (!data) return { ok: false, error: 'invalid or expired token — please click verify again in Discord' };
   if (Date.now() > data.expires) {
     delete state.pendingVerifications[token];
-    return { ok: false, error: 'token expired — please click verify again' };
+    return { ok: false, error: 'token expired — please click the verify button again in Discord' };
   }
-  if (!state.verifiedRoleId) return { ok: false, error: 'verified role not configured — ask an admin' };
+  // use override role id, or saved one, or the one stored in the token itself
+  const roleId = overrideRoleId || state.verifiedRoleId || data.roleId;
+  if (!roleId) return { ok: false, error: 'verified role not set — go to dashboard → Verification → set the role id and save' };
   try {
     const guild = client.guilds.cache.get(data.guildId);
-    if (!guild) return { ok: false, error: 'server not found' };
-    const member = await guild.members.fetch(data.userId);
-    if (!member) return { ok: false, error: 'member not found' };
-    await member.roles.add(state.verifiedRoleId);
+    if (!guild) return { ok: false, error: 'bot is not in that server' };
+    let member;
+    try { member = await guild.members.fetch(data.userId); }
+    catch(e) { return { ok: false, error: 'could not find you in the server — make sure you are a member' }; }
+    await member.roles.add(roleId);
     delete state.pendingVerifications[token];
-    addLog('VERIFY', member.user.username + ' completed verification', 'green');
+    addLog('VERIFY', member.user.username + ' verified and got role', 'green');
     return { ok: true, username: member.user.username };
   } catch (e) {
+    if (e.message.includes('Missing Permissions')) {
+      return { ok: false, error: 'bot is missing permissions — make sure the bot role is above the verified role in server settings' };
+    }
     return { ok: false, error: e.message };
   }
 }
