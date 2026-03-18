@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ahh</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#000000;--bg2:#0a0a0a;--bg3:#111111;--bg4:#181818;--bg5:#222222;
+  --card:#0d0d0d;--border:#1a1a1a;--border2:#222222;
+  --a:#ffffff;--a2:#eeeeee;--txt:#e0e0e0;--txt2:#666666;--txt3:#333333;
+  --green:#00e87a;--red:#ff3555;--yellow:#ffb700;--purple:#9b8cff;--cyan:#00d4ff;--blue:#4488ff;
+  --sb:230px;
+}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);display:flex;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* SIDEBAR */
+.sb{width:var(--sb);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:20px 16px;border-bottom:1px solid var(--border);}
+.sb-av{width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative;overflow:hidden;}
+.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.sb-av .dot{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);}
+.sb-name{font-size:17px;font-weight:800;color:#fff;}
+.sb-id{font-size:10px;color:var(--txt3);margin-top:1px;}
+.sb-sec{padding:12px 8px 2px;}
+.sb-lbl{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;padding:0 8px 8px;}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:var(--txt2);font-size:12px;font-weight:600;transition:all .12s;margin-bottom:1px;position:relative;user-select:none;}
+.ni:hover{background:var(--bg3);color:var(--txt);}
+.ni.active{background:var(--bg4);color:#fff;}
+.ni.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:2px;background:#fff;border-radius:2px;}
+.ni i{width:15px;text-align:center;font-size:11px;flex-shrink:0;}
+.nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;min-width:16px;text-align:center;}
+.sb-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);}
+.sb-bc{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;}
+.fav{width:28px;height:28px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.fav img{width:100%;height:100%;object-fit:cover;}
+.fnm{font-size:11px;font-weight:700;}
+.fst{font-size:10px;color:var(--green);display:flex;align-items:center;gap:3px;margin-top:1px;}
+.pd{width:4px;height:4px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* MAIN */
+.main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.tb-l{display:flex;align-items:center;gap:8px;}
+.tb-crumb{font-size:11px;color:var(--txt3);}
+.tb-sep{color:var(--txt3);font-size:11px;}
+.tb-title{font-size:13px;font-weight:700;color:#fff;}
+.tb-r{display:flex;align-items:center;gap:8px;}
+.tb-btn{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt2);font-size:11px;transition:all .12s;}
+.tb-btn:hover{background:var(--bg4);color:var(--txt);}
+.ping-pill{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--green);}
+
+/* PAGES */
+.page{display:none;padding:20px 24px;animation:fi .15s ease;}
+.page.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* BANNER */
+.banner{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:20px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
+.banner-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:3px;}
+.banner-sub{font-size:11px;color:var(--txt2);}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s;}
+.sc:hover{border-color:var(--border2);}
+.sc-top{display:flex;align-items:center;justify-content:space-between;}
+.sc-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg3);}
+.sc-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;background:var(--bg3);color:var(--txt2);}
+.sc-val{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.sc-lbl{font-size:10px;color:var(--txt2);font-weight:600;}
+.sc-bar{height:1px;background:var(--border2);border-radius:2px;}
+.sc-fill{height:100%;border-radius:2px;background:#fff;opacity:.3;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px;}
+.ch{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ct{font-size:12px;font-weight:700;color:#fff;}
+.cs{font-size:10px;color:var(--txt2);margin-top:2px;}
+.cb{padding:16px 18px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
+.gstack{display:flex;flex-direction:column;gap:14px;}
+
+/* TOGGLE */
+.tog{width:34px;height:18px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;position:relative;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.tog.on{background:#fff;border-color:#fff;}
+.tog::after{content:'';position:absolute;width:12px;height:12px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:left .2s;}
+.tog.on::after{left:18px;background:#000;}
+
+/* MODULE ITEM */
+.mi{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;transition:background .1s;cursor:default;}
+.mi:hover{background:var(--bg3);}
+.mi-l{display:flex;align-items:center;gap:10px;}
+.mi-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--bg3);}
+.mi-name{font-size:12px;font-weight:700;}
+.mi-desc{font-size:10px;color:var(--txt2);margin-top:1px;}
+
+/* TAGS */
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;}
+.t-white{background:rgba(255,255,255,.08);color:#fff;}
+.t-green{background:rgba(0,232,122,.1);color:var(--green);}
+.t-red{background:rgba(255,53,85,.1);color:var(--red);}
+.t-yellow{background:rgba(255,183,0,.1);color:var(--yellow);}
+.t-blue{background:rgba(68,136,255,.1);color:var(--blue);}
+.t-purple{background:rgba(155,140,255,.1);color:var(--purple);}
+.t-cyan{background:rgba(0,212,255,.1);color:var(--cyan);}
+.t-gray{background:rgba(100,100,100,.15);color:var(--txt2);}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;padding:0 12px 8px;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 12px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--bg3);}
+.mono{font-family:'DM Mono',monospace;color:var(--txt2);font-size:11px;}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .12s;display:inline-flex;align-items:center;gap:5px;}
+.btn-w{background:#fff;color:#000;}
+.btn-w:hover{background:var(--a2);}
+.btn-g{background:transparent;border:1px solid var(--border2);color:var(--txt2);}
+.btn-g:hover{background:var(--bg3);color:var(--txt);}
+.btn-r{background:rgba(255,53,85,.12);border:1px solid rgba(255,53,85,.2);color:var(--red);}
+.btn-r:hover{background:rgba(255,53,85,.2);}
+.btn-y{background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.2);color:var(--yellow);}
+.btn-y:hover{background:rgba(255,183,0,.18);}
+.btn-gr{background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.2);color:var(--green);}
+.btn-gr:hover{background:rgba(0,232,122,.18);}
+
+/* INPUTS */
+.inp{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 11px;color:var(--txt);font-size:11px;font-family:'Syne',sans-serif;outline:none;width:100%;transition:border .12s;}
+.inp:focus{border-color:rgba(255,255,255,.3);}
+.inp::placeholder{color:var(--txt3);}
+select.inp{cursor:pointer;}
+textarea.inp{resize:vertical;min-height:72px;}
+.fl{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:4px;display:block;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+
+/* STATUS ROW */
+.sr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.sr:last-child{border-bottom:none;padding-bottom:0;}
+.sr-l{font-size:10px;color:var(--txt2);font-weight:600;width:110px;flex-shrink:0;}
+.sr-v{font-size:11px;font-weight:700;}
+
+/* LOGS */
+.lgi{display:flex;gap:10px;padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px;}
+.lgi:last-child{border-bottom:none;}
+.lgt{font-family:'DM Mono',monospace;font-size:9px;color:var(--txt3);width:60px;flex-shrink:0;margin-top:1px;}
+.lgk{width:62px;flex-shrink:0;}
+.lgm{color:var(--txt2);flex:1;line-height:1.5;}
+.lgm b{color:var(--txt);}
+
+/* CHART */
+.bars{display:flex;align-items:flex-end;gap:3px;height:44px;}
+.bar{flex:1;border-radius:2px 2px 0 0;background:#fff;opacity:.15;transition:opacity .12s;min-height:3px;}
+.bar:hover{opacity:.4;}
+.barlbls{display:flex;gap:3px;margin-top:3px;}
+.barlbl{flex:1;font-size:8px;color:var(--txt3);text-align:center;}
+
+/* SERVER / MEMBER ROWS */
+.svr{display:flex;align-items:center;gap:11px;padding:11px 18px;transition:background .1s;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.03);}
+.svr:last-child{border-bottom:none;}
+.svr:hover{background:var(--bg3);}
+.svr-ico{width:36px;height:36px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.svr-ico img{width:100%;height:100%;object-fit:cover;}
+.mrow{display:flex;align-items:center;gap:10px;padding:8px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;}
+.mrow:last-child{border-bottom:none;}
+.mrow:hover{background:var(--bg3);}
+.mav{width:26px;height:26px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.mav img{width:100%;height:100%;object-fit:cover;}
+
+/* LOADER */
+.ld{display:flex;align-items:center;justify-content:center;padding:26px;gap:5px;}
+.ld span{width:5px;height:5px;background:var(--txt3);border-radius:50%;animation:lb 1.2s infinite;}
+.ld span:nth-child(2){animation-delay:.2s;}
+.ld span:nth-child(3){animation-delay:.4s;}
+@keyframes lb{0%,80%,100%{transform:scale(.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+.empty{padding:24px;text-align:center;color:var(--txt3);font-size:11px;}
+
+/* SH */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.sh h2{font-size:15px;font-weight:800;color:#fff;}
+.sh p{font-size:10px;color:var(--txt2);margin-top:2px;}
+.scrollarea{max-height:400px;overflow-y:auto;}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 15px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.8);transform:translateY(80px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:300px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;}
+.mbg.open{display:flex;}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:22px;width:400px;max-width:92vw;}
+.modal-t{font-size:14px;font-weight:800;color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.modal-t span{cursor:pointer;color:var(--txt2);font-size:12px;}
+.modal-t span:hover{color:var(--txt);}
+.modal-b{font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.6;}
+.modal-b b{color:var(--txt);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-av" id="sbAv">a<span class="dot"></span></div>
+    <div><div class="sb-name" id="sbName">ahh</div><div class="sb-id" id="sbId">loading...</div></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Overview</div>
+    <div class="ni active" data-page="dashboard"><i class="fas fa-grip-vertical"></i> Dashboard</div>
+    <div class="ni" data-page="servers"><i class="fas fa-server"></i> Servers</div>
+    <div class="ni" data-page="members"><i class="fas fa-users"></i> Members</div>
+    <div class="ni" data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Moderation</div>
+    <div class="ni" data-page="automod"><i class="fas fa-shield-halved"></i> Auto Mod</div>
+    <div class="ni" data-page="infractions"><i class="fas fa-gavel"></i> Infractions <span class="nbadge" id="infBadge">0</span></div>
+    <div class="ni" data-page="logs"><i class="fas fa-scroll"></i> Logs</div>
+    <div class="ni" data-page="actions"><i class="fas fa-bolt"></i> Actions</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Features</div>
+    <div class="ni" data-page="leveling"><i class="fas fa-star"></i> Leveling</div>
+    <div class="ni" data-page="welcome"><i class="fas fa-door-open"></i> Welcome</div>
+    <div class="ni" data-page="tickets"><i class="fas fa-ticket"></i> Tickets</div>
+    <div class="ni" data-page="commands"><i class="fas fa-terminal"></i> Commands</div>
+    <div class="ni" data-page="send"><i class="fas fa-paper-plane"></i> Send Message</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Config</div>
+    <div class="ni" data-page="settings"><i class="fas fa-sliders"></i> Settings</div>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-bc">
+      <div class="fav" id="footAv">a</div>
+      <div><div class="fnm" id="footName">ahh</div><div class="fst"><span class="pd"></span> online</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-l">
+      <span class="tb-crumb">ahh</span><span class="tb-sep">/</span>
+      <span class="tb-title" id="pageTitle">Dashboard</span>
+    </div>
+    <div class="tb-r">
+      <div class="ping-pill"><span class="pd"></span><span id="pingTxt">— ms</span></div>
+      <div class="tb-btn" title="Refresh" onclick="initAll()"><i class="fas fa-rotate-right"></i></div>
+      <div class="tb-btn" title="Invite Bot" onclick="inviteBot()"><i class="fas fa-plus"></i></div>
+    </div>
+  </header>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="banner">
+      <div>
+        <div class="banner-title">ahh <span id="bnName" style="color:var(--txt2)">—</span></div>
+        <div class="banner-sub" id="bnSub">connecting to Discord...</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" onclick="inviteBot()"><i class="fas fa-plus"></i> invite</button>
+        <button class="btn btn-w" onclick="initAll()"><i class="fas fa-sync-alt"></i> refresh</button>
+      </div>
+    </div>
+    <div class="sgrid">
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-server" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s1b">—</span></div><div class="sc-val" id="s1v">—</div><div class="sc-lbl">servers</div><div class="sc-bar"><div class="sc-fill" style="width:60%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-users" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s2b">—</span></div><div class="sc-val" id="s2v">—</div><div class="sc-lbl">members</div><div class="sc-bar"><div class="sc-fill" style="width:72%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-bolt" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s3b">—</span></div><div class="sc-val" id="s3v">—</div><div class="sc-lbl">ping</div><div class="sc-bar"><div class="sc-fill" style="width:35%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-circle-check" style="color:var(--green)"></i></div><span class="sc-badge t-green">live</span></div><div class="sc-val" id="s4v" style="color:var(--green)">—</div><div class="sc-lbl">status</div><div class="sc-bar"><div class="sc-fill" style="width:95%"></div></div></div>
+    </div>
+    <div class="g3">
+      <div>
+        <div class="card">
+          <div class="ch"><div><div class="ct">modules</div><div class="cs">every toggle instantly affects the bot</div></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-shield-halved" style="color:var(--txt2)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">auto-delete + warn</div></div></div><div class="tog" id="m-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--txt2)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 msgs in 5s = timeout</div></div></div><div class="tog" id="m-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--txt2)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn user</div></div></div><div class="tog" id="m-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--txt2)"></i></div><div><div class="mi-name">Mass Mention Block</div><div class="mi-desc">3+ mentions = warn</div></div></div><div class="tog" id="m-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--txt2)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">delete excessive caps</div></div></div><div class="tog" id="m-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-link" style="color:var(--txt2)"></i></div><div><div class="mi-name">Block All Links</div><div class="mi-desc">delete any URL</div></div></div><div class="tog" id="m-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-door-open" style="color:var(--txt2)"></i></div><div><div class="mi-name">Welcome Messages</div><div class="mi-desc">greet new members</div></div></div><div class="tog" id="m-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-star" style="color:var(--txt2)"></i></div><div><div class="mi-name">Leveling / XP</div><div class="mi-desc">xp for chatting</div></div></div><div class="tog" id="m-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div></div>
+          <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-ticket" style="color:var(--txt2)"></i></div><div><div class="mi-name">Tickets</div><div class="mi-desc">/ticket command</div></div></div><div class="tog" id="m-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
+        </div>
+      </div>
+      <div class="gstack">
+        <div class="card">
+          <div class="ch"><div class="ct">bot info</div><span class="tag t-green" id="statusTag">● connecting</span></div>
+          <div class="cb" style="padding-top:12px;padding-bottom:12px">
+            <div class="sr"><div class="sr-l">name</div><div class="sr-v" id="iName">—</div></div>
+            <div class="sr"><div class="sr-l">id</div><div class="sr-v mono" id="iId">—</div></div>
+            <div class="sr"><div class="sr-l">servers</div><div class="sr-v" id="iGuilds">—</div></div>
+            <div class="sr"><div class="sr-l">ws ping</div><div class="sr-v" id="iWsPing">—</div></div>
+            <div class="sr"><div class="sr-l">api ping</div><div class="sr-v" id="iApiPing">—</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">recent activity</div><a class="btn btn-g" style="font-size:10px;padding:4px 9px;cursor:pointer" onclick="nav('logs')">view all</a></div>
+          <div id="dashLogs"><div class="empty">loading...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SERVERS ══ -->
+  <div class="page" id="page-servers">
+    <div class="sh"><div><h2>servers</h2><p>guilds your bot is in</p></div><button class="btn btn-w" onclick="loadServers()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="card" id="serversCard"><div class="ld"><span></span><span></span><span></span></div></div>
+  </div>
+
+  <!-- ══ MEMBERS ══ -->
+  <div class="page" id="page-members">
+    <div class="sh"><div><h2>members</h2><p>users in your server</p></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="inp" id="memberGuildPicker" style="width:170px"></select>
+        <button class="btn btn-w" onclick="loadMembers()"><i class="fas fa-sync-alt"></i> load</button>
+      </div>
+    </div>
+    <div class="card" id="membersCard"><div class="empty">select a server and click load</div></div>
+  </div>
+
+  <!-- ══ ANALYTICS ══ -->
+  <div class="page" id="page-analytics">
+    <div class="sh"><div><h2>analytics</h2><p>live stats from the bot</p></div><button class="btn btn-w" onclick="loadAnalytics()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="sgrid">
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-scroll" style="color:var(--txt2)"></i></div><span class="sc-badge" id="an-lb">—</span></div><div class="sc-val" id="an-lv">—</div><div class="sc-lbl">log entries</div><div class="sc-bar"><div class="sc-fill" style="width:50%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-gavel" style="color:var(--txt2)"></i></div><span class="sc-badge" id="an-ib">—</span></div><div class="sc-val" id="an-iv">—</div><div class="sc-lbl">infractions</div><div class="sc-bar"><div class="sc-fill" style="width:30%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-star" style="color:var(--yellow)"></i></div><span class="sc-badge t-yellow">xp</span></div><div class="sc-val" id="an-xv">—</div><div class="sc-lbl">users with xp</div><div class="sc-bar"><div class="sc-fill" style="width:60%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-ticket" style="color:var(--cyan)"></i></div><span class="sc-badge t-cyan">tickets</span></div><div class="sc-val" id="an-tv">—</div><div class="sc-lbl">total tickets</div><div class="sc-bar"><div class="sc-fill" style="width:40%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">xp leaderboard</div><span class="tag t-white">live</span></div>
+      <table class="tbl"><thead><tr><th>#</th><th>user id</th><th>level</th><th>xp</th></tr></thead>
+      <tbody id="lbBody"><tr><td colspan="4" class="empty">no xp data yet</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ AUTO MOD ══ -->
+  <div class="page" id="page-automod">
+    <div class="sh"><div><h2>auto moderation</h2><p>toggles affect the bot instantly</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">filters</div><span class="tag t-green">live</span></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-link" style="color:var(--red)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">discord.gg links auto-deleted</div></div></div><div class="tog" id="am-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--yellow)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 messages in 5 seconds = timeout</div></div></div><div class="tog" id="am-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--red)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn (edit list below)</div></div></div><div class="tog" id="am-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--yellow)"></i></div><div><div class="mi-name">Mass Mention Block</div><div class="mi-desc">3 or more mentions = warning</div></div></div><div class="tog" id="am-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--yellow)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">70%+ caps = delete</div></div></div><div class="tog" id="am-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-globe" style="color:var(--red)"></i></div><div><div class="mi-name">Block All Links</div><div class="mi-desc">delete any http:// link</div></div></div><div class="tog" id="am-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="ch"><div class="ct">settings</div></div>
+          <div class="cb">
+            <label class="fl">Auto-ban after X warnings</label>
+            <input class="inp" type="number" id="autobanThreshold" value="3" min="1" max="20" style="margin-bottom:10px">
+            <label class="fl">Timeout duration (minutes)</label>
+            <input class="inp" type="number" id="muteMinutes" value="10" min="1" max="1440" style="margin-bottom:10px">
+            <label class="fl">Log Channel ID</label>
+            <input class="inp" id="logChannelId" placeholder="paste channel id" style="margin-bottom:14px">
+            <button class="btn btn-w" style="width:100%" onclick="saveAutomod()"><i class="fas fa-check"></i> save &amp; apply</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">bad words list</div></div>
+          <div class="cb">
+            <label class="fl">Words (comma separated)</label>
+            <textarea class="inp" id="badWordsList" placeholder="word1, word2, word3" style="margin-bottom:10px"></textarea>
+            <button class="btn btn-w" style="width:100%" onclick="saveBadWords()"><i class="fas fa-check"></i> update list</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INFRACTIONS ══ -->
+  <div class="page" id="page-infractions">
+    <div class="sh"><div><h2>infractions</h2><p>all bans, kicks, warns — from bot and dashboard</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" onclick="loadInfractions()"><i class="fas fa-sync-alt"></i> refresh</button>
+        <button class="btn btn-r" onclick="clearInfractions()"><i class="fas fa-trash"></i> clear all</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="ch"><div class="ct">issue infraction</div></div>
+      <div class="cb">
+        <div class="fr">
+          <div><label class="fl">Server</label><select class="inp" id="infGuild"></select></div>
+          <div><label class="fl">User ID</label><input class="inp" id="infUser" placeholder="paste user id"></div>
+        </div>
+        <div class="fr">
+          <div><label class="fl">Action</label><select class="inp" id="infAct"><option value="warn">warn</option><option value="timeout">timeout (10min)</option><option value="kick">kick</option><option value="ban">ban</option></select></div>
+          <div><label class="fl">Reason</label><input class="inp" id="infReason" placeholder="reason..."></div>
+        </div>
+        <button class="btn btn-w" onclick="issueInfraction()"><i class="fas fa-gavel"></i> execute via bot</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">history</div><span class="tag t-gray" id="infCount">0 records</span></div>
+      <table class="tbl"><thead><tr><th>#</th><th>user</th><th>action</th><th>reason</th><th>time</th><th></th></tr></thead>
+      <tbody id="infBody"></tbody></table>
+      <div class="empty" id="infEmpty">no infractions yet</div>
+    </div>
+  </div>
+
+  <!-- ══ LOGS ══ -->
+  <div class="page" id="page-logs">
+    <div class="sh"><div><h2>logs</h2><p>live from the bot — auto-refreshes</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> refresh</button>
+        <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear</button>
+      </div>
+    </div>
+    <div class="card"><div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div></div>
+  </div>
+
+  <!-- ══ ACTIONS ══ -->
+  <div class="page" id="page-actions">
+    <div class="sh"><div><h2>actions</h2><p>execute bot actions directly — everything is real</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">moderation</div><span class="tag t-red">executes in Discord</span></div>
+        <div class="cb">
+          <label class="fl">Server</label><select class="inp" id="actGuild" style="margin-bottom:10px"></select>
+          <label class="fl">User ID</label><input class="inp" id="actUser" placeholder="paste user id" style="margin-bottom:10px">
+          <label class="fl">Reason</label><input class="inp" id="actReason" placeholder="reason..." style="margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-y" onclick="doAction('warn')"><i class="fas fa-exclamation-triangle"></i> warn</button>
+            <button class="btn btn-y" onclick="doAction('timeout')"><i class="fas fa-clock"></i> timeout</button>
+            <button class="btn btn-r" onclick="doAction('kick')"><i class="fas fa-sign-out-alt"></i> kick</button>
+            <button class="btn btn-r" onclick="doAction('ban')"><i class="fas fa-hammer"></i> ban</button>
+          </div>
+          <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-gr" onclick="doAction('unban')"><i class="fas fa-unlock"></i> unban</button>
+            <button class="btn btn-gr" onclick="doAction('clearwarnings')"><i class="fas fa-eraser"></i> clear warns</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">purge messages</div><span class="tag t-red">deletes real messages</span></div>
+        <div class="cb">
+          <label class="fl">Server</label><select class="inp" id="purgeGuild" style="margin-bottom:10px" onchange="loadChForPurge()"></select>
+          <label class="fl">Channel</label><select class="inp" id="purgeChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Amount (max 100)</label><input class="inp" id="purgeAmt" type="number" value="10" min="1" max="100" style="margin-bottom:14px">
+          <button class="btn btn-r" style="width:100%" onclick="doPurge()"><i class="fas fa-trash"></i> purge messages</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LEVELING ══ -->
+  <div class="page" id="page-leveling">
+    <div class="sh"><div><h2>leveling</h2><p>xp system — live leaderboard</p></div><button class="btn btn-w" onclick="loadLeaderboard()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:12px;font-weight:700">Leveling Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">xp for every message (60s cooldown)</div></div>
+            <div class="tog" id="lv-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div>
+          </div>
+          <label class="fl">Level Up Message</label>
+          <input class="inp" id="levelUpMessage" placeholder="gg {user}, you hit level {level}!" style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:14px">variables: {user} {level}</div>
+          <button class="btn btn-w" style="width:100%" onclick="saveLeveling()"><i class="fas fa-check"></i> save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">leaderboard</div><span class="tag t-yellow">live</span></div>
+        <table class="tbl"><thead><tr><th>#</th><th>user id</th><th>lvl</th><th>xp</th></tr></thead>
+        <tbody id="lvlBody"><tr><td colspan="4" class="empty">no data yet</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WELCOME ══ -->
+  <div class="page" id="page-welcome">
+    <div class="sh"><div><h2>welcome</h2><p>saving applies instantly to the bot</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:12px;font-weight:700">Welcome Messages</div></div>
+            <div class="tog" id="wlc-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:12px;font-weight:700">Goodbye Messages</div></div>
+            <div class="tog" id="wlc-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div>
+          </div>
+          <label class="fl">Welcome Channel ID</label>
+          <input class="inp" id="welcomeChannelId" placeholder="leave blank for system channel" style="margin-bottom:10px">
+          <label class="fl">Welcome Message</label>
+          <textarea class="inp" id="welcomeMessage" style="margin-bottom:10px"></textarea>
+          <label class="fl">Goodbye Message</label>
+          <textarea class="inp" id="goodbyeMessage" style="margin-bottom:14px"></textarea>
+          <button class="btn btn-w" style="width:100%" onclick="saveWelcome()"><i class="fas fa-check"></i> save — applies immediately</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">preview</div></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:14px">
+            <div style="display:flex;gap:9px;align-items:center;margin-bottom:8px">
+              <div id="wAv" style="width:30px;height:30px;background:var(--bg5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;overflow:hidden">a</div>
+              <div><div style="font-size:12px;font-weight:700">ahh <span style="font-size:9px;background:var(--blue);padding:1px 5px;border-radius:3px">BOT</span></div><div style="font-size:9px;color:var(--txt3)">today at 12:00</div></div>
+            </div>
+            <div style="font-size:11px;color:var(--txt2);line-height:1.6">welcome to the server, <span style="color:var(--blue)">@NewUser</span>. you're member <span style="color:var(--green)">#1,249</span>.</div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--txt3)">use: <span class="mono">{user}</span> <span class="mono">{count}</span> <span class="mono">{server}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TICKETS ══ -->
+  <div class="page" id="page-tickets">
+    <div class="sh"><div><h2>tickets</h2><p>/ticket opens a channel, /closeticket closes it</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:12px;font-weight:700">Tickets Enabled</div></div>
+            <div class="tog" id="tk-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div>
+          </div>
+          <div style="font-size:11px;color:var(--txt2);line-height:1.6;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:12px">
+            <b style="color:var(--txt)">how it works:</b><br>
+            user types <span class="mono">/ticket</span> → bot creates a private channel → staff can see it → type <span class="mono">/closeticket</span> to delete the channel
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">commands</div></div>
+        <div class="cb">
+          <div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticket</span></div><div style="font-size:11px;color:var(--txt2)">creates a private ticket channel for the user</div></div>
+          <div><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/closeticket</span></div><div style="font-size:11px;color:var(--txt2)">closes and deletes the ticket (mods only)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEND MESSAGE ══ -->
+  <div class="page" id="page-send">
+    <div class="sh"><div><h2>send message</h2><p>make the bot send a message to any channel</p></div></div>
+    <div class="card" style="max-width:560px">
+      <div class="ch"><div class="ct">compose</div><span class="tag t-white">bot sends it</span></div>
+      <div class="cb">
+        <label class="fl">Server</label><select class="inp" id="msgGuild" style="margin-bottom:10px" onchange="loadChForMsg()"></select>
+        <label class="fl">Channel</label><select class="inp" id="msgChannel" style="margin-bottom:10px"></select>
+        <label class="fl">Message</label><textarea class="inp" id="msgContent" placeholder="what should the bot say?" style="margin-bottom:14px;min-height:100px"></textarea>
+        <button class="btn btn-w" style="width:100%" onclick="sendMsg()"><i class="fas fa-paper-plane"></i> send via bot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COMMANDS ══ -->
+  <div class="page" id="page-commands">
+    <div class="sh"><div><h2>commands</h2><p>auto-registered slash commands</p></div></div>
+    <div class="card">
+      <div class="ch"><div class="ct">all slash commands</div><span class="tag t-green">auto-registered</span></div>
+      <table class="tbl"><thead><tr><th>command</th><th>what it does</th><th>category</th><th>who can use</th></tr></thead><tbody>
+        <tr><td><span class="mono">/ban</span></td><td style="color:var(--txt2)">ban a member from the server</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Ban Members</td></tr>
+        <tr><td><span class="mono">/kick</span></td><td style="color:var(--txt2)">kick a member</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Kick Members</td></tr>
+        <tr><td><span class="mono">/warn</span></td><td style="color:var(--txt2)">give a warning (auto-bans at limit)</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/mute</span></td><td style="color:var(--txt2)">timeout a member</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/unmute</span></td><td style="color:var(--txt2)">remove timeout</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/warnings</span></td><td style="color:var(--txt2)">check how many warnings a user has</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/clearwarnings</span></td><td style="color:var(--txt2)">clear all warnings for a user</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/purge</span></td><td style="color:var(--txt2)">bulk delete up to 100 messages</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Manage Messages</td></tr>
+        <tr><td><span class="mono">/rank</span></td><td style="color:var(--txt2)">view your xp rank card</td><td><span class="tag t-yellow">level</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/leaderboard</span></td><td style="color:var(--txt2)">top members by xp</td><td><span class="tag t-yellow">level</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/ticket</span></td><td style="color:var(--txt2)">open a private support ticket</td><td><span class="tag t-cyan">support</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/closeticket</span></td><td style="color:var(--txt2)">close and delete a ticket</td><td><span class="tag t-cyan">support</span></td><td style="color:var(--txt2)">Manage Channels</td></tr>
+        <tr><td><span class="mono">/say</span></td><td style="color:var(--txt2)">make the bot say something</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">Manage Messages</td></tr>
+        <tr><td><span class="mono">/ping</span></td><td style="color:var(--txt2)">check bot ping</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/serverinfo</span></td><td style="color:var(--txt2)">server details</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/userinfo</span></td><td style="color:var(--txt2)">user details + level</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/help</span></td><td style="color:var(--txt2)">list all commands</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="page" id="page-settings">
+    <div class="sh"><div><h2>settings</h2><p>bot configuration</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">general</div></div>
+        <div class="cb">
+          <label class="fl">Bot Prefix</label><input class="inp" id="settPrefix" value="!" style="margin-bottom:14px">
+          <button class="btn btn-w" onclick="saveGeneral()"><i class="fas fa-check"></i> save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">all feature toggles</div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Block Invite Links</div><div class="tog" id="st-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Anti Spam</div><div class="tog" id="st-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Bad Words Filter</div><div class="tog" id="st-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Mass Mention Block</div><div class="tog" id="st-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Caps Filter</div><div class="tog" id="st-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Block All Links</div><div class="tog" id="st-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Welcome Messages</div><div class="tog" id="st-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Goodbye Messages</div><div class="tog" id="st-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Leveling / XP</div><div class="tog" id="st-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Tickets</div><div class="tog" id="st-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="mbg" id="modal">
+  <div class="modal">
+    <div class="modal-t"><span id="modalT">confirm</span><span onclick="closeModal()"><i class="fas fa-times"></i></span></div>
+    <div class="modal-b" id="modalB"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-r" id="modalOk">confirm</button>
+      <button class="btn btn-g" onclick="closeModal()">cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"><i id="toastIco" class="fas fa-check-circle"></i><span id="toastMsg">done</span></div>
+
+<script>
+let clientId = null;
+let guilds = [];
+let cfg = {};
+let toastTmr;
+let logInterval;
+
+// ── NAV ───────────────────────────────────────────────
+document.querySelectorAll('.ni[data-page]').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-' + el.dataset.page).classList.add('active');
+    document.getElementById('pageTitle').textContent = el.textContent.replace(/\d+$/, '').trim();
+    const p = el.dataset.page;
+    if(p==='servers') loadServers();
+    if(p==='logs') loadLogs();
+    if(p==='infractions'){ loadInfractions(); fillGuildSelects(); }
+    if(p==='analytics') loadAnalytics();
+    if(p==='leveling') loadLeaderboard();
+    if(p==='actions'){ fillGuildSelects(); }
+    if(p==='send'){ fillGuildSelects(); }
+    if(p==='members') fillMemberPicker();
+  });
+});
+
+function nav(p){ document.querySelector('.ni[data-page="'+p+'"]').click(); }
+
+// ── API ───────────────────────────────────────────────
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+// ── INIT ─────────────────────────────────────────────
+async function initAll(){
+  try {
+    const [bot, gd, s] = await Promise.all([api('/api/bot'), api('/api/guilds'), api('/api/settings')]);
+    clientId = bot.id;
+    guilds = Array.isArray(gd) ? gd : [];
+    cfg = s;
+
+    const name = bot.username || 'ahh';
+    document.getElementById('sbName').textContent = name;
+    document.getElementById('sbId').textContent = 'id: '+bot.id;
+    document.getElementById('footName').textContent = name;
+    document.getElementById('bnName').textContent = name;
+    document.getElementById('bnSub').textContent = 'id: '+bot.id+' · api '+bot._ping+'ms · ws '+bot._wsPing+'ms · online';
+    document.getElementById('pingTxt').textContent = bot._ping+' ms';
+    document.getElementById('iName').textContent = name;
+    document.getElementById('iId').textContent = bot.id;
+    document.getElementById('iGuilds').textContent = guilds.length;
+    document.getElementById('iApiPing').textContent = bot._ping+'ms';
+    document.getElementById('iWsPing').textContent = bot._wsPing+'ms';
+    document.getElementById('s1v').textContent = guilds.length;
+    document.getElementById('s1b').textContent = guilds.length+' total';
+    document.getElementById('s3v').textContent = bot._ping+'ms';
+    document.getElementById('s4v').textContent = 'online';
+    document.getElementById('statusTag').textContent = '● online';
+    document.getElementById('statusTag').className = 'tag t-green';
+
+    const total = guilds.reduce((a,g)=>a+(g.member_count||0),0);
+    if(total){ document.getElementById('s2v').textContent = total.toLocaleString(); document.getElementById('s2b').textContent = 'total'; }
+
+    if(bot.avatar){
+      const url = 'https://cdn.discordapp.com/avatars/'+bot.id+'/'+bot.avatar+'.png?size=64';
+      document.getElementById('sbAv').innerHTML = '<img src="'+url+'"><span class="dot"></span>';
+      document.getElementById('footAv').innerHTML = '<img src="'+url+'">';
+      document.getElementById('wAv').innerHTML = '<img src="'+url+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+    }
+
+    applySettings(cfg);
+    loadDashLogs();
+    t('connected — '+name,'green');
+  } catch(e) {
+    document.getElementById('bnSub').textContent = 'connection error';
+    document.getElementById('statusTag').textContent = '● offline';
+    document.getElementById('statusTag').className = 'tag t-red';
+    t('error: '+e.message,'red');
+  }
+}
+
+// ── SETTINGS ─────────────────────────────────────────
+function applySettings(s){
+  cfg = s;
+  const keys = ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled'];
+  keys.forEach(k => {
+    document.querySelectorAll('[data-key="'+k+'"]').forEach(el => el.classList.toggle('on', !!s[k]));
+  });
+  if(s.welcomeMessage) document.getElementById('welcomeMessage').value = s.welcomeMessage;
+  if(s.goodbyeMessage) document.getElementById('goodbyeMessage').value = s.goodbyeMessage;
+  if(s.levelUpMessage) document.getElementById('levelUpMessage').value = s.levelUpMessage;
+  if(s.welcomeChannelId) document.getElementById('welcomeChannelId').value = s.welcomeChannelId;
+  if(s.autobanThreshold) document.getElementById('autobanThreshold').value = s.autobanThreshold;
+  if(s.muteMinutes) document.getElementById('muteMinutes').value = s.muteMinutes;
+  if(s.prefix) document.getElementById('settPrefix').value = s.prefix;
+  if(s.badWordsList) document.getElementById('badWordsList').value = Array.isArray(s.badWordsList) ? s.badWordsList.join(', ') : s.badWordsList;
+}
+
+// ── TOGGLE ───────────────────────────────────────────
+async function toggle(el){
+  const key = el.dataset.key;
+  const value = !el.classList.contains('on');
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(e => e.classList.toggle('on', value));
+  try {
+    await api('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,value})});
+    t((value?'enabled':'disabled')+' '+key.replace(/([A-Z])/g,' $1').toLowerCase(), value?'green':'yellow');
+  } catch(e){ t('toggle failed: '+e.message,'red'); }
+}
+
+// ── SERVERS ──────────────────────────────────────────
+async function loadServers(){
+  const card = document.getElementById('serversCard');
+  card.innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
+  try {
+    const data = await api('/api/guilds');
+    guilds = Array.isArray(data)?data:[];
+    if(guilds.length){
+      card.innerHTML = guilds.map(g=>{
+        const ico = g.icon?'<img src="https://cdn.discordapp.com/icons/'+g.id+'/'+g.icon+'.png?size=64" onerror="this.parentElement.textContent=\''+g.name.charAt(0).toUpperCase()+'\'">':g.name.charAt(0).toUpperCase();
+        return '<div class="svr"><div class="svr-ico">'+ico+'</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+g.name+'</div><div style="font-size:10px;color:var(--txt2)">'+g.id+(g.owner?' · <span style="color:var(--yellow)">owner</span>':'')+(g.member_count?' · '+g.member_count.toLocaleString()+' members':'')+'</div></div><span class="tag t-green">active</span></div>';
+      }).join('');
+      t(guilds.length+' servers loaded','green');
+    } else card.innerHTML = '<div class="empty">no servers found</div>';
+  } catch(e){ card.innerHTML = '<div class="empty" style="color:var(--red)">error: '+e.message+'</div>'; }
+}
+
+// ── MEMBERS ──────────────────────────────────────────
+function fillMemberPicker(){
+  const sel = document.getElementById('memberGuildPicker');
+  sel.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+}
+
+async function loadMembers(){
+  const id = document.getElementById('memberGuildPicker').value;
+  if(!id){t('select a server first','yellow');return;}
+  const card = document.getElementById('membersCard');
+  card.innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
+  try {
+    const data = await api('/api/guilds/'+id+'/members');
+    if(Array.isArray(data)&&data.length){
+      const g = guilds.find(x=>x.id===id);
+      const rows = data.map(m=>{
+        const u = m.user||{};
+        const name = u.global_name||u.username||'unknown';
+        const av = u.avatar?'<img src="https://cdn.discordapp.com/avatars/'+u.id+'/'+u.avatar+'.png?size=32">':name.charAt(0).toUpperCase();
+        const joined = m.joined_at?new Date(m.joined_at).toLocaleDateString():'—';
+        return '<div class="mrow"><div class="mav">'+av+'</div><div style="flex:1"><div style="font-size:11px;font-weight:700">'+name+(u.bot?' <span class="tag t-blue" style="font-size:8px">BOT</span>':'')+'</div><div style="font-size:9px;color:var(--txt3)">'+u.id+'</div></div><div style="font-size:10px;color:var(--txt3)">'+joined+'</div></div>';
+      }).join('');
+      card.innerHTML = '<div class="ch"><div class="ct">members — '+(g?g.name:id)+'</div><span class="tag t-white">'+data.length+' loaded</span></div><div class="scrollarea">'+rows+'</div>';
+      t(data.length+' members loaded','green');
+    } else if(data&&data.message){
+      card.innerHTML = '<div class="empty" style="color:var(--red)">'+data.message+'<br><small>enable Server Members Intent in Discord Developer Portal</small></div>';
+    } else card.innerHTML = '<div class="empty">no members found</div>';
+  } catch(e){ card.innerHTML = '<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+}
+
+// ── LOGS ─────────────────────────────────────────────
+async function loadLogs(){
+  document.getElementById('logsList').innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
+  try { renderLogs(await api('/api/logs'), 'logsList'); }
+  catch(e){ document.getElementById('logsList').innerHTML = '<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+}
+
+async function loadDashLogs(){
+  try { renderLogs((await api('/api/logs')).slice(0,6), 'dashLogs'); }
+  catch(e){ document.getElementById('dashLogs').innerHTML = '<div class="empty">no logs yet</div>'; }
+}
+
+function renderLogs(logs, id){
+  const el = document.getElementById(id);
+  if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet</div>'; return; }
+  const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
+  el.innerHTML = logs.map(l=>'<div class="lgi"><div class="lgt">'+l.time+'</div><div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span></div><div class="lgm">'+l.msg+'</div></div>').join('');
+}
+
+async function clearLogs(){
+  await api('/api/logs',{method:'DELETE'});
+  document.getElementById('logsList').innerHTML = '<div class="empty">logs cleared</div>';
+  t('logs cleared','green');
+}
+
+// ── INFRACTIONS ──────────────────────────────────────
+async function loadInfractions(){
+  try { renderInfractions(await api('/api/infractions')); }
+  catch(e){ t('failed to load infractions','red'); }
+}
+
+function renderInfractions(data){
+  const n = data.length;
+  document.getElementById('infCount').textContent = n+' record'+(n!==1?'s':'');
+  document.getElementById('infBadge').textContent = n;
+  const empty = document.getElementById('infEmpty');
+  const body = document.getElementById('infBody');
+  if(!n){ body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = data.map(i=>'<tr><td class="mono">#'+String(i.id).padStart(3,'0')+'</td><td style="font-size:11px">'+i.user+'</td><td><span class="tag '+(i.act==='ban'||i.act==='kick'?'t-red':'t-yellow')+'">'+i.act+'</span></td><td style="color:var(--txt2);font-size:11px">'+i.reason+'</td><td style="color:var(--txt3);font-size:10px">'+i.time+'</td><td><button class="btn btn-r" style="padding:2px 7px;font-size:9px" onclick="removeInfraction('+i.id+')">remove</button></td></tr>').join('');
+}
+
+async function issueInfraction(){
+  const guildId = document.getElementById('infGuild').value;
+  const userId = document.getElementById('infUser').value.trim();
+  const act = document.getElementById('infAct').value;
+  const reason = document.getElementById('infReason').value.trim()||'no reason';
+  if(!userId){t('enter a user id','red');return;}
+  if(!guildId){t('select a server','red');return;}
+  const eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban'};
+  try {
+    const res = await api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId,userId,reason,minutes:10})});
+    t(act+' executed — '+(res.message||'done'),'green');
+    loadInfractions();
+    document.getElementById('infUser').value='';
+    document.getElementById('infReason').value='';
+  } catch(e){ t('failed: '+e.message,'red'); }
+}
+
+async function removeInfraction(id){
+  await api('/api/infractions/'+id,{method:'DELETE'});
+  loadInfractions();
+}
+
+async function clearInfractions(){
+  await api('/api/infractions',{method:'DELETE'});
+  renderInfractions([]);
+  t('infractions cleared','green');
+}
+
+// ── ANALYTICS ────────────────────────────────────────
+async function loadAnalytics(){
+  try {
+    const [logs,infs,lb,stats] = await Promise.all([api('/api/logs'),api('/api/infractions'),api('/api/leaderboard'),api('/api/stats')]);
+    document.getElementById('an-lv').textContent = logs.length;
+    document.getElementById('an-iv').textContent = infs.length;
+    document.getElementById('an-xv').textContent = lb.length;
+    document.getElementById('an-tv').textContent = stats.totalTickets||0;
+    document.getElementById('an-lb').textContent = logs.length;
+    document.getElementById('an-ib').textContent = infs.length;
+    const medals = ['🥇','🥈','🥉'];
+    document.getElementById('lbBody').innerHTML = lb.length
+      ? lb.map((u,i)=>'<tr><td>'+( medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-white">'+u.level+'</span></td><td>'+u.xp+'</td></tr>').join('')
+      : '<tr><td colspan="4" class="empty">no xp data yet — users need to chat first</td></tr>';
+  } catch(e){ t('analytics error: '+e.message,'red'); }
+}
+
+// ── LEADERBOARD ──────────────────────────────────────
+async function loadLeaderboard(){
+  try {
+    const lb = await api('/api/leaderboard');
+    const medals=['🥇','🥈','🥉'];
+    document.getElementById('lvlBody').innerHTML = lb.length
+      ? lb.map((u,i)=>'<tr><td>'+(medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-yellow">'+u.level+'</span></td><td>'+u.xp+'</td></tr>').join('')
+      : '<tr><td colspan="4" class="empty">no data yet</td></tr>';
+  } catch(e){}
+}
+
+// ── GUILD SELECTS ────────────────────────────────────
+function fillGuildSelects(){
+  ['actGuild','purgeGuild','msgGuild','infGuild'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+  });
+}
+
+async function loadChannelsFor(guildId, targetId){
+  if(!guildId) return;
+  try {
+    const chs = await api('/api/guilds/'+guildId+'/channels');
+    const text = chs.filter(c=>c.type===0);
+    document.getElementById(targetId).innerHTML = text.map(c=>'<option value="'+c.id+'">#'+c.name+'</option>').join('');
+  } catch(e){}
+}
+
+function loadChForPurge(){ loadChannelsFor(document.getElementById('purgeGuild').value,'purgeChannel'); }
+function loadChForMsg(){ loadChannelsFor(document.getElementById('msgGuild').value,'msgChannel'); }
+
+// ── ACTIONS ──────────────────────────────────────────
+function doAction(act){
+  const guildId = document.getElementById('actGuild').value;
+  const userId = document.getElementById('actUser').value.trim();
+  const reason = document.getElementById('actReason').value.trim()||'action from dashboard';
+  if(!userId){t('enter a user id','red');return;}
+  const labels={warn:'warn',timeout:'timeout',kick:'kick',ban:'ban',unban:'unban',clearwarnings:'clear warnings for'};
+  openModal('confirm '+act,'about to <b>'+act+'</b> user <span class="mono">'+userId+'</span>.<br>reason: '+reason,async()=>{
+    const eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban',unban:'/api/action/unban',clearwarnings:'/api/action/clearwarnings'};
+    try {
+      const res = await api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId,userId,reason,minutes:parseInt(document.getElementById('muteMinutes')?document.getElementById('muteMinutes').value:10)||10})});
+      t(act+' done: '+(res.message||'success'),'green');
+      closeModal();
+      loadInfractions();
+    } catch(e){ t('failed: '+e.message,'red'); }
+  });
+}
+
+function doPurge(){
+  const guildId = document.getElementById('purgeGuild').value;
+  const channelId = document.getElementById('purgeChannel').value;
+  const amount = parseInt(document.getElementById('purgeAmt').value)||10;
+  openModal('confirm purge','delete <b>'+amount+' messages</b> from the selected channel?<br>this cannot be undone.',async()=>{
+    try {
+      const res = await api('/api/action/purge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId,channelId,amount})});
+      t('deleted '+res.deleted+' messages','green');
+      closeModal();
+    } catch(e){ t('failed: '+e.message,'red'); }
+  });
+}
+
+// ── SEND MESSAGE ─────────────────────────────────────
+async function sendMsg(){
+  const guildId = document.getElementById('msgGuild').value;
+  const channelId = document.getElementById('msgChannel').value;
+  const message = document.getElementById('msgContent').value.trim();
+  if(!message){t('enter a message','red');return;}
+  try {
+    await api('/api/action/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId,channelId,message})});
+    t('message sent ✓','green');
+    document.getElementById('msgContent').value='';
+  } catch(e){ t('failed: '+e.message,'red'); }
+}
+
+// ── SAVE SETTINGS ────────────────────────────────────
+async function saveAutomod(){
+  const body={autobanThreshold:parseInt(document.getElementById('autobanThreshold').value)||3,muteMinutes:parseInt(document.getElementById('muteMinutes').value)||10,logChannelId:document.getElementById('logChannelId').value.trim()||null};
+  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); t('automod saved — bot updated','green'); }
+  catch(e){ t('save failed','red'); }
+}
+
+async function saveBadWords(){
+  const raw = document.getElementById('badWordsList').value;
+  const list = raw.split(',').map(w=>w.trim()).filter(Boolean);
+  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({badWordsList:list})}); t('bad words list updated ('+list.length+' words)','green'); }
+  catch(e){ t('save failed','red'); }
+}
+
+async function saveWelcome(){
+  const body={welcomeMessage:document.getElementById('welcomeMessage').value,goodbyeMessage:document.getElementById('goodbyeMessage').value,welcomeChannelId:document.getElementById('welcomeChannelId').value.trim()||null};
+  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); t('welcome settings saved — bot updated','green'); }
+  catch(e){ t('save failed','red'); }
+}
+
+async function saveLeveling(){
+  const body={levelUpMessage:document.getElementById('levelUpMessage').value};
+  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); t('leveling settings saved','green'); }
+  catch(e){ t('save failed','red'); }
+}
+
+async function saveGeneral(){
+  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefix:document.getElementById('settPrefix').value})}); t('settings saved','green'); }
+  catch(e){ t('save failed','red'); }
+}
+
+// ── INVITE ───────────────────────────────────────────
+function inviteBot(){
+  if(clientId) window.open('https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot+applications.commands&permissions=8','_blank');
+  else t('refresh first','yellow');
+}
+
+// ── MODAL ────────────────────────────────────────────
+function openModal(title, body, onOk){
+  document.getElementById('modalT').textContent = title;
+  document.getElementById('modalB').innerHTML = body;
+  document.getElementById('modalOk').onclick = onOk;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+// ── TOAST ────────────────────────────────────────────
+function t(msg, type='green'){
+  const el = document.getElementById('toastEl');
+  document.getElementById('toastMsg').textContent = msg;
+  const map={green:['fa-check-circle','var(--green)'],red:['fa-circle-xmark','var(--red)'],blue:['fa-circle-info','var(--blue)'],yellow:['fa-triangle-exclamation','var(--yellow)']};
+  const [cls,col] = map[type]||map.green;
+  const ico = document.getElementById('toastIco');
+  ico.className = 'fas '+cls;
+  ico.style.color = col;
+  el.classList.add('show');
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── AUTO REFRESH ─────────────────────────────────────
+setInterval(loadDashLogs, 8000);
+setInterval(()=>{ api('/api/bot').then(b=>{ document.getElementById('pingTxt').textContent=b._ping+' ms'; document.getElementById('iApiPing').textContent=b._ping+'ms'; document.getElementById('iWsPing').textContent=b._wsPing+'ms'; }).catch(()=>{}); }, 30000);
+
+// ── BOOT ─────────────────────────────────────────────
+initAll();
+</script>
+</body>
+</html>
