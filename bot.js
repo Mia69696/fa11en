@@ -22,7 +22,7 @@ const state = {
     modActions:null, commands:null, images:null, voiceActivity:null, roleChanges:null },
   autobanThreshold:3, prefix:'!', muteMinutes:10,
   badWordsList:['badword1','badword2'],
-  xpData:{}, warnings:{}, infractions:[], infId:1, logs:[], tickets:{}, ticketCount:0,
+  xpData:{}, warnings:{}, infractions:[], infId:1, logs:[], tickets:{}, ticketCount:0, ticketPanelChannels:{},
   // temp voice
   tempVoiceEnabled:true,
   tempVoiceGuilds:{},    // guildId -> { categoryId, creatorId, controlChannelId }
@@ -42,7 +42,7 @@ const PERSIST_KEYS = [
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId',
   'verifyMessageId','verifyEmoji','logChannels','tempVoiceEnabled','tempVoiceGuilds',
-  'xpData','warnings','infractions','infId','ticketCount',
+  'xpData','warnings','infractions','infId','ticketCount','ticketPanelChannels',
 ];
 
 function saveState() {
@@ -295,6 +295,42 @@ async function tvSendWelcome(ctrl) {
 }
 
 // ── READY ─────────────────────────────────────────────
+// ── TICKET AUTO SETUP ────────────────────────────────
+async function ticketAutoSetup(guild) {
+  try {
+    if (!state.ticketPanelChannels) state.ticketPanelChannels = {};
+    const existingId = state.ticketPanelChannels[guild.id];
+    if (existingId) {
+      const existing = guild.channels.cache.get(existingId);
+      if (existing) return;
+    }
+    let category = guild.channels.cache.find(ch => ch.type === 4 && ch.name.toLowerCase().includes('ticket'));
+    if (!category) category = await guild.channels.create({ name: '🎫 Tickets', type: 4 });
+    const panelCh = await guild.channels.create({
+      name: '📋-create-ticket', type: 0, parent: category.id,
+      permissionOverwrites: [
+        { id: guild.id, allow: ['ViewChannel','ReadMessageHistory'], deny: ['SendMessages'] },
+        { id: client.user.id, allow: ['ViewChannel','SendMessages','ManageChannels','ReadMessageHistory'] },
+      ],
+      topic: 'click the button to open a support ticket',
+    });
+    const botAvatar = client.user.displayAvatarURL({ dynamic:true, size:512 });
+    const embed = new EmbedBuilder()
+      .setColor(0x2b2d31)
+      .setAuthor({ name: 'Staff Support', iconURL: botAvatar })
+      .setTitle('Do you need help with something?')
+      .setDescription('Contact our staff team privately so we can assist you with whatever you need.\n\n**Additional Information:**\n> \u2726 If it\'s urgent, just mention one of our staff members.\n> \u2726 Please give us clear information.')
+      .setThumbnail(botAvatar)
+      .setFooter({ text: 'fa11en \u00b7 support system', iconURL: botAvatar })
+      .setTimestamp();
+    await panelCh.send({ embeds:[embed], components:[{ type:1, components:[{ type:2, style:1, label:'Create Ticket', emoji:'🎫', custom_id:'open_ticket' }]}] });
+    state.ticketPanelChannels[guild.id] = panelCh.id;
+    saveState();
+    addLog('TICKET','ticket panel auto-setup in '+guild.name,'cyan');
+    console.log('✅ ticket setup:', guild.name);
+  } catch(e) { console.error('ticket setup err:', e.message); }
+}
+
 client.once('ready', async () => {
   console.log('🤖 fa11en online:', client.user.tag);
   client.user.setActivity('your server', { type:ActivityType.Watching });
@@ -302,12 +338,14 @@ client.once('ready', async () => {
   for (const g of client.guilds.cache.values()) {
     await registerCommands(g.id);
     await tvAutoSetup(g);
+    await ticketAutoSetup(g);
   }
 });
 
 client.on('guildCreate', async g => {
   await registerCommands(g.id);
   await tvAutoSetup(g);
+  await ticketAutoSetup(g);
   addLog('JOIN','bot joined: '+g.name,'green');
 });
 
@@ -965,8 +1003,8 @@ async function openTicket(guild, user, interaction) {
   const ticketEmbed = new EmbedBuilder()
     .setColor(0x5865f2)
     .setAuthor({ name: 'fa11en support', iconURL: botAvatar })
-    .setTitle('🎫 ticket #' + num)
-    .setDescription('> hey <@'+user.id+'>, thanks for opening a ticket!\n> staff will be with you shortly, please describe your issue.')
+    .setTitle('Ticket #' + num)
+    .setDescription('Hey <@'+user.id+'>, thanks for reaching out!\n\n**Additional Information:**\n> \u2726 A staff member will be with you shortly.\n> \u2726 Please describe your issue clearly.\n> \u2726 If it\'s urgent, mention a staff member.')
     .setThumbnail(user.displayAvatarURL({ dynamic:true, size:256 }))
     .addFields(
       { name: '👤 opened by', value: '<@'+user.id+'>', inline: true },
