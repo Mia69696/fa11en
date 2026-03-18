@@ -319,7 +319,8 @@ async function ticketAutoSetup(guild) {
       .setColor(0x2b2d31)
       .setAuthor({ name: 'Staff Support', iconURL: botAvatar })
       .setTitle('Do you need help with something?')
-      .setDescription('Contact our staff team privately so we can assist you with whatever you need.\n\n**Additional Information:**\n> \u2726 If it\'s urgent, just mention one of our staff members.\n> \u2726 Please give us clear information.')
+      .setDescription('Contact our staff team privately so we can assist you with whatever you need.')
+      .setImage('https://fa11en-production.up.railway.app/welcome.gif')
       .setThumbnail(botAvatar)
       .setFooter({ text: 'fa11en \u00b7 support system', iconURL: botAvatar })
       .setTimestamp();
@@ -361,7 +362,7 @@ client.on('guildMemberAdd', async member => {
     .setTitle('welcome to the server! 🎉')
     .setDescription('> ' + msg + '\n\u200b')
     .setThumbnail(member.user.displayAvatarURL({ dynamic:true, size:512 }))
-    .setImage(member.user.bannerURL({ size:1024 }) || null)
+    .setImage('https://fa11en-production.up.railway.app/welcome.gif')
     .addFields(
       { name: '👤 user',       value: `<@${member.id}>`, inline: true },
       { name: '🔢 member #',  value: `**${member.guild.memberCount}**`, inline: true },
