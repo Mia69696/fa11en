@@ -3,7 +3,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
-const { client, state, addLog, addWarning, clearWarnings, addInfraction, createVerifyToken, completeVerification } = require('./bot');
+const { client, state, addLog, addWarning, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState } = require('./bot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -139,6 +139,7 @@ app.post('/api/settings', (req, res) => {
     'levelUpMessage','welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList'];
   allowed.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k]; });
   addLog('DASH', 'settings updated from dashboard', 'blue');
+  saveState();
   res.json({ ok: true });
 });
 
@@ -149,6 +150,7 @@ app.post('/api/toggle', (req, res) => {
   if (!allowed.includes(key)) return res.status(400).json({ error: 'invalid key' });
   state[key] = value;
   addLog('DASH', key + ' set to ' + value, value ? 'green' : 'yellow');
+  saveState();
   res.json({ ok: true, [key]: state[key] });
 });
 
@@ -393,6 +395,7 @@ app.post('/api/verify/settings', (req, res) => {
   if (verifiedRoleId !== undefined) state.verifiedRoleId = verifiedRoleId;
   if (verificationChannelId !== undefined) state.verificationChannelId = verificationChannelId;
   addLog('DASH', 'verification settings updated', 'blue');
+  saveState();
   res.json({ ok: true });
 });
 
