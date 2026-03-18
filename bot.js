@@ -256,15 +256,92 @@ async function registerCommands(guildId) {
 }
 
 // ── READY ─────────────────────────────────────────────
-client.once('ready', () => {
-  console.log(`🤖 bot online: ${client.user.tag}`);
+// auto setup when bot joins or on ready
+async function tvAutoSetup(guild) {
+  if (!state.tempVoiceGuilds) state.tempVoiceGuilds = {};
+  const existing = state.tempVoiceGuilds[guild.id];
+  if (existing?.creatorId) {
+    const ch = guild.channels.cache.get(existing.creatorId);
+    if (ch) {
+      // already set up — but resend welcome embed if control channel is empty
+      if (existing.controlChannelId) {
+        const ctrl = guild.channels.cache.get(existing.controlChannelId);
+        if (ctrl) {
+          const msgs = await ctrl.messages.fetch({ limit: 5 }).catch(() => null);
+          if (msgs && msgs.size === 0) {
+            await ctrl.send({ embeds:[new EmbedBuilder()
+              .setColor(0x00d4ff)
+              .setTitle('🎙️ temp voice ready!')
+              .setDescription('> join **➕ Join to Create** to get your own voice channel\n> your control panel will appear here when you join')
+              .addFields(
+                { name:'✏️ NAME', value:'rename your vc', inline:true },
+                { name:'🔒 PRIVACY', value:'lock or hide it', inline:true },
+                { name:'👥 LIMIT', value:'set user limit', inline:true },
+                { name:'🤝 TRUST', value:'let friends in when locked', inline:true },
+                { name:'🚫 BLOCK', value:'kick + ban someone', inline:true },
+                { name:'🔄 TRANSFER', value:'give ownership', inline:true },
+              )
+              .setFooter({ text: 'fa11en · channel auto-deletes when everyone leaves' })
+              .setTimestamp()
+            ]}).catch(() => {});
+          }
+        }
+      }
+      return;
+    }
+  }
+  try {
+    const category = await guild.channels.create({ name: '🔊 Temp Voice', type: 4 });
+    const creator = await guild.channels.create({ name: '➕ Join to Create', type: 2, parent: category.id });
+    const ctrl = await guild.channels.create({
+      name: '🎛️-vc-controls', type: 0, parent: category.id,
+      permissionOverwrites: [{ id: guild.id, deny: ['ViewChannel'] }],
+      topic: 'your temp voice control panel appears here',
+    });
+    state.tempVoiceGuilds[guild.id] = { categoryId: category.id, creatorId: creator.id, controlChannelId: ctrl.id };
+    state.tempVoiceCategoryId = category.id;
+    state.tempVoiceCreatorId = creator.id;
+    state.tempVoiceControlChannelId = ctrl.id;
+    state.tempVoiceEnabled = true;
+    saveState();
+    // send welcome embed
+    await ctrl.send({ embeds:[new EmbedBuilder()
+      .setColor(0x00d4ff)
+      .setTitle('🎙️ temp voice ready!')
+      .setDescription('> join **➕ Join to Create** to get your own voice channel\n> your control panel will appear here')
+      .addFields(
+        { name:'✏️ NAME', value:'rename your vc', inline:true },
+        { name:'🔒 PRIVACY', value:'lock or hide it', inline:true },
+        { name:'👥 LIMIT', value:'set user limit', inline:true },
+        { name:'🤝 TRUST', value:'let friends in when locked', inline:true },
+        { name:'🚫 BLOCK', value:'kick + ban someone', inline:true },
+        { name:'🔄 TRANSFER', value:'give ownership', inline:true },
+      )
+      .setFooter({ text: 'fa11en · when everyone leaves, channel auto-deletes' })
+      .setTimestamp()
+    ]});
+    addLog('VOICE', 'temp voice auto-setup in ' + guild.name, 'green');
+    console.log('✅ temp voice setup in ' + guild.name);
+  } catch(e) {
+    console.error('tv setup error:', e.message);
+    addLog('VOICE', 'setup failed in ' + guild.name + ': ' + e.message, 'red');
+  }
+}
+
+client.once('ready', async () => {
+  console.log(`🤖 fa11en online: ${client.user.tag}`);
   client.user.setActivity('your server', { type: ActivityType.Watching });
-  client.guilds.cache.forEach(g => registerCommands(g.id));
   addLog('START', `bot online as ${client.user.tag}`, 'green');
+  // setup every guild
+  for (const g of client.guilds.cache.values()) {
+    registerCommands(g.id);
+    await tvAutoSetup(g);
+  }
 });
 
-client.on('guildCreate', g => {
+client.on('guildCreate', async g => {
   registerCommands(g.id);
+  await tvAutoSetup(g);
   addLog('JOIN', `bot joined server: ${g.name}`, 'green');
 });
 
@@ -1453,442 +1530,348 @@ setInterval(() => {
 
 client.login(TOKEN).catch(e => console.error('❌ login failed:', e.message));
 
-module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState };// ── TEMP VOICE ───────────────────────────────────────
+// ── TEMP VOICE (CLEAN) ───────────────────────────────
 
-function buildControlPanel(chData, channelId) {
-  const isPrivate = chData.private || false;
-  const embed = new EmbedBuilder()
+function tvGetCfg(guildId) {
+  if (!state.tempVoiceGuilds) state.tempVoiceGuilds = {};
+  return state.tempVoiceGuilds[guildId] || {};
+}
+
+function tvEmbed(ch, channelId) {
+  return new EmbedBuilder()
     .setColor(0x00d4ff)
-    .setAuthor({ name: 'fa11en — voice interface' })
-    .setTitle('🎙️ ' + (chData.name || 'your channel'))
-    .setDescription(
-      '> use the buttons below to manage your temporary voice channel.\n' +
-      '> more options available with **/voice** commands.'
-    )
+    .setTitle('🎙️ ' + (ch.name || 'your channel'))
+    .setDescription('> manage your temp voice channel\n> only the **owner** can use these')
     .addFields(
-      { name: '👑 owner', value: '<@' + chData.ownerId + '>', inline: true },
-      { name: '👥 limit', value: chData.limit ? String(chData.limit) : '∞ unlimited', inline: true },
-      { name: '🔒 privacy', value: isPrivate ? 'private 🔒' : 'public 🔓', inline: true },
-      { name: '🚫 blocked', value: chData.blockedUsers?.length ? chData.blockedUsers.map(id => '<@' + id + '>').join(', ') : 'none', inline: true },
-      { name: '🤝 trusted', value: chData.trustedUsers?.length ? chData.trustedUsers.map(id => '<@' + id + '>').join(', ') : 'none', inline: true },
-      { name: '📍 channel', value: '<#' + channelId + '>', inline: true },
+      { name: '👑 owner', value: '<@' + ch.ownerId + '>', inline: true },
+      { name: '👥 limit', value: ch.limit ? ch.limit + ' users' : '∞', inline: true },
+      { name: '🔒 status', value: ch.locked ? '🔒 locked' : ch.hidden ? '👁️ hidden' : '🔓 public', inline: true },
+      { name: '🤝 trusted', value: ch.trustedUsers?.length ? ch.trustedUsers.map(id=>'<@'+id+'>').join(', ') : 'none', inline: true },
+      { name: '🚫 blocked', value: ch.bannedUsers?.length ? ch.bannedUsers.length + ' user(s)' : 'none', inline: true },
+      { name: '🌐 region', value: ch.region || 'auto', inline: true },
     )
-    .setFooter({ text: 'press the buttons below to use the interface' })
+    .setFooter({ text: 'fa11en temp voice · ' + channelId })
     .setTimestamp();
-
-  const row1 = { type: 1, components: [
-    { type: 2, style: 2, label: 'name', emoji: '📝', custom_id: 'tv_name_' + channelId },
-    { type: 2, style: 2, label: 'limit', emoji: '👥', custom_id: 'tv_limit_' + channelId },
-    { type: 2, style: isPrivate ? 3 : 2, label: 'privacy', emoji: isPrivate ? '🔓' : '🔒', custom_id: 'tv_privacy_' + channelId },
-    { type: 2, style: 2, label: 'waiting room', emoji: '⏳', custom_id: 'tv_waitroom_' + channelId },
-    { type: 2, style: 2, label: 'chat', emoji: '💬', custom_id: 'tv_chat_' + channelId },
-  ]};
-
-  const row2 = { type: 1, components: [
-    { type: 2, style: 3, label: 'trust', emoji: '🤝', custom_id: 'tv_trust_' + channelId },
-    { type: 2, style: 4, label: 'untrust', emoji: '🚫', custom_id: 'tv_untrust_' + channelId },
-    { type: 2, style: 2, label: 'invite', emoji: '📨', custom_id: 'tv_invite_' + channelId },
-    { type: 2, style: 4, label: 'kick', emoji: '👟', custom_id: 'tv_kick_' + channelId },
-    { type: 2, style: 2, label: 'region', emoji: '🌍', custom_id: 'tv_region_' + channelId },
-  ]};
-
-  const row3 = { type: 1, components: [
-    { type: 2, style: 4, label: 'block', emoji: '🔨', custom_id: 'tv_block_' + channelId },
-    { type: 2, style: 3, label: 'unblock', emoji: '✅', custom_id: 'tv_unblock_' + channelId },
-    { type: 2, style: 3, label: 'claim', emoji: '👑', custom_id: 'tv_claim_' + channelId },
-    { type: 2, style: 2, label: 'transfer', emoji: '🔁', custom_id: 'tv_transfer_' + channelId },
-    { type: 2, style: 4, label: 'delete', emoji: '🗑️', custom_id: 'tv_delete_' + channelId },
-  ]};
-
-  return { embeds: [embed], components: [row1, row2, row3] };
 }
 
-async function sendControlPanel(guild, channelId) {
-  const chData = state.tempVoiceChannels[channelId];
-  const guildCfg = state.tempVoiceGuilds?.[guild.id] || {};
-  const ctrlChId = guildCfg.controlChannelId || state.tempVoiceControlChannelId;
-  if (!chData || !ctrlChId) return;
-  const ctrlCh = guild.channels.cache.get(ctrlChId);
-  if (!ctrlCh) return;
-  if (chData.controlMsgId) {
-    try {
-      const old = await ctrlCh.messages.fetch(chData.controlMsgId);
-      await old.edit(buildControlPanel(chData, channelId));
-      return;
-    } catch(e) {}
+function tvRows(channelId) {
+  return [
+    { type:1, components:[
+      { type:2, style:1, label:'NAME',    emoji:'✏️', custom_id:'tv_name_'+channelId },
+      { type:2, style:1, label:'LIMIT',   emoji:'👥', custom_id:'tv_limit_'+channelId },
+      { type:2, style:1, label:'PRIVACY', emoji:'🔒', custom_id:'tv_privacy_'+channelId },
+      { type:2, style:1, label:'REGION',  emoji:'🌐', custom_id:'tv_region_'+channelId },
+      { type:2, style:1, label:'CHAT',    emoji:'💬', custom_id:'tv_chat_'+channelId },
+    ]},
+    { type:1, components:[
+      { type:2, style:2, label:'TRUST',        emoji:'🤝', custom_id:'tv_trust_'+channelId },
+      { type:2, style:2, label:'UNTRUST',      emoji:'💔', custom_id:'tv_untrust_'+channelId },
+      { type:2, style:2, label:'INVITE',       emoji:'📨', custom_id:'tv_invite_'+channelId },
+      { type:2, style:4, label:'KICK',         emoji:'👟', custom_id:'tv_kick_'+channelId },
+      { type:2, style:1, label:'WAITING ROOM', emoji:'⏳', custom_id:'tv_wait_'+channelId },
+    ]},
+    { type:1, components:[
+      { type:2, style:4, label:'BLOCK',    emoji:'🚫', custom_id:'tv_block_'+channelId },
+      { type:2, style:2, label:'UNBLOCK',  emoji:'✅', custom_id:'tv_unblock_'+channelId },
+      { type:2, style:1, label:'CLAIM',    emoji:'👑', custom_id:'tv_claim_'+channelId },
+      { type:2, style:1, label:'TRANSFER', emoji:'🔄', custom_id:'tv_transfer_'+channelId },
+      { type:2, style:4, label:'DELETE',   emoji:'🗑️', custom_id:'tv_delete_'+channelId },
+    ]},
+  ];
+}
+
+async function tvSendPanel(guild, channelId) {
+  const ch = state.tempVoiceChannels[channelId];
+  const cfg = tvGetCfg(guild.id);
+  const ctrlId = cfg.controlChannelId || state.tempVoiceControlChannelId;
+  if (!ch || !ctrlId) return;
+  const ctrl = guild.channels.cache.get(ctrlId);
+  if (!ctrl) return;
+  if (ch.controlMsgId) {
+    const old = await ctrl.messages.fetch(ch.controlMsgId).catch(() => null);
+    if (old) await old.delete().catch(() => {});
   }
-  const msg = await ctrlCh.send(buildControlPanel(chData, channelId)).catch(() => null);
-  if (msg) chData.controlMsgId = msg.id;
+  const msg = await ctrl.send({ embeds:[tvEmbed(ch,channelId)], components:tvRows(channelId) }).catch(e => { console.error('panel send error:', e.message); return null; });
+  if (msg) ch.controlMsgId = msg.id;
 }
 
-client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (!state.tempVoiceEnabled || !state.tempVoiceCreatorId) return;
+async function tvUpdatePanel(guild, channelId) {
+  const ch = state.tempVoiceChannels[channelId];
+  const cfg = tvGetCfg(guild.id);
+  const ctrlId = cfg.controlChannelId || state.tempVoiceControlChannelId;
+  if (!ch || !ctrlId || !ch.controlMsgId) return tvSendPanel(guild, channelId);
+  const ctrl = guild.channels.cache.get(ctrlId);
+  if (!ctrl) return;
+  const msg = await ctrl.messages.fetch(ch.controlMsgId).catch(() => null);
+  if (!msg) return tvSendPanel(guild, channelId);
+  await msg.edit({ embeds:[tvEmbed(ch,channelId)], components:tvRows(channelId) }).catch(() => {});
+}
 
-  // join creator → make new channel
-  if (newState.channelId === state.tempVoiceCreatorId) {
+// voice state — create & delete
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (!state.tempVoiceEnabled) return;
+  const cfg = tvGetCfg(newState.guild?.id || oldState.guild?.id || '');
+  const creatorId = cfg.creatorId || state.tempVoiceCreatorId;
+  const categoryId = cfg.categoryId || state.tempVoiceCategoryId;
+  if (!creatorId) return;
+
+  // joined creator → make channel
+  if (newState.channelId === creatorId) {
     const guild = newState.guild;
     const member = newState.member;
     try {
       const newCh = await guild.channels.create({
-        name: '🔊 ' + member.displayName + "'s channel",
+        name: '🔊 ' + member.displayName,
         type: 2,
         parent: categoryId || undefined,
         permissionOverwrites: [
-          { id: guild.id, allow: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.ViewChannel] },
-          { id: member.id, allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.MoveMembers, PermissionFlagsBits.MuteMembers, PermissionFlagsBits.DeafenMembers, PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.ViewChannel] },
+          { id: guild.id,   allow: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.ViewChannel] },
+          { id: member.id,  allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.MoveMembers, PermissionFlagsBits.MuteMembers, PermissionFlagsBits.DeafenMembers, PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.ViewChannel] },
         ]
       });
       state.tempVoiceChannels[newCh.id] = {
         ownerId: member.id, guildId: guild.id, name: newCh.name,
-        limit: 0, private: false, controlMsgId: null,
-        blockedUsers: [], trustedUsers: [], waitingRoom: false,
+        limit: 0, locked: false, hidden: false, region: null,
+        trustedUsers: [], bannedUsers: [], controlMsgId: null,
       };
       await member.voice.setChannel(newCh);
-      await sendControlPanel(guild, newCh.id);
-      addLog('VOICE', member.user.username + ' created temp vc: ' + newCh.name, 'cyan');
-    } catch(e) { addLog('VOICE', 'failed to create temp vc: ' + e.message, 'red'); }
+      await tvSendPanel(guild, newCh.id);
+      addLog('VOICE', member.user.username + ' created temp vc', 'cyan');
+    } catch(e) { console.error('create vc error:', e.message); addLog('VOICE', 'create failed: '+e.message, 'red'); }
     return;
   }
 
-  // channel empty → delete it
+  // left a temp vc
   if (oldState.channelId && state.tempVoiceChannels[oldState.channelId]) {
-    const ch = oldState.guild.channels.cache.get(oldState.channelId);
+    const guild = oldState.guild;
+    const ch = guild.channels.cache.get(oldState.channelId);
+    const chData = state.tempVoiceChannels[oldState.channelId];
     if (ch && ch.members.size === 0) {
-      const chData = state.tempVoiceChannels[oldState.channelId];
-      const gCfg = state.tempVoiceGuilds?.[oldState.guild.id] || {};
-      const ctrlChIdDel = gCfg.controlChannelId || state.tempVoiceControlChannelId;
-      if (chData.controlMsgId && ctrlChIdDel) {
-        const ctrlCh = oldState.guild.channels.cache.get(ctrlChIdDel);
-        if (ctrlCh) ctrlCh.messages.fetch(chData.controlMsgId).then(m => m.delete()).catch(() => {});
+      // delete control panel msg
+      const cfg2 = tvGetCfg(guild.id);
+      const ctrlId = cfg2.controlChannelId || state.tempVoiceControlChannelId;
+      if (chData.controlMsgId && ctrlId) {
+        const ctrl = guild.channels.cache.get(ctrlId);
+        if (ctrl) ctrl.messages.fetch(chData.controlMsgId).then(m=>m.delete()).catch(()=>{});
       }
       delete state.tempVoiceChannels[oldState.channelId];
-      await ch.delete('temp voice empty').catch(() => {});
+      await ch.delete().catch(()=>{});
       addLog('VOICE', 'temp vc deleted (empty)', 'yellow');
+    } else if (ch && chData.ownerId === oldState.member?.id && ch.members.size > 0) {
+      // owner left → transfer
+      const newOwner = ch.members.first();
+      chData.ownerId = newOwner.id;
+      chData.name = '🔊 ' + newOwner.displayName;
+      await ch.setName('🔊 ' + newOwner.displayName).catch(()=>{});
+      await tvUpdatePanel(guild, oldState.channelId);
+      addLog('VOICE', 'vc ownership transferred to ' + newOwner.user.username, 'blue');
     }
   }
 });
 
-// helper: ask user to type something in channel
-async function askInput(interaction, prompt) {
-  await interaction.reply({ content: prompt, ephemeral: true });
-  return new Promise(resolve => {
-    const filter = m => m.author.id === interaction.user.id;
-    const col = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
-    col.on('collect', m => { m.delete().catch(() => {}); resolve(m.content.trim()); });
-    col.on('end', collected => { if (!collected.size) resolve(null); });
-  });
-}
-
-// ── TEMP VOICE BUTTON HANDLER ─────────────────────────
+// button handler
 client.on('interactionCreate', async interaction => {
   if (!interaction.isButton()) return;
   const { customId } = interaction;
   if (!customId.startsWith('tv_')) return;
-
-  const parts = customId.split('_');
-  const action = parts[1];
-  const channelId = parts[2];
+  const [, action, channelId] = customId.split('_');
   const chData = state.tempVoiceChannels[channelId];
   const guild = interaction.guild;
-  const voiceCh = guild.channels.cache.get(channelId);
+  const vc = guild?.channels.cache.get(channelId);
 
-  if (!chData) return interaction.reply({ content: '❌ this channel no longer exists.', ephemeral: true });
+  if (action === 'claim') {
+    if (!chData) return interaction.reply({ content:'❌ channel not found', ephemeral:true });
+    if (vc?.members.has(chData.ownerId)) return interaction.reply({ content:'❌ owner is still in the channel', ephemeral:true });
+    chData.ownerId = interaction.user.id;
+    await tvUpdatePanel(guild, channelId);
+    return interaction.reply({ content:'👑 you are now the owner', ephemeral:true });
+  }
 
-  const isOwner = chData.ownerId === interaction.user.id;
-  const isTrusted = chData.trustedUsers?.includes(interaction.user.id);
-  const canControl = isOwner || isTrusted;
+  if (!chData) return interaction.reply({ content:'❌ channel not found', ephemeral:true });
+  if (chData.ownerId !== interaction.user.id) return interaction.reply({ content:'❌ only the owner can use these', ephemeral:true });
 
-  // claim doesn't need ownership
-  if (action !== 'claim' && action !== 'chat' && !canControl) {
-    return interaction.reply({ content: '❌ only the channel **owner** or **trusted** users can use this.', ephemeral: true });
+  async function ask(prompt) {
+    await interaction.reply({ content:prompt, ephemeral:true });
+    const col = interaction.channel.createMessageCollector({ filter:m=>m.author.id===interaction.user.id, time:30000, max:1 });
+    return new Promise(res => {
+      col.on('collect', async m => { await m.delete().catch(()=>{}); res(m.content.trim()); });
+      col.on('end', c => { if(!c.size) res(null); });
+    });
   }
 
   try {
-    // ── NAME ──
-    if (action === 'name') {
-      const input = await askInput(interaction, '✏️ type the new name for your channel (30 seconds):');
-      if (!input) return interaction.followUp({ content: '❌ timed out.', ephemeral: true });
-      const newName = '🔊 ' + input.slice(0, 90);
-      await voiceCh?.setName(newName).catch(() => {});
-      chData.name = newName;
-      await sendControlPanel(guild, channelId);
-      addLog('VOICE', interaction.user.username + ' renamed vc to ' + input, 'cyan');
+    if (action==='name') {
+      const n = await ask('✏️ type the new name (30s):');
+      if (!n) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const name = '🔊 '+n.slice(0,95);
+      await vc?.setName(name); chData.name=name;
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'✅ renamed to **'+name+'**',ephemeral:true});
 
-    // ── LIMIT ──
-    } else if (action === 'limit') {
-      const input = await askInput(interaction, '👥 type the user limit (0–99, 0 = unlimited):');
-      if (input === null) return;
-      const limit = Math.min(99, Math.max(0, parseInt(input) || 0));
-      await voiceCh?.setUserLimit(limit).catch(() => {});
-      chData.limit = limit;
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ limit set to **' + (limit || 'unlimited') + '**', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' set vc limit to ' + limit, 'cyan');
+    } else if (action==='limit') {
+      const n = await ask('👥 type limit (0=unlimited, max 99):');
+      if (n===null) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const lim = Math.min(99,Math.max(0,parseInt(n)||0));
+      await vc?.setUserLimit(lim); chData.limit=lim;
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'✅ limit set to **'+(lim||'unlimited')+'**',ephemeral:true});
 
-    // ── PRIVACY ──
-    } else if (action === 'privacy') {
-      chData.private = !chData.private;
-      if (chData.private) {
-        await voiceCh?.permissionOverwrites.edit(guild.id, { Connect: false, ViewChannel: false }).catch(() => {});
-        interaction.reply({ content: '🔒 channel is now **private** — only trusted users can join.', ephemeral: true });
-      } else {
-        await voiceCh?.permissionOverwrites.edit(guild.id, { Connect: true, ViewChannel: true }).catch(() => {});
-        interaction.reply({ content: '🔓 channel is now **public**.', ephemeral: true });
-      }
-      await sendControlPanel(guild, channelId);
-      addLog('VOICE', interaction.user.username + ' set vc ' + (chData.private ? 'private' : 'public'), 'cyan');
+    } else if (action==='privacy') {
+      await interaction.reply({ content:'🔒 choose:', ephemeral:true, components:[{type:1,components:[
+        {type:2,style:2,label:'Lock',emoji:'🔒',custom_id:'tv_lock_'+channelId},
+        {type:2,style:2,label:'Hide',emoji:'👁️',custom_id:'tv_hide_'+channelId},
+        {type:2,style:1,label:'Unlock & Show',emoji:'🔓',custom_id:'tv_unlock_'+channelId},
+      ]}]});
 
-    // ── WAITING ROOM ──
-    } else if (action === 'waitroom') {
-      chData.waitingRoom = !chData.waitingRoom;
-      interaction.reply({ content: chData.waitingRoom ? '⏳ waiting room **enabled** — users wait for your approval to join.' : '⏳ waiting room **disabled**.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' toggled waiting room', 'cyan');
+    } else if (action==='lock') {
+      chData.locked=true; await vc?.permissionOverwrites.edit(guild.id,{Connect:false});
+      await tvUpdatePanel(guild,channelId);
+      interaction.reply({content:'🔒 locked',ephemeral:true});
 
-    // ── CHAT ──
-    } else if (action === 'chat') {
-      if (!state.tempVoiceControlChannelId) return interaction.reply({ content: '❌ no control channel set.', ephemeral: true });
-      interaction.reply({ content: '💬 use <#' + state.tempVoiceControlChannelId + '> to chat with your vc members.', ephemeral: true });
+    } else if (action==='hide') {
+      chData.hidden=true; await vc?.permissionOverwrites.edit(guild.id,{ViewChannel:false,Connect:false});
+      await tvUpdatePanel(guild,channelId);
+      interaction.reply({content:'👁️ hidden',ephemeral:true});
 
-    // ── TRUST ──
-    } else if (action === 'trust') {
-      const input = await askInput(interaction, '🤝 type the user ID or @mention to trust:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      if (!chData.trustedUsers) chData.trustedUsers = [];
-      if (!chData.trustedUsers.includes(targetId)) chData.trustedUsers.push(targetId);
-      await voiceCh?.permissionOverwrites.edit(targetId, { Connect: true, ViewChannel: true, Speak: true }).catch(() => {});
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ **' + target.user.username + '** is now trusted and can join even if private.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' trusted ' + target.user.username, 'green');
+    } else if (action==='unlock') {
+      chData.locked=false; chData.hidden=false;
+      await vc?.permissionOverwrites.edit(guild.id,{ViewChannel:true,Connect:true});
+      await tvUpdatePanel(guild,channelId);
+      interaction.reply({content:'🔓 unlocked and visible',ephemeral:true});
 
-    // ── UNTRUST ──
-    } else if (action === 'untrust') {
-      const input = await askInput(interaction, '🚫 type the user ID or @mention to untrust:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      chData.trustedUsers = (chData.trustedUsers || []).filter(id => id !== targetId);
-      await voiceCh?.permissionOverwrites.delete(targetId).catch(() => {});
-      if (chData.private && target.voice?.channelId === channelId) await target.voice.disconnect().catch(() => {});
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ **' + target.user.username + '** untrusted.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' untrusted ' + target.user.username, 'yellow');
+    } else if (action==='region') {
+      await interaction.reply({ content:'🌐 pick region:', ephemeral:true, components:[{type:1,components:[{
+        type:3, custom_id:'tv_setregion_'+channelId, placeholder:'select region',
+        options:[
+          {label:'Automatic',value:'',default:!chData.region},
+          {label:'🇺🇸 US East',value:'us-east'},{label:'🇺🇸 US West',value:'us-west'},
+          {label:'🇺🇸 US Central',value:'us-central'},{label:'🇺🇸 US South',value:'us-south'},
+          {label:'🇪🇺 Europe',value:'europe'},{label:'🇧🇷 Brazil',value:'brazil'},
+          {label:'🇸🇬 Singapore',value:'singapore'},{label:'🇦🇺 Sydney',value:'sydney'},
+          {label:'🇯🇵 Japan',value:'japan'},{label:'🇮🇳 India',value:'india'},
+          {label:'🇿🇦 South Africa',value:'southafrica'},{label:'🇦🇪 Dubai',value:'dubai'},
+          {label:'🇩🇪 Frankfurt',value:'frankfurt'},{label:'🇬🇧 London',value:'london'},
+        ]
+      }]}]});
 
-    // ── INVITE ──
-    } else if (action === 'invite') {
-      const input = await askInput(interaction, '📨 type the user ID or @mention to invite:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      await voiceCh?.permissionOverwrites.edit(targetId, { Connect: true, ViewChannel: true }).catch(() => {});
-      target.send('📨 you have been invited to join **' + (chData.name || 'a voice channel') + '** by **' + interaction.user.username + '**! Go to <#' + channelId + '>').catch(() => {});
-      interaction.followUp({ content: '✅ invited **' + target.user.username + '** — they got a DM.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' invited ' + target.user.username + ' to vc', 'cyan');
+    } else if (action==='chat') {
+      interaction.reply({content:'💬 use this channel to chat with your vc members!',ephemeral:true});
 
-    // ── KICK ──
-    } else if (action === 'kick') {
-      const input = await askInput(interaction, '👟 type the user ID or @mention to kick:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      if (target.voice?.channelId !== channelId) return interaction.followUp({ content: '❌ that user is not in your channel.', ephemeral: true });
-      await target.voice.disconnect('kicked by vc owner').catch(() => {});
-      interaction.followUp({ content: '✅ kicked **' + target.user.username + '** from your channel.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' kicked ' + target.user.username + ' from vc', 'yellow');
+    } else if (action==='trust') {
+      const inp = await ask('🤝 user ID or @mention to trust:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      const t = guild.members.cache.get(tid);
+      if (!t) return interaction.followUp({content:'❌ not found',ephemeral:true});
+      await vc?.permissionOverwrites.edit(tid,{Connect:true,ViewChannel:true,Speak:true});
+      if (!chData.trustedUsers.includes(tid)) chData.trustedUsers.push(tid);
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'🤝 trusted **'+t.user.username+'**',ephemeral:true});
 
-    // ── REGION ──
-    } else if (action === 'region') {
-      const regions = ['automatic', 'us-east', 'us-west', 'us-central', 'us-south', 'singapore', 'southafrica', 'sydney', 'europe', 'brazil', 'hongkong', 'india', 'japan', 'rotterdam'];
-      interaction.reply({
-        content: '🌍 pick a region:\n' + regions.map((r, i) => '`' + (i + 1) + '.` ' + r).join(' · ') + '\n\ntype the number or name:',
-        ephemeral: true
-      });
-      const filter = m => m.author.id === interaction.user.id;
-      const col = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
-      col.on('collect', async m => {
-        m.delete().catch(() => {});
-        const pick = m.content.trim();
-        const idx = parseInt(pick) - 1;
-        const region = (!isNaN(idx) && regions[idx]) ? regions[idx] : pick.toLowerCase();
-        const rtcRegion = region === 'automatic' ? null : region;
-        await voiceCh?.setRTCRegion(rtcRegion).catch(() => {});
-        interaction.followUp({ content: '✅ region set to **' + region + '**', ephemeral: true });
-        addLog('VOICE', interaction.user.username + ' set vc region to ' + region, 'cyan');
-      });
+    } else if (action==='untrust') {
+      const inp = await ask('💔 user ID or @mention to untrust:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      await vc?.permissionOverwrites.delete(tid).catch(()=>{});
+      chData.trustedUsers = chData.trustedUsers.filter(i=>i!==tid);
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'💔 untrusted',ephemeral:true});
 
-    // ── BLOCK ──
-    } else if (action === 'block') {
-      const input = await askInput(interaction, '🔨 type the user ID or @mention to block from your VC:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      if (!chData.blockedUsers) chData.blockedUsers = [];
-      if (!chData.blockedUsers.includes(targetId)) chData.blockedUsers.push(targetId);
-      await voiceCh?.permissionOverwrites.edit(targetId, { Connect: false, ViewChannel: false }).catch(() => {});
-      if (target.voice?.channelId === channelId) await target.voice.disconnect().catch(() => {});
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ **' + target.user.username + '** is blocked from your channel.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' blocked ' + target.user.username + ' from vc', 'red');
+    } else if (action==='invite') {
+      const inp = await ask('📨 user ID or @mention to invite:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      const t = guild.members.cache.get(tid);
+      if (!t) return interaction.followUp({content:'❌ not found',ephemeral:true});
+      await vc?.permissionOverwrites.edit(tid,{Connect:true,ViewChannel:true});
+      t.send('📨 **'+interaction.user.username+'** invited you to **'+chData.name+'** in **'+guild.name+'**!').catch(()=>{});
+      interaction.followUp({content:'📨 invited **'+t.user.username+'**',ephemeral:true});
 
-    // ── UNBLOCK ──
-    } else if (action === 'unblock') {
-      const input = await askInput(interaction, '✅ type the user ID or @mention to unblock:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      chData.blockedUsers = (chData.blockedUsers || []).filter(id => id !== targetId);
-      await voiceCh?.permissionOverwrites.delete(targetId).catch(() => {});
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ **' + target.user.username + '** is unblocked.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' unblocked ' + target.user.username, 'green');
+    } else if (action==='kick') {
+      const inp = await ask('👟 user ID or @mention to kick:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      const t = guild.members.cache.get(tid);
+      if (!t) return interaction.followUp({content:'❌ not found',ephemeral:true});
+      if (t.voice?.channelId!==channelId) return interaction.followUp({content:'❌ not in your channel',ephemeral:true});
+      await t.voice.disconnect();
+      await vc?.permissionOverwrites.edit(tid,{Connect:false});
+      interaction.followUp({content:'👟 kicked **'+t.user.username+'**',ephemeral:true});
+      addLog('VOICE', interaction.user.username+' kicked '+t.user.username+' from vc','yellow');
 
-    // ── CLAIM ──
-    } else if (action === 'claim') {
-      const owner = guild.members.cache.get(chData.ownerId);
-      if (owner?.voice?.channelId === channelId) {
-        return interaction.reply({ content: '❌ the owner is still in the channel.', ephemeral: true });
-      }
-      chData.ownerId = interaction.user.id;
-      await sendControlPanel(guild, channelId);
-      interaction.reply({ content: '👑 you are now the **owner** of this channel!', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' claimed vc ownership', 'yellow');
+    } else if (action==='wait') {
+      chData.locked=!chData.locked;
+      await vc?.permissionOverwrites.edit(guild.id,{Connect:!chData.locked});
+      await tvUpdatePanel(guild,channelId);
+      interaction.reply({content:chData.locked?'⏳ waiting room on':'✅ waiting room off',ephemeral:true});
 
-    // ── TRANSFER ──
-    } else if (action === 'transfer') {
-      if (!isOwner) return interaction.reply({ content: '❌ only the owner can transfer.', ephemeral: true });
-      const input = await askInput(interaction, '🔁 type the user ID or @mention to transfer ownership to:');
-      if (!input) return;
-      const targetId = input.replace(/[<@!>]/g, '');
-      const target = await guild.members.fetch(targetId).catch(() => null);
-      if (!target) return interaction.followUp({ content: '❌ user not found.', ephemeral: true });
-      chData.ownerId = targetId;
-      await sendControlPanel(guild, channelId);
-      interaction.followUp({ content: '✅ transferred ownership to **' + target.user.username + '**', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' transferred vc to ' + target.user.username, 'cyan');
+    } else if (action==='block') {
+      const inp = await ask('🚫 user ID or @mention to block:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      const t = guild.members.cache.get(tid);
+      if (!t) return interaction.followUp({content:'❌ not found',ephemeral:true});
+      await vc?.permissionOverwrites.edit(tid,{Connect:false,ViewChannel:false});
+      if (t.voice?.channelId===channelId) await t.voice.disconnect().catch(()=>{});
+      if (!chData.bannedUsers.includes(tid)) chData.bannedUsers.push(tid);
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'🚫 blocked **'+t.user.username+'**',ephemeral:true});
 
-    // ── DELETE ──
-    } else if (action === 'delete') {
-      if (!isOwner) return interaction.reply({ content: '❌ only the owner can delete the channel.', ephemeral: true });
-      if (chData.controlMsgId && state.tempVoiceControlChannelId) {
-        const ctrlCh = guild.channels.cache.get(state.tempVoiceControlChannelId);
-        if (ctrlCh) ctrlCh.messages.fetch(chData.controlMsgId).then(m => m.delete()).catch(() => {});
+    } else if (action==='unblock') {
+      const inp = await ask('✅ user ID or @mention to unblock:');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      await vc?.permissionOverwrites.delete(tid).catch(()=>{});
+      chData.bannedUsers=chData.bannedUsers.filter(i=>i!==tid);
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'✅ unblocked',ephemeral:true});
+
+    } else if (action==='transfer') {
+      const inp = await ask('🔄 user ID or @mention to transfer to (must be in your vc):');
+      if (!inp) return interaction.followUp({content:'⏱️ timed out',ephemeral:true});
+      const tid = inp.replace(/[<@!>]/g,'').trim();
+      const t = guild.members.cache.get(tid);
+      if (!t) return interaction.followUp({content:'❌ not found',ephemeral:true});
+      if (t.voice?.channelId!==channelId) return interaction.followUp({content:'❌ must be in your vc',ephemeral:true});
+      await vc?.permissionOverwrites.edit(tid,{ManageChannels:true,MoveMembers:true,MuteMembers:true,DeafenMembers:true,Connect:true,Speak:true,ViewChannel:true});
+      await vc?.permissionOverwrites.edit(interaction.user.id,{ManageChannels:null,MoveMembers:null});
+      chData.ownerId=tid;
+      await tvUpdatePanel(guild,channelId);
+      interaction.followUp({content:'🔄 transferred to **'+t.user.username+'**',ephemeral:true});
+
+    } else if (action==='delete') {
+      const cfg2=tvGetCfg(guild.id);
+      const ctrlId=cfg2.controlChannelId||state.tempVoiceControlChannelId;
+      if (chData.controlMsgId && ctrlId) {
+        const ctrl=guild.channels.cache.get(ctrlId);
+        if(ctrl) ctrl.messages.fetch(chData.controlMsgId).then(m=>m.delete()).catch(()=>{});
       }
       delete state.tempVoiceChannels[channelId];
-      if (voiceCh) await voiceCh.delete('deleted by owner').catch(() => {});
-      interaction.reply({ content: '🗑️ your voice channel has been deleted.', ephemeral: true });
-      addLog('VOICE', interaction.user.username + ' deleted their temp vc', 'red');
+      if(vc) await vc.delete().catch(()=>{});
+      interaction.reply({content:'🗑️ channel deleted',ephemeral:true});
+      addLog('VOICE',interaction.user.username+' deleted their vc','red');
     }
-
   } catch(e) {
-    interaction.reply({ content: '❌ error: ' + e.message, ephemeral: true }).catch(() => {});
-    addLog('VOICE', 'button error: ' + e.message, 'red');
+    console.error('tv btn error:',e.message);
+    const p={content:'❌ '+e.message,ephemeral:true};
+    if(interaction.replied||interaction.deferred) interaction.followUp(p).catch(()=>{});
+    else interaction.reply(p).catch(()=>{});
   }
 });
 
-// ── REACTION VERIFICATION ────────────────────────────────
-client.on('messageReactionAdd', async (reaction, user) => {
-  if (user.bot) return;
-  if (!state.verificationEnabled) return;
-  if (!state.verifyMessageId) return;
-
-  // handle partial reactions
-  if (reaction.partial) {
-    try { await reaction.fetch(); } catch (e) { return; }
-  }
-
-  // check if this is the verify message
-  if (reaction.message.id !== state.verifyMessageId) return;
-
-  // check emoji matches
-  const emoji = reaction.emoji.name;
-  if (emoji !== state.verifyEmoji) {
-    // remove wrong reaction
-    await reaction.users.remove(user.id).catch(() => {});
-    return;
-  }
-
-  try {
-    const guild = reaction.message.guild;
-    const member = await guild.members.fetch(user.id);
-
-    // give verified role
-    if (state.verifiedRoleId) {
-      await member.roles.add(state.verifiedRoleId).catch(() => {});
-    }
-
-    // remove unverified role
-    if (state.unverifiedRoleId) {
-      await member.roles.remove(state.unverifiedRoleId).catch(() => {});
-    }
-
-    // remove their reaction so others can see it's clean
-    await reaction.users.remove(user.id).catch(() => {});
-
-    addLog('VERIFY', member.user.username + ' verified via reaction', 'green');
-
-    // DM the user
-    user.send('✅ you have been verified in **' + guild.name + '**! you now have access to all channels.').catch(() => {});
-
-  } catch (e) {
-    addLog('VERIFY', 'reaction verify failed for ' + user.username + ': ' + e.message, 'red');
-  }
+// region select
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isStringSelectMenu()) return;
+  if (!interaction.customId.startsWith('tv_setregion_')) return;
+  const channelId = interaction.customId.replace('tv_setregion_','');
+  const ch = state.tempVoiceChannels[channelId];
+  if (!ch || ch.ownerId!==interaction.user.id) return interaction.reply({content:'❌ not your channel',ephemeral:true});
+  const region = interaction.values[0]||null;
+  const vc = interaction.guild?.channels.cache.get(channelId);
+  if(vc) await vc.setRTCRegion(region).catch(()=>{});
+  ch.region=region;
+  await tvUpdatePanel(interaction.guild, channelId);
+  interaction.reply({content:'🌐 region: **'+(region||'automatic')+'**',ephemeral:true});
 });
 
-// ── VERIFICATION HELPERS ─────────────────────────────
-function createVerifyToken(userId, guildId) {
-  const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-  state.pendingVerifications[token] = {
-    userId,
-    guildId,
-    roleId: state.verifiedRoleId, // snapshot the role id at creation time
-    expires: Date.now() + 15 * 60 * 1000, // 15 min
-  };
-  return token;
-}
-
-async function completeVerification(token, overrideRoleId) {
-  const data = state.pendingVerifications[token];
-  if (!data) return { ok: false, error: 'invalid or expired token — please click verify again in Discord' };
-  if (Date.now() > data.expires) {
-    delete state.pendingVerifications[token];
-    return { ok: false, error: 'token expired — please click the verify button again in Discord' };
-  }
-  // use override role id, or saved one, or the one stored in the token itself
-  const roleId = overrideRoleId || state.verifiedRoleId || data.roleId;
-  if (!roleId) return { ok: false, error: 'verified role not set — go to dashboard → Verification → set the role id and save' };
-  try {
-    const guild = client.guilds.cache.get(data.guildId);
-    if (!guild) return { ok: false, error: 'bot is not in that server' };
-    let member;
-    try { member = await guild.members.fetch(data.userId); }
-    catch(e) { return { ok: false, error: 'could not find you in the server — make sure you are a member' }; }
-    await member.roles.add(roleId);
-    delete state.pendingVerifications[token];
-    addLog('VERIFY', member.user.username + ' verified and got role', 'green');
-    return { ok: true, username: member.user.username };
-  } catch (e) {
-    if (e.message.includes('Missing Permissions')) {
-      return { ok: false, error: 'bot is missing permissions — make sure the bot role is above the verified role in server settings' };
-    }
-    return { ok: false, error: e.message };
-  }
-}
-
-// cleanup expired tokens every 5 min
-setInterval(() => {
-  const now = Date.now();
-  Object.keys(state.pendingVerifications).forEach(t => {
-    if (state.pendingVerifications[t].expires < now) delete state.pendingVerifications[t];
-  });
-}, 5 * 60 * 1000);
-
-client.login(TOKEN).catch(e => console.error('❌ login failed:', e.message));
-
-module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState };
+module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState, tvAutoSetup };
