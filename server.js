@@ -28,9 +28,11 @@ function isAuth(req) {
 }
 
 app.use(cors({
-  origin: ['https://mia69696.github.io', 'http://localhost:3000'],
-  credentials: true
+  origin: '*',
+  methods: ['GET','POST','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
 }));
+app.options('*', cors());
 app.use(express.json());
 
 // ── PUBLIC ROUTES (no auth needed) ───────────────────
@@ -451,4 +453,4 @@ app.get('/verify-start', (req, res) => {
 // ── FALLBACK ──────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.listen(PORT, '0.0.0.0', () => console.log('dashboard on port ' + PORT));
+app.listen(PORT, '0.0.0.0', () => console.log('fa11en dashboard on port ' + PORT));
