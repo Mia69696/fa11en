@@ -557,7 +557,7 @@ client.on('interactionCreate', async interaction => {
           { name: '⚡ earn xp by', value: 'chatting (1min cooldown)', inline: true },
         )
         .setThumbnail(interaction.guild.iconURL({ dynamic: true }) || null)
-        .setFooter({ text: 'use /rank to see your own stats · updated live' })
+        .setFooter({ text: 'use /rank to see your own stats · fa11en' })
         .setTimestamp();
       await interaction.reply({ embeds: [lbEmbed] });
     }
@@ -636,7 +636,7 @@ client.on('interactionCreate', async interaction => {
           { name: '🎫 tickets', value: '`/ticket` `/closeticket`' },
           { name: '🛠️ utility', value: '`/say` `/ping` `/serverinfo` `/userinfo` `/help`' },
           { name: '🤖 auto mod', value: 'invite links, spam, bad words, mass mentions, caps — all automatic' },
-        ).setFooter({ text: 'ahh bot' }).setTimestamp()], ephemeral: true });
+        ).setFooter({ text: 'fa11en' }).setTimestamp()], ephemeral: true });
     }
 
   } catch (e) {
