@@ -83,15 +83,20 @@ app.get('/api/verify/settings', (req, res) => {
   res.json({
     verificationEnabled: state.verificationEnabled,
     verifiedRoleId: state.verifiedRoleId,
+    unverifiedRoleId: state.unverifiedRoleId,
     verificationChannelId: state.verificationChannelId,
+    verifyMessageId: state.verifyMessageId,
+    verifyEmoji: state.verifyEmoji,
   });
 });
 
 app.post('/api/verify/settings', (req, res) => {
-  const { verificationEnabled, verifiedRoleId, verificationChannelId } = req.body;
+  const { verificationEnabled, verifiedRoleId, unverifiedRoleId, verificationChannelId, verifyEmoji } = req.body;
   if (verificationEnabled !== undefined) state.verificationEnabled = verificationEnabled;
   if (verifiedRoleId !== undefined) state.verifiedRoleId = verifiedRoleId;
+  if (unverifiedRoleId !== undefined) state.unverifiedRoleId = unverifiedRoleId;
   if (verificationChannelId !== undefined) state.verificationChannelId = verificationChannelId;
+  if (verifyEmoji !== undefined) state.verifyEmoji = verifyEmoji;
   saveState();
   addLog('DASH', 'verification settings saved', 'blue');
   res.json({ ok: true });
@@ -314,23 +319,39 @@ app.post('/api/verify/send-panel', async (req, res) => {
     const channel = guild.channels.cache.get(channelId);
     if (!channel) return res.status(404).json({ error: 'channel not found' });
     const { EmbedBuilder } = require('discord.js');
+    const emoji = state.verifyEmoji || '✅';
+
     const embed = new EmbedBuilder()
       .setColor(0x00e87a)
-      .setTitle('✅  verify yourself')
-      .setDescription('> click the button below to verify and gain access to all channels.\n\n```\n1. Click the link\n2. Solve the captcha\n3. Get the @verified role\n```')
-      .addFields(
-        { name: '⚡ instant', value: 'role assigned immediately', inline: true },
-        { name: '🔒 secure', value: 'captcha protected', inline: true },
-        { name: '✅ required', value: 'to access server', inline: true },
+      .setTitle(emoji + '  verify to get access')
+      .setDescription(
+        '> react with ' + emoji + ' below to instantly get the verified role and access all channels.' +
+        '\n\n' +
+        '**how it works:**\n' +
+        '1. React with ' + emoji + ' to this message\n' +
+        '2. Bot gives you the **@verified** role\n' +
+        '3. Your **@unverified** role gets removed\n' +
+        '4. You now have full access!'
       )
-      .setFooter({ text: 'fa11en · verification system' })
+      .addFields(
+        { name: '⚡ instant', value: 'role assigned in seconds', inline: true },
+        { name: '🔒 automatic', value: 'no forms needed', inline: true },
+        { name: '✅ required', value: 'to access channels', inline: true },
+      )
+      .setFooter({ text: 'fa11en · just react to verify' })
       .setTimestamp();
-    await channel.send({
-      embeds: [embed],
-      components: [{ type: 1, components: [{ type: 2, style: 5, label: '✅  verify me', url: 'https://mia69696.github.io/verify/?guild=' + guildId }] }]
-    });
-    addLog('VERIFY', 'panel sent to #' + channel.name, 'green');
-    res.json({ ok: true });
+
+    const msg = await channel.send({ embeds: [embed] });
+
+    // add the reaction so users know what to click
+    await msg.react(emoji);
+
+    // save the message id so the bot knows which message to watch
+    state.verifyMessageId = msg.id;
+    saveState();
+
+    addLog('VERIFY', 'reaction verify panel posted in #' + channel.name, 'green');
+    res.json({ ok: true, messageId: msg.id });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
