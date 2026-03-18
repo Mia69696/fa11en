@@ -44,8 +44,11 @@ const state = {
   // verification
   verificationEnabled: false,
   verifiedRoleId: null,
+  unverifiedRoleId: null,
   verificationChannelId: null,
-  pendingVerifications: {}, // token -> { userId, guildId, expires }
+  verifyMessageId: null,  // the message users react to
+  verifyEmoji: '✅',      // emoji to react with
+  pendingVerifications: {},
 };
 
 // ── PERSISTENCE ──────────────────────────────────────
@@ -57,7 +60,7 @@ const PERSIST_KEYS = [
   'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled',
   'welcomeMessage','goodbyeMessage','levelUpMessage',
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
-  'verificationEnabled','verifiedRoleId','verificationChannelId',
+  'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId','verifyMessageId','verifyEmoji',
   'xpData','warnings','infractions','infId','ticketCount',
 ];
 
@@ -644,6 +647,55 @@ client.on('interactionCreate', async interaction => {
     const reply = { content: `error: ${e.message}`, ephemeral: true };
     if (interaction.replied || interaction.deferred) await interaction.followUp(reply).catch(() => {});
     else await interaction.reply(reply).catch(() => {});
+  }
+});
+
+// ── REACTION VERIFICATION ────────────────────────────
+client.on('messageReactionAdd', async (reaction, user) => {
+  if (user.bot) return;
+  if (!state.verificationEnabled) return;
+  if (!state.verifyMessageId) return;
+
+  // handle partial reactions
+  if (reaction.partial) {
+    try { await reaction.fetch(); } catch (e) { return; }
+  }
+
+  // check if this is the verify message
+  if (reaction.message.id !== state.verifyMessageId) return;
+
+  // check emoji matches
+  const emoji = reaction.emoji.name;
+  if (emoji !== state.verifyEmoji) {
+    // remove wrong reaction
+    await reaction.users.remove(user.id).catch(() => {});
+    return;
+  }
+
+  try {
+    const guild = reaction.message.guild;
+    const member = await guild.members.fetch(user.id);
+
+    // give verified role
+    if (state.verifiedRoleId) {
+      await member.roles.add(state.verifiedRoleId).catch(() => {});
+    }
+
+    // remove unverified role
+    if (state.unverifiedRoleId) {
+      await member.roles.remove(state.unverifiedRoleId).catch(() => {});
+    }
+
+    // remove their reaction so others can see it's clean
+    await reaction.users.remove(user.id).catch(() => {});
+
+    addLog('VERIFY', member.user.username + ' verified via reaction', 'green');
+
+    // DM the user
+    user.send('✅ you have been verified in **' + guild.name + '**! you now have access to all channels.').catch(() => {});
+
+  } catch (e) {
+    addLog('VERIFY', 'reaction verify failed for ' + user.username + ': ' + e.message, 'red');
   }
 });
 
