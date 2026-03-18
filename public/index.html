@@ -534,13 +534,52 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ LOGS ══ -->
   <div class="page" id="page-logs">
-    <div class="sh"><div><h2>logs</h2><p>live from the bot — auto-refreshes</p></div>
+    <div class="sh"><div><h2>logs</h2><p>every action tracked — pick where each type goes in Discord</p></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-g" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> refresh</button>
         <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear</button>
       </div>
     </div>
-    <div class="card"><div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div></div>
+
+    <!-- Log Channel Config -->
+    <div class="card" style="margin-bottom:18px">
+      <div class="ch"><div><div class="ct">log channels</div><div class="cs">pick which Discord channel each log type gets sent to</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="inp" id="logGuildPicker" style="width:160px" onchange="loadLogChannels()"></select>
+          <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save all</button>
+        </div>
+      </div>
+      <div class="cb">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="fl">🗑️ deleted messages</label>
+            <select class="inp" id="lc-deletedMessages" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">✏️ edited messages</label>
+            <select class="inp" id="lc-editedMessages" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">👋 joins &amp; leaves</label>
+            <select class="inp" id="lc-joinLeave" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">🖼️ image / file uploads</label>
+            <select class="inp" id="lc-images"><option value="">disabled</option></select>
+          </div>
+          <div>
+            <label class="fl">🔨 mod actions</label>
+            <select class="inp" id="lc-modActions" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">⌨️ commands used</label>
+            <select class="inp" id="lc-commands" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">🎙️ voice activity</label>
+            <select class="inp" id="lc-voiceActivity" style="margin-bottom:10px"><option value="">disabled</option></select>
+            <label class="fl">🏷️ role changes</label>
+            <select class="inp" id="lc-roleChanges"><option value="">disabled</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Logs -->
+    <div class="card">
+      <div class="ch"><div class="ct">live dashboard logs</div><span class="tag t-gray" id="logCount">0 entries</span></div>
+      <div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div>
+    </div>
   </div>
 
   <!-- ══ ACTIONS ══ -->
@@ -835,7 +874,12 @@ document.querySelectorAll('.ni[data-page]').forEach(el => {
     document.getElementById('pageTitle').textContent = el.textContent.replace(/\d+$/, '').trim();
     const p = el.dataset.page;
     if(p==='servers') loadServers();
-    if(p==='logs') loadLogs();
+    if(p==='logs'){
+      loadLogs();
+      // fill guild picker for log channels
+      const lp = document.getElementById('logGuildPicker');
+      if(lp) lp.innerHTML = guilds.map(g=>'<option value="'+g.id+'">'+g.name+'</option>').join('');
+    }
     if(p==='infractions'){ loadInfractions(); fillGuildSelects(); }
     if(p==='analytics') loadAnalytics();
     if(p==='leveling') loadLeaderboard();
@@ -994,13 +1038,48 @@ async function loadDashLogs(){
 
 function renderLogs(logs, id){
   const el = document.getElementById(id);
-  if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet</div>'; return; }
-  const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
+  if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet — actions will appear here automatically</div>'; return; }
+  const cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan',white:'t-white'};
   el.innerHTML = logs.map(l=>'<div class="lgi" style="opacity:0;transform:translateX(-8px)"><div class="lgt">'+l.time+'</div><div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span></div><div class="lgm">'+l.msg+'</div></div>').join('');
   staggerAnimate(el, '.lgi');
+  const countEl = document.getElementById('logCount');
+  if(countEl) countEl.textContent = logs.length+' entries';
 }
 
-async function clearLogs(){
+async // ── LOG CHANNELS ─────────────────────────────────────
+async function loadLogChannels(){
+  const guildId = document.getElementById('logGuildPicker').value;
+  if(!guildId) return;
+  try {
+    const chs = await api('/api/guilds/'+guildId+'/channels');
+    const text = chs.filter(ch=>ch.type===0);
+    const opts = '<option value="">disabled</option>' + text.map(ch=>'<option value="'+ch.id+'">#'+ch.name+'</option>').join('');
+    ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges'].forEach(k=>{
+      const el = document.getElementById('lc-'+k);
+      if(el){ const cur = el.value; el.innerHTML = opts; if(cur) el.value = cur; }
+    });
+    // load saved values
+    const saved = await api('/api/logchannels');
+    Object.entries(saved).forEach(([k,v])=>{
+      const el = document.getElementById('lc-'+k);
+      if(el && v) el.value = v;
+    });
+  } catch(e){ t('failed to load channels: '+e.message,'red'); }
+}
+
+async function saveLogChannels(){
+  const body = {};
+  ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges'].forEach(k=>{
+    const el = document.getElementById('lc-'+k);
+    if(el) body[k] = el.value || null;
+  });
+  try {
+    await api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    t('log channels saved — bot will send logs there now','green');
+  } catch(e){ t('save failed: '+e.message,'red'); }
+}
+
+function clearLogs(){
   await api('/api/logs',{method:'DELETE'});
   document.getElementById('logsList').innerHTML = '<div class="empty">logs cleared</div>';
   t('logs cleared','green');
