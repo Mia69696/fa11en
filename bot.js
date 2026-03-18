@@ -29,6 +29,17 @@ const state = {
   levelUpMessage: 'gg {user}, you hit level {level}!',
   welcomeChannelId: null,
   logChannelId: null,
+  // detailed log channels (each type can go to a different channel)
+  logChannels: {
+    deletedMessages: null,
+    editedMessages: null,
+    joinLeave: null,
+    modActions: null,
+    commands: null,
+    images: null,
+    voiceActivity: null,
+    roleChanges: null,
+  },
   autobanThreshold: 3,
   prefix: '!',
   muteMinutes: 10,
@@ -60,7 +71,7 @@ const PERSIST_KEYS = [
   'welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled',
   'welcomeMessage','goodbyeMessage','levelUpMessage',
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
-  'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId','verifyMessageId','verifyEmoji',
+  'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId','verifyMessageId','verifyEmoji','logChannels',
   'xpData','warnings','infractions','infId','ticketCount',
 ];
 
@@ -288,6 +299,20 @@ client.on('guildMemberAdd', async member => {
 
   ch.send({ content: `> 🎊 everyone welcome <@${member.id}> to the server!`, embeds: [welcomeEmbed] }).catch(() => {});
   addLog('JOIN', `${member.user.username} joined ${member.guild.name}`, 'green');
+  // send to audit join/leave channel
+  const joinAuditEmbed = new EmbedBuilder()
+    .setColor(0x00e87a)
+    .setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
+    .setTitle('📥 member joined')
+    .addFields(
+      { name: '👤 user', value: `<@${member.id}>`, inline: true },
+      { name: '🔢 member count', value: `${member.guild.memberCount}`, inline: true },
+      { name: '📅 account created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true },
+    )
+    .setThumbnail(member.user.displayAvatarURL())
+    .setFooter({ text: 'user id: ' + member.id })
+    .setTimestamp();
+  sendAuditLog(member.guild, 'joinLeave', joinAuditEmbed);
 });
 
 client.on('guildMemberRemove', async member => {
@@ -328,6 +353,19 @@ client.on('guildMemberRemove', async member => {
 
   ch.send({ embeds: [goodbyeEmbed] }).catch(() => {});
   addLog('LEAVE', `${member.user.username} left ${member.guild.name}`, 'yellow');
+  const leaveAuditEmbed = new EmbedBuilder()
+    .setColor(0xff3555)
+    .setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
+    .setTitle('📤 member left')
+    .addFields(
+      { name: '👤 user', value: member.user.username, inline: true },
+      { name: '🔢 members remaining', value: `${member.guild.memberCount}`, inline: true },
+      { name: '📅 joined', value: member.joinedTimestamp ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>` : '—', inline: true },
+    )
+    .setThumbnail(member.user.displayAvatarURL())
+    .setFooter({ text: 'user id: ' + member.id })
+    .setTimestamp();
+  sendAuditLog(member.guild, 'joinLeave', leaveAuditEmbed);
 });
 
 // ── AUTO MOD + XP ─────────────────────────────────────
@@ -423,6 +461,20 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   const cmd = interaction.commandName;
 
+  // log command usage to audit channel
+  const cmdEmbed = new EmbedBuilder()
+    .setColor(0x4488ff)
+    .setAuthor({ name: interaction.user.username, iconURL: interaction.user.displayAvatarURL() })
+    .setTitle('⌨️ command used')
+    .addFields(
+      { name: '💬 command', value: '`/' + cmd + '`', inline: true },
+      { name: '👤 user', value: '<@' + interaction.user.id + '>', inline: true },
+      { name: '📺 channel', value: '<#' + interaction.channel.id + '>', inline: true },
+    )
+    .setFooter({ text: 'user id: ' + interaction.user.id })
+    .setTimestamp();
+  sendAuditLog(interaction.guild, 'commands', cmdEmbed);
+
   try {
     if (cmd === 'ban') {
       const user = interaction.options.getUser('user');
@@ -431,6 +483,7 @@ client.on('interactionCreate', async interaction => {
       await member.ban({ reason });
       addInfraction(user.username, 'ban', reason);
       addLog('MOD', `${user.username} was banned — ${reason}`, 'red');
+      sendAuditLog(interaction.guild, 'modActions', new EmbedBuilder().setColor(0xff3555).setTitle('🔨 member banned').addFields({name:'👤 target',value:`<@${user.id}>`,inline:true},{name:'👮 mod',value:`<@${interaction.user.id}>`,inline:true},{name:'📋 reason',value:reason,inline:false}).setFooter({text:'user id: '+user.id}).setTimestamp());
       await interaction.reply({ embeds: [makeEmbed(0xff0000, '🔨 banned', `**${user.username}** was banned.\n**reason:** ${reason}`)] });
     }
 
@@ -441,6 +494,7 @@ client.on('interactionCreate', async interaction => {
       await member.kick(reason);
       addInfraction(user.username, 'kick', reason);
       addLog('MOD', `${user.username} was kicked — ${reason}`, 'red');
+      sendAuditLog(interaction.guild, 'modActions', new EmbedBuilder().setColor(0xff8800).setTitle('👟 member kicked').addFields({name:'👤 target',value:`<@${user.id}>`,inline:true},{name:'👮 mod',value:`<@${interaction.user.id}>`,inline:true},{name:'📋 reason',value:reason,inline:false}).setFooter({text:'user id: '+user.id}).setTimestamp());
       await interaction.reply({ embeds: [makeEmbed(0xff4400, '👟 kicked', `**${user.username}** was kicked.\n**reason:** ${reason}`)] });
     }
 
@@ -450,6 +504,7 @@ client.on('interactionCreate', async interaction => {
       const count = addWarning(interaction.guild.id, user.id);
       addInfraction(user.username, 'warn', reason);
       addLog('MOD', `${user.username} warned (${count}) — ${reason}`, 'yellow');
+      sendAuditLog(interaction.guild, 'modActions', new EmbedBuilder().setColor(0xffb700).setTitle('⚠️ member warned').addFields({name:'👤 target',value:`<@${user.id}>`,inline:true},{name:'👮 mod',value:`<@${interaction.user.id}>`,inline:true},{name:'⚠️ warnings',value:`${count}/${state.autobanThreshold}`,inline:true},{name:'📋 reason',value:reason,inline:false}).setFooter({text:'user id: '+user.id}).setTimestamp());
       await interaction.reply({ embeds: [makeEmbed(0xffaa00, '⚠️ warned', `**${user.username}** warned.\n**reason:** ${reason}\n**warnings:** ${count}/${state.autobanThreshold}`)] });
       if (count >= state.autobanThreshold) {
         const member = await interaction.guild.members.fetch(user.id).catch(() => null);
@@ -650,7 +705,139 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// ── REACTION VERIFICATION ────────────────────────────
+// ── AUDIT LOG HELPER ─────────────────────────────────
+async function sendAuditLog(guild, type, embed) {
+  const channelId = state.logChannels[type] || state.logChannelId;
+  if (!channelId) return;
+  const channel = guild.channels.cache.get(channelId);
+  if (!channel) return;
+  channel.send({ embeds: [embed] }).catch(() => {});
+}
+
+// ── MESSAGE DELETE ─────────────────────────────────────
+client.on('messageDelete', async message => {
+  if (!message.guild || message.author?.bot) return;
+  const embed = new EmbedBuilder()
+    .setColor(0xff3555)
+    .setAuthor({ name: message.author?.username || 'unknown', iconURL: message.author?.displayAvatarURL() || undefined })
+    .setTitle('🗑️ message deleted')
+    .addFields(
+      { name: '👤 user', value: '<@' + (message.author?.id || '?') + '>', inline: true },
+      { name: '📺 channel', value: '<#' + message.channel.id + '>', inline: true },
+      { name: '🕐 sent at', value: '<t:' + Math.floor(message.createdTimestamp / 1000) + ':R>', inline: true },
+    )
+    .setFooter({ text: 'user id: ' + (message.author?.id || '?') })
+    .setTimestamp();
+
+  if (message.content) embed.setDescription('**content:**\n```\n' + message.content.slice(0, 1000) + '\n```');
+
+  if (message.attachments.size > 0) {
+    const att = message.attachments.first();
+    embed.addFields({ name: '📎 attachment', value: att.name || 'file', inline: false });
+    if (att.contentType?.startsWith('image/')) embed.setImage(att.proxyURL);
+  }
+
+  await sendAuditLog(message.guild, 'deletedMessages', embed);
+  addLog('DELETE', (message.author?.username || '?') + ' deleted a message in #' + message.channel.name, 'red');
+});
+
+// ── MESSAGE EDIT ───────────────────────────────────────
+client.on('messageUpdate', async (oldMsg, newMsg) => {
+  if (!newMsg.guild || newMsg.author?.bot) return;
+  if (oldMsg.content === newMsg.content) return;
+  const embed = new EmbedBuilder()
+    .setColor(0xffb700)
+    .setAuthor({ name: newMsg.author?.username || 'unknown', iconURL: newMsg.author?.displayAvatarURL() || undefined })
+    .setTitle('✏️ message edited')
+    .addFields(
+      { name: '👤 user', value: '<@' + newMsg.author?.id + '>', inline: true },
+      { name: '📺 channel', value: '<#' + newMsg.channel.id + '>', inline: true },
+      { name: '🔗 jump', value: '[click here](' + newMsg.url + ')', inline: true },
+      { name: '❌ before', value: '```' + (oldMsg.content || 'unknown').slice(0, 500) + '```' },
+      { name: '✅ after', value: '```' + (newMsg.content || '').slice(0, 500) + '```' },
+    )
+    .setFooter({ text: 'user id: ' + newMsg.author?.id })
+    .setTimestamp();
+  await sendAuditLog(newMsg.guild, 'editedMessages', embed);
+  addLog('EDIT', newMsg.author?.username + ' edited a message in #' + newMsg.channel.name, 'yellow');
+});
+
+// ── IMAGE / FILE UPLOAD ────────────────────────────────
+client.on('messageCreate', async message => {
+  if (!message.guild || message.author?.bot) return;
+  if (message.attachments.size === 0) return;
+  message.attachments.forEach(att => {
+    const isImage = att.contentType?.startsWith('image/');
+    const embed = new EmbedBuilder()
+      .setColor(0x00d4ff)
+      .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+      .setTitle(isImage ? '🖼️ image uploaded' : '📎 file uploaded')
+      .addFields(
+        { name: '👤 user', value: '<@' + message.author.id + '>', inline: true },
+        { name: '📺 channel', value: '<#' + message.channel.id + '>', inline: true },
+        { name: '📄 file', value: att.name || 'unknown', inline: true },
+        { name: '📦 size', value: att.size ? (att.size / 1024).toFixed(1) + ' KB' : 'unknown', inline: true },
+      )
+      .setFooter({ text: 'user id: ' + message.author.id })
+      .setTimestamp();
+    if (isImage) embed.setImage(att.proxyURL);
+    sendAuditLog(message.guild, 'images', embed);
+    addLog('FILE', message.author.username + ' uploaded ' + (att.name || 'file') + ' in #' + message.channel.name, 'cyan');
+  });
+});
+
+// ── VOICE ACTIVITY ─────────────────────────────────────
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (!newState.guild || newState.member?.user?.bot) return;
+  const member = newState.member;
+  let action, color;
+
+  if (!oldState.channelId && newState.channelId) {
+    action = '🎤 joined voice — <#' + newState.channelId + '>';
+    color = 0x00e87a;
+  } else if (oldState.channelId && !newState.channelId) {
+    action = '🔇 left voice — <#' + oldState.channelId + '>';
+    color = 0xff3555;
+  } else if (oldState.channelId !== newState.channelId) {
+    action = '🔀 moved from <#' + oldState.channelId + '> to <#' + newState.channelId + '>';
+    color = 0xffb700;
+  } else return;
+
+  const embed = new EmbedBuilder()
+    .setColor(color)
+    .setAuthor({ name: member.user.username, iconURL: member.user.displayAvatarURL() })
+    .setTitle('🎙️ voice activity')
+    .setDescription(action)
+    .addFields({ name: '👤 user', value: '<@' + member.id + '>', inline: true })
+    .setFooter({ text: 'user id: ' + member.id })
+    .setTimestamp();
+  await sendAuditLog(newState.guild, 'voiceActivity', embed);
+  addLog('VOICE', member.user.username + ' ' + action.replace(/<#[0-9]+>/g, '').trim(), 'blue');
+});
+
+// ── ROLE CHANGES ───────────────────────────────────────
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
+  const removed = oldMember.roles.cache.filter(r => !newMember.roles.cache.has(r.id));
+  if (added.size === 0 && removed.size === 0) return;
+
+  const embed = new EmbedBuilder()
+    .setColor(0x9b8cff)
+    .setAuthor({ name: newMember.user.username, iconURL: newMember.user.displayAvatarURL() })
+    .setTitle('🏷️ roles updated');
+
+  if (added.size > 0) embed.addFields({ name: '✅ roles added', value: added.map(r => '<@&' + r.id + '>').join(', '), inline: false });
+  if (removed.size > 0) embed.addFields({ name: '❌ roles removed', value: removed.map(r => '<@&' + r.id + '>').join(', '), inline: false });
+
+  embed.addFields({ name: '👤 user', value: '<@' + newMember.id + '>', inline: true })
+    .setFooter({ text: 'user id: ' + newMember.id })
+    .setTimestamp();
+
+  await sendAuditLog(newMember.guild, 'roleChanges', embed);
+  addLog('ROLE', newMember.user.username + ' roles changed', 'purple');
+});
+
+// ── REACTION VERIFICATION ────────────────────────────────
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return;
   if (!state.verificationEnabled) return;
