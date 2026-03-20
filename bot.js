@@ -1,4 +1,6 @@
 require('dotenv').config();
+let createCanvas, loadImage;
+try { const napi = require('@napi-rs/canvas'); createCanvas = napi.createCanvas; loadImage = napi.loadImage; } catch(e) { console.log('canvas not available, welcome cards will be text-only'); }
 const fs   = require('fs');
 const path = require('path');
 const {
@@ -9,6 +11,106 @@ const {
 
 const TOKEN = process.env.BOT_TOKEN;
 
+// ── WELCOME CARD GENERATOR ───────────────────────────
+async function buildWelcomeCard(member, opts) {
+  // opts: { bgUrl, text1, text2, subtext, circleColor, overlayColor, overlayOpacity }
+  try {
+    const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
+    const nodeFetch = require('node-fetch');
+
+    const W = 700, H = 250;
+    const canvas = createCanvas(W, H);
+    const ctx = canvas.getContext('2d');
+
+    // 1. draw background image (custom gif frame or color)
+    const bgUrl = opts.bgUrl || null;
+    if (bgUrl) {
+      try {
+        const bgRes = await nodeFetch(bgUrl);
+        const bgBuf = await bgRes.buffer();
+        const bg = await loadImage(bgBuf);
+        ctx.drawImage(bg, 0, 0, W, H);
+      } catch(e) {
+        // fallback gradient bg
+        const grad = ctx.createLinearGradient(0,0,W,H);
+        grad.addColorStop(0, '#0d1117');
+        grad.addColorStop(1, '#161b22');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+      }
+    } else {
+      const grad = ctx.createLinearGradient(0,0,W,H);
+      grad.addColorStop(0, '#0d1117');
+      grad.addColorStop(1, '#161b22');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // 2. dark overlay for readability
+    const overlayOpacity = opts.overlayOpacity !== undefined ? opts.overlayOpacity : 0.45;
+    ctx.fillStyle = 'rgba(0,0,0,'+overlayOpacity+')';
+    ctx.fillRect(0, 0, W, H);
+
+    // 3. user avatar in circle (centered left area)
+    const avatarX = W / 2, avatarY = H / 2 - 10;
+    const radius = 65;
+    try {
+      const avUrl = member.user.displayAvatarURL({ extension: 'png', size: 256 });
+      const avRes = await nodeFetch(avUrl);
+      const avBuf = await avRes.buffer();
+      const avImg = await loadImage(avBuf);
+
+      // circle clip
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, radius, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avImg, avatarX - radius, avatarY - radius, radius * 2, radius * 2);
+      ctx.restore();
+
+      // circle border
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, radius + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = opts.circleColor || '#ffffff';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    } catch(e) {
+      // fallback circle
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#333';
+      ctx.fill();
+    }
+
+    // 4. text — username below avatar
+    const textY = avatarY + radius + 28;
+    ctx.textAlign = 'center';
+
+    // username
+    ctx.font = 'bold 22px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 8;
+    const mainText = opts.text1 || (member.user.username + ' is now a member >_<');
+    ctx.fillText(mainText.slice(0, 50), avatarX, textY);
+
+    // subtext
+    ctx.font = '15px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    const sub = opts.subtext || ('member #' + member.guild.memberCount);
+    ctx.fillText(sub, avatarX, textY + 26);
+
+    ctx.shadowBlur = 0;
+
+    return canvas.toBuffer('image/png');
+  } catch(e) {
+    console.error('welcome card error:', e.message);
+    return null;
+  }
+}
+
+
 // ── STATE ─────────────────────────────────────────────
 const state = {
   // automod
@@ -16,6 +118,23 @@ const state = {
   blockMassMentions:true, capsFilter:false, blockLinks:false,
   blockDuplicates:false, blockEmojiSpam:false, blockMentionSpam:false,
   emojiSpamLimit:5, mentionSpamLimit:3,
+  // security
+  antiRaidEnabled:false, antiRaidThreshold:10, antiRaidWindow:10, antiRaidAction:'kick', // action: kick|ban|mute
+  antiRaidLocked:false, antiRaidLog:[],
+  altDetectEnabled:false, altDetectDays:7, altDetectAction:'kick', // kick|ban|mute|flag
+  altDetectLogChannel:null,
+  slowmodeEnabled:false, slowmodeChannels:{}, // channelId -> seconds
+  autoRoleEnabled:false, autoRoleId:null, autoRoleDelay:0,
+  // moderation++
+  customCommands:{}, // trigger -> response
+  nicknameFilterEnabled:false, nicknameFilterWords:[],
+  muteRoleId:null,
+  // advanced logging extra channels
+  logChannelsExtra:{
+    nicknameChanges:null, inviteCreated:null, inviteDeleted:null,
+    messagesBulkDelete:null, stageEvents:null, threadCreated:null, threadDeleted:null,
+    boostEvents:null, emojiCreated:null, emojiDeleted:null, webhookChanges:null,
+  },
   welcomeEnabled:true, goodbyeEnabled:true, levelingEnabled:true, ticketsEnabled:true,
   welcomeMessage:"welcome to the server, {user}! you're member #{count}.",
   goodbyeMessage:'{user} has left the server.',
@@ -35,6 +154,8 @@ const state = {
   badWordsList:['badword1','badword2'],
   xpData:{}, warnings:{}, infractions:[], infId:1, logs:[], tickets:{}, ticketCount:0, ticketPanelChannels:{},
   ticketTitle:'Staff Support', ticketDescription:'Contact our staff team privately so we can assist you with whatever you need.', ticketPanelChannelId:null,
+  welcomeCardText:null, welcomeCardSub:null, welcomeCardCircleColor:'#ffffff', welcomeCardOverlay:0.45,
+  goodbyeCardText:null, goodbyeCardSub:null, goodbyeCardCircleColor:'#ff3555',
   reactionRoles:{}, // messageId -> { guildId, roles: { emoji -> roleId } }
   serverBackups:{}, // guildId -> [ { name, date, roles[], channels[] } ]
   // temp voice
@@ -57,8 +178,14 @@ const PERSIST_KEYS = [
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId',
   'verifyMessageId','verifyEmoji','logChannels','tempVoiceEnabled','tempVoiceGuilds',
   'xpData','warnings','infractions','infId','ticketCount','ticketPanelChannels','ticketTitle','ticketDescription','ticketPanelChannelId',
+  'welcomeCardText','welcomeCardSub','welcomeCardCircleColor','welcomeCardOverlay','goodbyeCardText','goodbyeCardSub','goodbyeCardCircleColor',
   'reactionRoles','serverBackups','welcomeGif','goodbyeGif','ticketGif',
   'goodbyeChannelId','blockDuplicates','blockEmojiSpam','blockMentionSpam','emojiSpamLimit','mentionSpamLimit',
+  'antiRaidEnabled','antiRaidThreshold','antiRaidWindow','antiRaidAction',
+  'altDetectEnabled','altDetectDays','altDetectAction','altDetectLogChannel',
+  'slowmodeEnabled','slowmodeChannels','autoRoleEnabled','autoRoleId','autoRoleDelay',
+  'customCommands','nicknameFilterEnabled','nicknameFilterWords','muteRoleId',
+  'logChannelsExtra',
 ];
 
 function saveState() {
@@ -332,6 +459,118 @@ async function tvSendWelcome(ctrl) {
   ]}).catch(()=>{});
 }
 
+
+// ── WELCOME CARD GENERATOR ───────────────────────────
+async function generateWelcomeCard(member, options) {
+  options = options || {};
+  const width = 800, height = 300;
+  
+  if (!createCanvas) return null;
+  
+  try {
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    
+    // background — fetch as buffer so GIFs work too (canvas uses first frame of GIF)
+    let bgLoaded = false;
+    if (options.bgUrl) {
+      try {
+        const bgRes = await nodeFetch(options.bgUrl, { timeout: 5000 });
+        const bgBuf = Buffer.from(await bgRes.arrayBuffer());
+        const bg = await loadImage(bgBuf);
+        ctx.drawImage(bg, 0, 0, width, height);
+        // dark overlay for readability
+        ctx.fillStyle = 'rgba(0,0,0,0.52)';
+        ctx.fillRect(0, 0, width, height);
+        bgLoaded = true;
+      } catch(e) {
+        console.log('bg load failed, using gradient:', e.message);
+      }
+    }
+    if (!bgLoaded) {
+      // default dark gradient
+      const grad = ctx.createLinearGradient(0,0,width,height);
+      grad.addColorStop(0, '#0d0f1a');
+      grad.addColorStop(1, '#1a1f3a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+    }
+    
+    // subtle vignette border
+    const vignette = ctx.createRadialGradient(width/2,height/2,height*0.3,width/2,height/2,height*0.9);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+    
+    // avatar circle
+    const avatarX = width/2, avatarY = 110, avatarR = 70;
+    
+    // circle shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 25;
+    ctx.beginPath();
+    ctx.arc(avatarX, avatarY, avatarR + 5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // white ring around avatar
+    ctx.beginPath();
+    ctx.arc(avatarX, avatarY, avatarR + 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    
+    // draw avatar (fetch as buffer for reliability)
+    try {
+      const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 256 });
+      const avRes = await nodeFetch(avatarUrl, { timeout: 5000 });
+      const avBuf = Buffer.from(await avRes.arrayBuffer());
+      const avatar = await loadImage(avBuf);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatar, avatarX - avatarR, avatarY - avatarR, avatarR*2, avatarR*2);
+      ctx.restore();
+    } catch(e) {
+      // fallback circle if avatar fails
+      ctx.beginPath();
+      ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI * 2);
+      ctx.fillStyle = '#5865f2';
+      ctx.fill();
+    }
+    
+    // username
+    const displayName = member.user.globalName || member.user.username;
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 10;
+    ctx.fillText(displayName, width/2, avatarY + avatarR + 40);
+    ctx.shadowBlur = 0;
+    
+    // subtitle (customizable)
+    const subtitle = options.subtitle || ('member #' + member.guild.memberCount);
+    ctx.font = '18px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText(subtitle, width/2, avatarY + avatarR + 68);
+    
+    // top text (server name or custom)
+    const topText = options.topText || ('welcome to ' + member.guild.name + '!');
+    ctx.font = '20px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillText(topText, width/2, 30);
+    
+    return canvas.toBuffer('image/png');
+  } catch(e) {
+    console.error('card gen error:', e.message);
+    return null;
+  }
+}
+
 // ── READY ─────────────────────────────────────────────
 // ── TICKET AUTO SETUP ────────────────────────────────
 async function ticketAutoSetup(guild) {
@@ -430,9 +669,9 @@ client.on('guildMemberAdd', async member => {
 
 client.on('guildMemberRemove', async member => {
   if (!state.goodbyeEnabled) return;
-  const ch = (state.goodbyeChannelId || state.welcomeChannelId)
-    ? member.guild.channels.cache.get(state.goodbyeChannelId || state.welcomeChannelId)
-    : member.guild.systemChannel;
+  const ch = state.goodbyeChannelId
+    ? member.guild.channels.cache.get(state.goodbyeChannelId)
+    : (state.welcomeChannelId ? member.guild.channels.cache.get(state.welcomeChannelId) : member.guild.systemChannel);
   if (!ch) return;
   const msg = state.goodbyeMessage.replace(/{user}/g,member.user.username).replace(/{server}/g,member.guild.name);
   const goodbyeEmbed = new EmbedBuilder()
@@ -1245,7 +1484,7 @@ client.on('roleDelete', async role => {
 });
 
 // server backup system
-async function createBackup(guild) {
+async function createBackup(guild, customName) {
   const roles = guild.roles.cache.filter(r=>!r.managed&&r.id!==guild.id).map(r=>({
     id:r.id, name:r.name, color:r.hexColor, hoist:r.hoist,
     mentionable:r.mentionable, position:r.position, permissions:r.permissions.bitfield.toString(),
@@ -1256,14 +1495,229 @@ async function createBackup(guild) {
   }));
   if (!state.serverBackups) state.serverBackups = {};
   if (!state.serverBackups[guild.id]) state.serverBackups[guild.id] = [];
-  const backup = { name:'backup-'+new Date().toLocaleDateString('en-GB').replace(/\//g,'-'), date:new Date().toISOString(), roles, channels };
+  const backup = { name: customName || ('backup-'+new Date().toLocaleDateString('en-GB').replace(/\//g,'-')), date:new Date().toISOString(), roles, channels, sourceGuild: guild.name, sourceGuildId: guild.id };
   state.serverBackups[guild.id].unshift(backup);
   if (state.serverBackups[guild.id].length > 5) state.serverBackups[guild.id].pop(); // keep max 5
   saveState();
   return backup;
 }
 
-client.login(TOKEN).catch(e=>console.error('❌ login failed:',e.message));
+
+// ── ANTI-RAID ─────────────────────────────────────────
+const raidTracker = {}; // guildId -> [timestamps]
+client.on('guildMemberAdd', async member => {
+  if (!state.antiRaidEnabled) return;
+  const gid = member.guild.id;
+  const now = Date.now();
+  if (!raidTracker[gid]) raidTracker[gid] = [];
+  raidTracker[gid].push(now);
+  raidTracker[gid] = raidTracker[gid].filter(t => now - t < (state.antiRaidWindow * 1000));
+  if (raidTracker[gid].length >= state.antiRaidThreshold) {
+    // raid detected!
+    if (!state.antiRaidLocked) {
+      state.antiRaidLocked = true;
+      addLog('SECURITY', 'RAID DETECTED in ' + member.guild.name + ' — ' + raidTracker[gid].length + ' joins in ' + state.antiRaidWindow + 's', 'red');
+      // log to channel if set
+      const logCh = state.altDetectLogChannel ? member.guild.channels.cache.get(state.altDetectLogChannel) : null;
+      if (logCh) {
+        const { EmbedBuilder } = require('discord.js');
+        logCh.send({ embeds:[new EmbedBuilder().setColor(0xff0000).setTitle('🚨 RAID DETECTED').setDescription('**'+raidTracker[gid].length+'** members joined in **'+state.antiRaidWindow+'** seconds!\nAction: **'+state.antiRaidAction.toUpperCase()+'**').setTimestamp()] });
+      }
+      // auto-unlock after 5 minutes
+      setTimeout(() => { state.antiRaidLocked = false; raidTracker[gid] = []; }, 5 * 60 * 1000);
+    }
+    // take action on the joining member
+    try {
+      if (state.antiRaidAction === 'ban') await member.ban({ reason: 'anti-raid — automatic ban' });
+      else if (state.antiRaidAction === 'kick') await member.kick('anti-raid — automatic kick');
+      else if (state.antiRaidAction === 'mute') await member.timeout(30 * 60 * 1000, 'anti-raid — automatic mute');
+    } catch(e) { console.error('anti-raid action failed:', e.message); }
+  }
+});
+
+// ── ALT ACCOUNT DETECTOR ──────────────────────────────
+client.on('guildMemberAdd', async member => {
+  if (!state.altDetectEnabled) return;
+  const ageDays = (Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24);
+  if (ageDays < state.altDetectDays) {
+    const logCh = state.altDetectLogChannel ? member.guild.channels.cache.get(state.altDetectLogChannel) : null;
+    const { EmbedBuilder } = require('discord.js');
+    const embed = new EmbedBuilder()
+      .setColor(0xff8800)
+      .setTitle('⚠️ new account detected')
+      .setDescription('<@' + member.id + '> joined but their account is only **' + ageDays.toFixed(1) + ' days old**')
+      .addFields(
+        { name: '👤 user', value: member.user.username, inline: true },
+        { name: '🆔 id', value: member.id, inline: true },
+        { name: '📅 account age', value: ageDays.toFixed(1) + ' days', inline: true },
+        { name: '⚡ action', value: state.altDetectAction.toUpperCase(), inline: true },
+      )
+      .setThumbnail(member.user.displayAvatarURL())
+      .setTimestamp();
+    if (logCh) logCh.send({ embeds: [embed] });
+    addLog('SECURITY', member.user.username + ' flagged as alt — account ' + ageDays.toFixed(1) + ' days old', 'yellow');
+    try {
+      if (state.altDetectAction === 'ban') await member.ban({ reason: 'alt account detector — account too new' });
+      else if (state.altDetectAction === 'kick') await member.kick('alt account detector — account too new');
+      else if (state.altDetectAction === 'mute') await member.timeout(60 * 60 * 1000, 'alt account detector');
+      // 'flag' = just log, no action
+    } catch(e) { console.error('alt detect action failed:', e.message); }
+  }
+});
+
+// ── AUTO-ROLE ─────────────────────────────────────────
+client.on('guildMemberAdd', async member => {
+  if (!state.autoRoleEnabled || !state.autoRoleId) return;
+  const delay = (state.autoRoleDelay || 0) * 1000;
+  setTimeout(async () => {
+    try {
+      const role = member.guild.roles.cache.get(state.autoRoleId);
+      if (role) await member.roles.add(role);
+      addLog('ROLE', member.user.username + ' got auto-role: ' + role?.name, 'green');
+    } catch(e) { console.error('auto-role failed:', e.message); }
+  }, delay);
+});
+
+// ── NICKNAME FILTER ───────────────────────────────────
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  if (!state.nicknameFilterEnabled || !state.nicknameFilterWords.length) return;
+  if (oldMember.nickname === newMember.nickname) return;
+  const nick = newMember.nickname?.toLowerCase() || '';
+  const blocked = state.nicknameFilterWords.some(w => nick.includes(w.toLowerCase()));
+  if (blocked) {
+    await newMember.setNickname(oldMember.nickname || null).catch(() => {});
+    addLog('SECURITY', newMember.user.username + ' tried to set blocked nickname: ' + newMember.nickname, 'yellow');
+  }
+});
+
+// ── ADVANCED AUDIT LOGS ───────────────────────────────
+// Nickname changes
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  if (oldMember.nickname === newMember.nickname) return;
+  const ch = newMember.guild.channels.cache.get(state.logChannelsExtra?.nicknameChanges);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0xffd700).setTitle('✏️ nickname changed')
+    .setAuthor({ name: newMember.user.username, iconURL: newMember.user.displayAvatarURL() })
+    .addFields(
+      { name: '👤 user', value: '<@' + newMember.id + '>', inline: true },
+      { name: '❌ before', value: oldMember.nickname || '*none*', inline: true },
+      { name: '✅ after', value: newMember.nickname || '*removed*', inline: true },
+    ).setTimestamp()] });
+  addLog('MOD', newMember.user.username + ' changed nickname', 'yellow', 'before: ' + (oldMember.nickname||'none') + '\nafter: ' + (newMember.nickname||'removed'));
+});
+
+// Bulk message delete
+client.on('messageDeleteBulk', async messages => {
+  const ch = messages.first()?.guild?.channels.cache.get(state.logChannelsExtra?.messagesBulkDelete);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ bulk delete')
+    .setDescription('**' + messages.size + '** messages deleted in <#' + messages.first()?.channel.id + '>')
+    .addFields({ name: '📺 channel', value: '<#' + messages.first()?.channel.id + '>', inline: true },
+               { name: '🔢 count', value: messages.size + ' messages', inline: true })
+    .setTimestamp()] });
+  addLog('DELETE', messages.size + ' messages bulk deleted in #' + messages.first()?.channel.name, 'red');
+});
+
+// Invite created
+client.on('inviteCreate', async invite => {
+  const ch = invite.guild?.channels.cache.get(state.logChannelsExtra?.inviteCreated);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0x00e87a).setTitle('📨 invite created')
+    .addFields(
+      { name: '🔗 code', value: invite.code, inline: true },
+      { name: '👤 by', value: invite.inviter ? '<@' + invite.inviter.id + '>' : 'unknown', inline: true },
+      { name: '📺 channel', value: '<#' + invite.channel?.id + '>', inline: true },
+      { name: '⏱️ expires', value: invite.expiresAt ? '<t:' + Math.floor(invite.expiresAt.getTime()/1000) + ':R>' : 'never', inline: true },
+      { name: '🔢 max uses', value: invite.maxUses ? invite.maxUses + '' : 'unlimited', inline: true },
+    ).setTimestamp()] });
+  addLog('INVITE', (invite.inviter?.username||'?') + ' created invite ' + invite.code, 'cyan', 'channel: ' + invite.channel?.name + '\nmax uses: ' + (invite.maxUses||'unlimited'));
+});
+
+// Invite deleted
+client.on('inviteDelete', async invite => {
+  const ch = invite.guild?.channels.cache.get(state.logChannelsExtra?.inviteDeleted);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ invite deleted')
+    .addFields({ name: '🔗 code', value: invite.code, inline: true }, { name: '📺 channel', value: '<#' + invite.channel?.id + '>', inline: true })
+    .setTimestamp()] });
+});
+
+// Thread created
+client.on('threadCreate', async thread => {
+  const ch = thread.guild?.channels.cache.get(state.logChannelsExtra?.threadCreated);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0x00d4ff).setTitle('🧵 thread created')
+    .addFields({ name: '🧵 name', value: thread.name, inline: true }, { name: '📺 parent', value: '<#' + thread.parentId + '>', inline: true }, { name: '🆔 id', value: thread.id, inline: true })
+    .setTimestamp()] });
+  addLog('CHANNEL', 'thread created: ' + thread.name, 'cyan');
+});
+
+// Thread deleted
+client.on('threadDelete', async thread => {
+  const ch = thread.guild?.channels.cache.get(state.logChannelsExtra?.threadDeleted);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ thread deleted')
+    .addFields({ name: '🧵 name', value: thread.name, inline: true }, { name: '📺 parent', value: '<#' + thread.parentId + '>', inline: true })
+    .setTimestamp()] });
+});
+
+// Boost events
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  const wasBooster = !!oldMember.premiumSince;
+  const isBooster = !!newMember.premiumSince;
+  if (wasBooster === isBooster) return;
+  const ch = newMember.guild.channels.cache.get(state.logChannelsExtra?.boostEvents);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  const boosting = !wasBooster && isBooster;
+  ch.send({ embeds:[new EmbedBuilder()
+    .setColor(boosting ? 0xff73fa : 0x888888)
+    .setTitle(boosting ? '🚀 server boosted!' : '💔 boost removed')
+    .setDescription('<@' + newMember.id + '> ' + (boosting ? '**just boosted the server!**' : 'stopped boosting'))
+    .setThumbnail(newMember.user.displayAvatarURL())
+    .setTimestamp()] });
+  addLog('BOOST', newMember.user.username + (boosting ? ' boosted the server' : ' removed their boost'), boosting ? 'green' : 'yellow');
+});
+
+// Emoji created/deleted
+client.on('emojiCreate', async emoji => {
+  const ch = emoji.guild?.channels.cache.get(state.logChannelsExtra?.emojiCreated);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0x00e87a).setTitle('😀 emoji created')
+    .setDescription('<:' + emoji.name + ':' + emoji.id + '> **:' + emoji.name + ':**')
+    .setThumbnail(emoji.url).setTimestamp()] });
+  addLog('EMOJI', 'emoji created: :' + emoji.name + ':', 'green');
+});
+
+client.on('emojiDelete', async emoji => {
+  const ch = emoji.guild?.channels.cache.get(state.logChannelsExtra?.emojiDeleted);
+  if (!ch) return;
+  const { EmbedBuilder } = require('discord.js');
+  ch.send({ embeds:[new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ emoji deleted')
+    .addFields({ name: '😀 name', value: ':' + emoji.name + ':', inline: true }, { name: '🆔 id', value: emoji.id, inline: true })
+    .setTimestamp()] });
+  addLog('EMOJI', 'emoji deleted: :' + emoji.name + ':', 'red');
+});
+
+// Custom commands
+client.on('messageCreate', async message => {
+  if (message.author.bot || !message.guild) return;
+  if (!state.customCommands || !Object.keys(state.customCommands).length) return;
+  const content = message.content.trim();
+  const trigger = Object.keys(state.customCommands).find(k => content.toLowerCase() === k.toLowerCase() || content.toLowerCase().startsWith(k.toLowerCase() + ' '));
+  if (trigger) {
+    const response = state.customCommands[trigger];
+    message.channel.send(response.replace(/{user}/g, '<@' + message.author.id + '>').replace(/{server}/g, message.guild.name).replace(/{username}/g, message.author.username)).catch(() => {});
+  }
+});
+
 client.login(TOKEN).catch(e=>console.error('❌ login failed:',e.message));
 
 module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState, createBackup };
