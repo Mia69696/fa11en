@@ -607,6 +607,96 @@ app.post('/api/automod/settings', (req, res) => {
   res.json({ ok: true });
 });
 
+
+// ── TICKET SETTINGS ──────────────────────────────────
+app.get('/api/ticket/settings', (req, res) => {
+  res.json({
+    ticketsEnabled: state.ticketsEnabled,
+    ticketGif: state.ticketGif || null,
+    ticketTitle: state.ticketTitle || 'Staff Support',
+    ticketDescription: state.ticketDescription || 'Contact our staff team privately so we can assist you with whatever you need.',
+    ticketPanelChannelId: state.ticketPanelChannelId || null,
+  });
+});
+
+app.post('/api/ticket/settings', (req, res) => {
+  const { ticketGif, ticketTitle, ticketDescription } = req.body;
+  if (ticketGif !== undefined) state.ticketGif = ticketGif || null;
+  if (ticketTitle !== undefined) state.ticketTitle = ticketTitle || 'Staff Support';
+  if (ticketDescription !== undefined) state.ticketDescription = ticketDescription || null;
+  saveState();
+  res.json({ ok: true });
+});
+
+app.post('/api/ticket/send-panel', async (req, res) => {
+  const { guildId, channelId } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in server' });
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) return res.status(404).json({ error: 'channel not found' });
+    const { EmbedBuilder } = require('discord.js');
+    const botAvatar = client.user.displayAvatarURL({ dynamic: true, size: 512 });
+    const title = state.ticketTitle || 'Staff Support';
+    const desc = state.ticketDescription || 'Contact our staff team privately so we can assist you with whatever you need.';
+    const embed = new EmbedBuilder()
+      .setColor(0x2b2d31)
+      .setAuthor({ name: title, iconURL: botAvatar })
+      .setTitle('Do you need help with something?')
+      .setDescription(desc)
+      .setThumbnail(botAvatar)
+      .setFooter({ text: 'fa11en support system', iconURL: botAvatar })
+      .setTimestamp();
+    if (state.ticketGif) embed.setImage(state.ticketGif);
+    await channel.send({
+      embeds: [embed],
+      components: [{ type: 1, components: [{ type: 2, style: 1, label: 'Create Ticket', emoji: '🎫', custom_id: 'open_ticket' }] }]
+    });
+    state.ticketPanelChannelId = channelId;
+    saveState();
+    addLog('TICKET', 'ticket panel sent to #' + channel.name, 'cyan');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── BACKUP RESTORE ────────────────────────────────────
+app.post('/api/backup/restore', async (req, res) => {
+  const { guildId, index } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in server' });
+    const backups = state.serverBackups?.[guildId];
+    if (!backups || !backups[index]) return res.status(404).json({ error: 'backup not found' });
+    const backup = backups[index];
+    const results = { rolesCreated: 0, channelsCreated: 0, errors: [] };
+    // restore roles (skip @everyone and managed roles)
+    for (const role of backup.roles.sort((a,b) => a.position - b.position)) {
+      try {
+        const exists = guild.roles.cache.find(r => r.name === role.name);
+        if (!exists) {
+          await guild.roles.create({ name: role.name, color: role.color, hoist: role.hoist, mentionable: role.mentionable, permissions: BigInt(role.permissions || '0') });
+          results.rolesCreated++;
+        }
+      } catch(e) { results.errors.push('role '+role.name+': '+e.message); }
+    }
+    // restore channels (categories first, then others)
+    const sorted = [...backup.channels].sort((a,b) => (a.type===4?-1:1));
+    for (const ch of sorted) {
+      try {
+        const exists = guild.channels.cache.find(c => c.name === ch.name && c.type === ch.type);
+        if (!exists) {
+          const opts = { name: ch.name, type: ch.type };
+          if (ch.topic) opts.topic = ch.topic;
+          await guild.channels.create(opts);
+          results.channelsCreated++;
+        }
+      } catch(e) { results.errors.push('channel '+ch.name+': '+e.message); }
+    }
+    addLog('DASH', 'backup restored for '+guild.name+' — '+results.rolesCreated+' roles, '+results.channelsCreated+' channels', 'green');
+    res.json({ ok: true, ...results });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── FALLBACK ──────────────────────────────────────────
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
