@@ -412,27 +412,18 @@ textarea.inp{resize:vertical;min-height:72px;}
 /* MISC */
 .ping-pill{font-family:'DM Mono',monospace;font-size:9px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);color:var(--green);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;}
 /* LOG CHANNEL CARDS */
-@keyframes lcCardIn{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
 .logch-card{
-  background:var(--bg3);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:0;
-  overflow:hidden;
-  transition:border-color .2s,box-shadow .2s,transform .2s;
-  animation:lcCardIn .25s ease both;
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:0;overflow:hidden;
+  transition:border-color .18s,box-shadow .18s,transform .18s;
+  animation:cardPop .25s ease both;
 }
-.logch-card:hover{border-color:var(--border2);box-shadow:0 4px 18px rgba(0,0,0,.35);transform:translateY(-2px);}
-.logch-top{
-  display:flex;align-items:center;gap:9px;
-  padding:10px 12px 8px;
-  border-bottom:1px solid rgba(255,255,255,.04);
-  background:rgba(255,255,255,.01);
-}
-.logch-label{font-size:10px;font-weight:800;color:var(--txt);letter-spacing:.2px;}
-.logch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px currentColor;}
-.logch-card .inp{border:none;border-radius:0;border-top:1px solid rgba(255,255,255,.04);background:transparent;padding:9px 12px;font-size:11px;}
-.logch-card .inp:focus{background:rgba(79,142,247,.04);border-top-color:rgba(79,142,247,.4);}
+.logch-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.3);transform:translateY(-1px);}
+.logch-top{display:flex;align-items:center;gap:8px;padding:9px 12px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
+.logch-label{font-size:10px;font-weight:700;color:var(--txt);letter-spacing:.2px;}
+.logch-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.logch-card .inp{border:none;border-top:1px solid rgba(255,255,255,.04);border-radius:0;background:transparent;padding:8px 12px;font-size:11px;}
+.logch-card .inp:focus{background:rgba(79,142,247,.04);outline:none;}
 /* LOG TABS */
 .log-tab:hover{background:rgba(255,255,255,.06) !important;color:var(--txt) !important;}
 .log-tab.active{background:var(--blue) !important;color:#fff !important;box-shadow:0 0 12px rgba(79,142,247,.3);}
@@ -952,16 +943,7 @@ textarea.inp{resize:vertical;min-height:72px;}
         </div>
       </div>
     </div>
-    <div class="card" style="max-width:480px;margin-top:0">
-      <div class="ch"><div class="ct">ticket gif</div></div>
-      <div class="cb">
-        <label class="fl">Ticket Panel GIF URL</label>
-        <input class="inp" id="ticketGif" placeholder="https://..." style="margin-bottom:4px">
-        <div id="ticketGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="ticketGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
-        <button class="btn btn-g" style="width:100%;margin-bottom:10px" onclick="previewGif('ticketGif','ticketGifPreview','ticketGifImg')"><i class="fas fa-eye"></i> preview</button>
-        <button class="btn btn-w" style="width:100%" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save all settings</button>
-      </div>
-    </div>
+
   </div>
 
   <!-- ══ TICKETS ══ -->
@@ -2285,15 +2267,23 @@ function switchLogTab(name, btn){
     var el=document.getElementById('logtab-'+t);
     if(el) el.style.display=(t===name?'block':'none');
   });
-  document.querySelectorAll('.log-tab').forEach(function(b){
+  // only reset tabs inside the logs page, not mod tabs
+  var logPage=document.getElementById('page-logs');
+  if(logPage) logPage.querySelectorAll('.log-tab').forEach(function(b){
     b.style.background='transparent'; b.style.color='var(--txt2)';
     b.classList.remove('active');
   });
   if(btn){ btn.style.background='var(--blue)'; btn.style.color='#fff'; btn.classList.add('active'); }
   if(name==='channels' && document.getElementById('logGuildPicker') && guilds.length){
+    var lp=document.getElementById('logGuildPicker');
+    if(lp && !lp.innerHTML.includes('<option')) lp.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
+    if(lp && guilds.length) lp.value=guilds[0].id;
     loadLogChannels();
   }
   if(name==='advanced' && document.getElementById('advLogGuild') && guilds.length){
+    var alg=document.getElementById('advLogGuild');
+    if(alg && !alg.innerHTML.includes('<option')) alg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
+    if(alg && guilds.length) alg.value=guilds[0].id;
     loadAdvLogChannels();
   }
 }
@@ -2303,13 +2293,12 @@ function switchModTab(name, btn){
     var el=document.getElementById('modtab-'+t);
     if(el) el.style.display=(t===name?'block':'none');
   });
-  var tabs=document.querySelectorAll('.log-tab');
-  // find only the ones in the automod page
   var page=document.getElementById('page-automod');
   if(page) page.querySelectorAll('.log-tab').forEach(function(b){
     b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active');
   });
   if(btn){ btn.style.background='var(--blue)'; btn.style.color='#fff'; btn.classList.add('active'); }
+  if(name==='commands'){ loadCustomCommands(); }
   if(name==='slowmode' && guilds.length){
     var sg=document.getElementById('slowGuild');
     if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); sg.value=guilds[0].id; loadSlowChannels(); }
