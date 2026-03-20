@@ -11,14 +11,14 @@
 
 /* VARS */
 :root{
-  --bg:#07080d; --bg2:#0c0d15; --bg3:#10111b; --bg4:#171824; --bg5:#1c1d2a;
-  --border:rgba(139,120,255,.08); --border2:rgba(139,120,255,.14);
-  --txt:#eeeef5; --txt2:#8a8aaa; --txt3:#4a4a66;
-  --blue:#7c6af7; --green:#00dfa2; --red:#ff4060; --yellow:#ffcc44;
-  --purple:#9d7fff; --cyan:#00c9f0; --pink:#f77cff;
-  --accent:#7c6af7;
-  --grad1:linear-gradient(135deg,#7c6af7,#b06af7);
-  --grad2:linear-gradient(135deg,#00dfa2,#00c9f0);
+  --bg:#0a0a0a; --bg2:#111111; --bg3:#181818; --bg4:#202020; --bg5:#282828;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --txt:#f5f5f5; --txt2:#999; --txt3:#555;
+  --blue:#fff; --green:#eee; --red:#ff4455; --yellow:#ffcc44;
+  --purple:#fff; --cyan:#ccc; --pink:#ddd;
+  --accent:#fff;
+  --grad1:linear-gradient(135deg,#333,#111);
+  --grad2:linear-gradient(135deg,#444,#222);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Syne',sans-serif;font-size:13px;overflow:hidden;}
@@ -58,7 +58,7 @@ body{display:flex;height:100vh;overflow:hidden;}
 /* SIDEBAR */
 aside.sb{
   width:196px;flex-shrink:0;
-  background:linear-gradient(180deg,#0d0e1a 0%,#09090f 100%);
+  background:linear-gradient(180deg,#141414 0%,#0a0a0a 100%);
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
   height:100vh;overflow-y:auto;overflow-x:hidden;
@@ -72,14 +72,14 @@ aside.sb::-webkit-scrollbar{display:none;}
 }
 .sb-av{
   width:34px;height:34px;border-radius:9px;flex-shrink:0;
-  background:var(--grad1);
+  background:linear-gradient(135deg,#333,#111);border:1px solid rgba(255,255,255,.12);
   display:flex;align-items:center;justify-content:center;
   font-weight:800;font-size:13px;color:#fff;
   position:relative;overflow:hidden;
-  box-shadow:0 4px 14px rgba(124,106,247,.35);
+  box-shadow:0 2px 12px rgba(0,0,0,.5);
   transition:box-shadow .3s,transform .2s;
 }
-.sb-av:hover{transform:scale(1.06);box-shadow:0 6px 20px rgba(124,106,247,.5);}
+.sb-av:hover{transform:scale(1.04);box-shadow:0 4px 16px rgba(0,0,0,.6);}
 .sb-av img{width:100%;height:100%;object-fit:cover;}
 .dot{
   position:absolute;bottom:2px;right:2px;
@@ -110,10 +110,10 @@ aside.sb::-webkit-scrollbar{display:none;}
 .ni:hover i{transform:scale(1.12);}
 .ni.active{
   color:var(--txt);
-  background:linear-gradient(90deg,rgba(124,106,247,.14),transparent);
-  border-left-color:var(--purple);
+  background:rgba(255,255,255,.06);
+  border-left-color:#fff;
 }
-.ni.active i{color:var(--purple);}
+.ni.active i{color:#fff;}
 .ni i{font-size:11px;width:14px;text-align:center;transition:transform .18s;}
 .nbadge{
   background:var(--red);color:#fff;border-radius:9px;
@@ -182,7 +182,7 @@ aside.sb::-webkit-scrollbar{display:none;}
 
 /* BANNER */
 .banner{
-  background:linear-gradient(135deg,#0c0d1e,#0e0b1c,#0d0d1a);
+  background:linear-gradient(135deg,#161616,#111,#131313);
   border:1px solid var(--border);border-radius:12px;
   padding:20px 22px;margin-bottom:16px;
   position:relative;overflow:hidden;
@@ -191,7 +191,7 @@ aside.sb::-webkit-scrollbar{display:none;}
 .banner::before{
   content:'';position:absolute;top:-40%;right:-5%;
   width:260px;height:260px;
-  background:radial-gradient(circle,rgba(124,106,247,.1) 0%,transparent 70%);
+  background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%);
   pointer-events:none;
 }
 .banner-title{
@@ -213,7 +213,7 @@ aside.sb::-webkit-scrollbar{display:none;}
   animation:cardPop .35s ease both;
 }
 .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);}
-.sc:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(124,106,247,.1);border-color:rgba(124,106,247,.2);}
+.sc:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.5);border-color:rgba(255,255,255,.1);}
 .sc:nth-child(1){animation-delay:.05s;}
 .sc:nth-child(2){animation-delay:.1s;}
 .sc:nth-child(3){animation-delay:.15s;}
@@ -236,7 +236,7 @@ aside.sb::-webkit-scrollbar{display:none;}
   transition:border-color .2s,box-shadow .2s;
   animation:cardPop .28s ease both;
 }
-.card:hover{border-color:rgba(124,106,247,.18);box-shadow:0 4px 24px rgba(0,0,0,.4),0 0 0 1px rgba(124,106,247,.06);}
+.card:hover{border-color:rgba(255,255,255,.12);box-shadow:0 4px 20px rgba(0,0,0,.5);}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
 .ch{
@@ -256,8 +256,8 @@ aside.sb::-webkit-scrollbar{display:none;}
   transition:border-color .18s,box-shadow .18s,background .18s;
 }
 .inp:focus{
-  border-color:rgba(124,106,247,.6);
-  box-shadow:0 0 0 3px rgba(124,106,247,.12);
+  border-color:rgba(255,255,255,.4);
+  box-shadow:0 0 0 3px rgba(255,255,255,.06);
   background:var(--bg5);
 }
 .inp:hover:not(:focus){border-color:rgba(255,255,255,.13);}
@@ -270,10 +270,10 @@ textarea.inp{resize:vertical;min-height:72px;}
 .tag{display:inline-flex;align-items:center;font-size:9px;font-weight:700;letter-spacing:.4px;padding:2px 7px;border-radius:5px;text-transform:uppercase;transition:all .12s;}
 .t-green{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.2);}
 .t-red{background:rgba(255,53,85,.1);color:var(--red);border:1px solid rgba(255,53,85,.2);}
-.t-blue{background:rgba(79,142,247,.1);color:var(--blue);border:1px solid rgba(79,142,247,.2);}
+.t-blue{background:rgba(255,255,255,.07);color:#ddd;border:1px solid rgba(255,255,255,.1);}
 .t-yellow{background:rgba(255,183,0,.1);color:var(--yellow);border:1px solid rgba(255,183,0,.2);}
-.t-purple{background:rgba(155,140,255,.1);color:var(--purple);border:1px solid rgba(155,140,255,.2);}
-.t-cyan{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.2);}
+.t-purple{background:rgba(255,255,255,.07);color:#ccc;border:1px solid rgba(255,255,255,.1);}
+.t-cyan{background:rgba(255,255,255,.06);color:#bbb;border:1px solid rgba(255,255,255,.1);}
 .t-gray{background:rgba(255,255,255,.06);color:var(--txt2);border:1px solid rgba(255,255,255,.08);}
 .t-white{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12);}
 .t-pink{background:rgba(255,115,250,.1);color:var(--pink);border:1px solid rgba(255,115,250,.2);}
@@ -281,15 +281,15 @@ textarea.inp{resize:vertical;min-height:72px;}
 /* TOGGLES */
 .tog{width:36px;height:20px;border-radius:10px;background:var(--bg5);border:1px solid var(--border2);cursor:pointer;position:relative;transition:background .22s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;flex-shrink:0;}
 .tog::after{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 5px rgba(0,0,0,.4);}
-.tog.on{background:var(--purple);border-color:var(--purple);box-shadow:0 0 12px rgba(124,106,247,.4);animation:togOn .22s cubic-bezier(.34,1.56,.64,1);}
-.tog.on::after{left:19px;}
+.tog.on{background:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.25);animation:togOn .22s cubic-bezier(.34,1.56,.64,1);}
+.tog.on::after{left:19px;background:#111;}
 
 /* BUTTONS */
 .btn{border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .16s cubic-bezier(.34,1.56,.64,1);position:relative;}
 .btn:active{transform:scale(.93);}
 .btn-w{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.1);}
-.btn-w:hover{background:rgba(255,255,255,.1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(124,106,247,.12);}
-.btn-g{background:rgba(0,232,122,.08);color:var(--green);border:1px solid rgba(0,232,122,.2);}
+.btn-w:hover{background:rgba(255,255,255,.12);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.btn-g{background:rgba(255,255,255,.07);color:#ddd;border:1px solid rgba(255,255,255,.12);}
 .btn-g:hover{background:rgba(0,232,122,.15);transform:translateY(-1px);box-shadow:0 0 16px rgba(0,232,122,.2);}
 .btn-r{background:rgba(255,53,85,.08);color:var(--red);border:1px solid rgba(255,53,85,.2);}
 .btn-r:hover{background:rgba(255,53,85,.15);transform:translateY(-1px);box-shadow:0 0 16px rgba(255,53,85,.2);}
@@ -413,7 +413,7 @@ textarea.inp{resize:vertical;min-height:72px;}
 .barlbl{flex:1;font-size:8px;color:var(--txt3);text-align:center;}
 
 /* MISC */
-.ping-pill{font-family:'DM Mono',monospace;font-size:9px;background:rgba(0,223,162,.08);border:1px solid rgba(0,223,162,.2);color:var(--green);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;}
+.ping-pill{font-family:'DM Mono',monospace;font-size:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#eee;border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;}
 /* LOG CHANNEL CARDS */
 .logch-card{
   background:var(--bg3);border:1px solid var(--border);border-radius:10px;
@@ -424,12 +424,12 @@ textarea.inp{resize:vertical;min-height:72px;}
 .logch-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.3);transform:translateY(-1px);}
 .logch-top{display:flex;align-items:center;gap:8px;padding:9px 12px 8px;border-bottom:1px solid rgba(255,255,255,.04);}
 .logch-label{font-size:10px;font-weight:700;color:var(--txt);letter-spacing:.2px;}
-.logch-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.logch-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;flex-shrink:0;}
 .logch-card .inp{border:none;border-top:1px solid rgba(255,255,255,.04);border-radius:0;background:transparent;padding:8px 12px;font-size:11px;}
-.logch-card .inp:focus{background:rgba(79,142,247,.04);outline:none;}
+.logch-card .inp:focus{background:rgba(255,255,255,.03);outline:none;}
 /* LOG TABS */
 .log-tab:hover{background:rgba(255,255,255,.06) !important;color:var(--txt) !important;}
-.log-tab.active{background:var(--purple) !important;color:#fff !important;box-shadow:0 0 14px rgba(124,106,247,.35);}
+.log-tab.active{background:#fff !important;color:#111 !important;box-shadow:0 2px 10px rgba(255,255,255,.2);}
 .banner-title{background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#ccc 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
 </style>
 </head>
@@ -682,6 +682,44 @@ textarea.inp{resize:vertical;min-height:72px;}
     </div>
   </div>
 
+  <!-- ══ INFRACTIONS ══ -->
+  <div class="page" id="page-infractions">
+    <div class="sh">
+      <div><h2>infractions</h2><p id="infCount">0 records</p></div>
+      <div style="display:flex;gap:8px">
+        <select class="inp" id="infGuild" style="width:160px"></select>
+        <button class="btn btn-r" onclick="clearInfractions()"><i class="fas fa-trash"></i> clear all</button>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">issue action</div></div>
+        <div class="cb">
+          <label class="fl">User ID</label>
+          <input class="inp" id="infUser" placeholder="user id" style="margin-bottom:10px">
+          <label class="fl">Action</label>
+          <select class="inp" id="infAct" style="margin-bottom:10px">
+            <option value="warn">warn</option>
+            <option value="timeout">timeout</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+          </select>
+          <label class="fl">Reason</label>
+          <input class="inp" id="infReason" placeholder="reason..." style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="issueInfraction()"><i class="fas fa-bolt"></i> execute</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">infraction log</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadInfractions()"><i class="fas fa-sync-alt"></i></button></div>
+        <div id="infEmpty" style="display:none" class="empty">no infractions recorded</div>
+        <table class="tbl" style="display:table">
+          <thead><tr><th>#</th><th>user</th><th>action</th><th>reason</th><th>time</th><th></th></tr></thead>
+          <tbody id="infBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ LOGS ══ -->
   <div class="page" id="page-logs">
     <div class="sh">
@@ -754,25 +792,25 @@ textarea.inp{resize:vertical;min-height:72px;}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Deleted Messages</div></div><select class="inp" id="lc-deletedMessages"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 6px #ffb700"></span><div class="logch-label">Edited Messages</div></div><select class="inp" id="lc-editedMessages"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 6px #00e87a"></span><div class="logch-label">Joins &amp; Leaves</div></div><select class="inp" id="lc-joinLeave"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Mod Actions</div></div><select class="inp" id="lc-modActions"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#4488ff;box-shadow:0 0 6px #4488ff"></span><div class="logch-label">Commands Used</div></div><select class="inp" id="lc-commands"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Images &amp; Files</div></div><select class="inp" id="lc-images"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Voice Activity</div></div><select class="inp" id="lc-voiceActivity"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#9b8cff;box-shadow:0 0 6px #9b8cff"></span><div class="logch-label">Role Changes</div></div><select class="inp" id="lc-roleChanges"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Member Banned</div></div><select class="inp" id="lc-memberBanned"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 6px #00e87a"></span><div class="logch-label">Member Unbanned</div></div><select class="inp" id="lc-memberUnbanned"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 6px #ff8800"></span><div class="logch-label">Member Kicked</div></div><select class="inp" id="lc-memberKicked"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 6px #ffb700"></span><div class="logch-label">Member Timeout</div></div><select class="inp" id="lc-memberTimeout"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 6px #00e87a"></span><div class="logch-label">Channel Created</div></div><select class="inp" id="lc-channelCreated"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Channel Deleted</div></div><select class="inp" id="lc-channelDeleted"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 6px #00e87a"></span><div class="logch-label">Role Created</div></div><select class="inp" id="lc-roleCreated"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Role Deleted</div></div><select class="inp" id="lc-roleDeleted"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Joined Voice</div></div><select class="inp" id="lc-memberJoinedVoice"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 6px #ff8800"></span><div class="logch-label">Left Voice</div></div><select class="inp" id="lc-memberLeftVoice"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Server Invites</div></div><select class="inp" id="lc-serverInvites"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Deleted Messages</div></div><select class="inp" id="lc-deletedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 5px #ffb70088"></span><div class="logch-label">Edited Messages</div></div><select class="inp" id="lc-editedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Joins &amp; Leaves</div></div><select class="inp" id="lc-joinLeave"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Mod Actions</div></div><select class="inp" id="lc-modActions"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#4488ff;box-shadow:0 0 5px #4488ff88"></span><div class="logch-label">Commands Used</div></div><select class="inp" id="lc-commands"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Images &amp; Files</div></div><select class="inp" id="lc-images"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Voice Activity</div></div><select class="inp" id="lc-voiceActivity"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#9b8cff;box-shadow:0 0 5px #9b8cff88"></span><div class="logch-label">Role Changes</div></div><select class="inp" id="lc-roleChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Member Banned</div></div><select class="inp" id="lc-memberBanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Member Unbanned</div></div><select class="inp" id="lc-memberUnbanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 5px #ff880088"></span><div class="logch-label">Member Kicked</div></div><select class="inp" id="lc-memberKicked"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 5px #ffb70088"></span><div class="logch-label">Member Timeout</div></div><select class="inp" id="lc-memberTimeout"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Channel Created</div></div><select class="inp" id="lc-channelCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Channel Deleted</div></div><select class="inp" id="lc-channelDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Role Created</div></div><select class="inp" id="lc-roleCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Role Deleted</div></div><select class="inp" id="lc-roleDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Joined Voice</div></div><select class="inp" id="lc-memberJoinedVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 5px #ff880088"></span><div class="logch-label">Left Voice</div></div><select class="inp" id="lc-memberLeftVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Server Invites</div></div><select class="inp" id="lc-serverInvites"><option value="">disabled</option></select></div>
       </div>
     </div>
 
@@ -788,16 +826,16 @@ textarea.inp{resize:vertical;min-height:72px;}
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 6px #ffd700"></span><div class="logch-label">Nickname Changes</div></div><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Invite Created</div></div><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Invite Deleted</div></div><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Bulk Delete</div></div><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 6px #00d4ff"></span><div class="logch-label">Thread Created</div></div><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Thread Deleted</div></div><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff73fa;box-shadow:0 0 6px #ff73fa"></span><div class="logch-label">Boost Events</div></div><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 6px #ffd700"></span><div class="logch-label">Emoji Created</div></div><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 6px #ff3555"></span><div class="logch-label">Emoji Deleted</div></div><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
-        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#888;box-shadow:0 0 6px #888"></span><div class="logch-label">Webhook Changes</div></div><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd70088"></span><div class="logch-label">Nickname Changes</div></div><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Invite Created</div></div><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Invite Deleted</div></div><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Bulk Delete</div></div><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Thread Created</div></div><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Thread Deleted</div></div><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff73fa;box-shadow:0 0 5px #ff73fa88"></span><div class="logch-label">Boost Events</div></div><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd70088"></span><div class="logch-label">Emoji Created</div></div><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Emoji Deleted</div></div><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#888;box-shadow:0 0 5px #88888"></span><div class="logch-label">Webhook Changes</div></div><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
       </div>
     </div>
   </div>
@@ -1766,7 +1804,7 @@ function switchLogTab(name,btn){
   });
   var logPage=document.getElementById('page-logs');
   if(logPage) logPage.querySelectorAll('.log-tab').forEach(function(b){ b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active'); });
-  if(btn){ btn.style.background='var(--purple)'; btn.style.color='#fff'; btn.classList.add('active'); }
+  if(btn){ btn.style.background='#fff'; btn.style.color='#111'; btn.classList.add('active'); }
   if(name==='channels'&&guilds.length){ fillLogGuildPickers(); loadLogChannels(); }
   if(name==='advanced'&&guilds.length){ fillLogGuildPickers(); loadAdvLogChannels(); }
 }
@@ -1825,7 +1863,7 @@ function switchModTab(name,btn){
   ['filters','commands','slowmode'].forEach(function(t){ var el=document.getElementById('modtab-'+t); if(el) el.style.display=(t===name?'block':'none'); });
   var page=document.getElementById('page-automod');
   if(page) page.querySelectorAll('.log-tab').forEach(function(b){ b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active'); });
-  if(btn){ btn.style.background='var(--purple)'; btn.style.color='#fff'; btn.classList.add('active'); }
+  if(btn){ btn.style.background='#fff'; btn.style.color='#111'; btn.classList.add('active'); }
   if(name==='commands') loadCustomCommands();
   if(name==='slowmode'&&guilds.length){ var sg=document.getElementById('slowGuild'); if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); sg.value=guilds[0].id; loadSlowChannels(); } }
 }
