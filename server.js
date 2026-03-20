@@ -489,16 +489,8 @@ app.post('/api/tempvoice/control', async (req, res) => {
 
 // ── EXTENDED SETTINGS ────────────────────────────────
 app.post('/api/settings/welcome', (req, res) => {
-  const { welcomeGif, goodbyeGif, ticketGif, welcomeChannelId, goodbyeChannelId, welcomeMessage, goodbyeMessage, welcomeEnabled, goodbyeEnabled } = req.body;
-  if (welcomeGif !== undefined) state.welcomeGif = welcomeGif || null;
-  if (goodbyeGif !== undefined) state.goodbyeGif = goodbyeGif || null;
-  if (ticketGif !== undefined) state.ticketGif = ticketGif || null;
-  if (welcomeChannelId !== undefined) state.welcomeChannelId = welcomeChannelId || null;
-  if (goodbyeChannelId !== undefined) state.goodbyeChannelId = goodbyeChannelId || null;
-  if (welcomeMessage !== undefined) state.welcomeMessage = welcomeMessage;
-  if (goodbyeMessage !== undefined) state.goodbyeMessage = goodbyeMessage;
-  if (welcomeEnabled !== undefined) state.welcomeEnabled = welcomeEnabled;
-  if (goodbyeEnabled !== undefined) state.goodbyeEnabled = goodbyeEnabled;
+  const fields = ['welcomeGif','goodbyeGif','ticketGif','welcomeChannelId','goodbyeChannelId','welcomeMessage','goodbyeMessage','welcomeEnabled','goodbyeEnabled','welcomeCardText','welcomeCardSub','welcomeCardCircleColor','welcomeCardOverlay','goodbyeCardText','goodbyeCardSub','goodbyeCardCircleColor'];
+  fields.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k] === '' ? null : req.body[k]; });
   saveState();
   res.json({ ok: true });
 });
@@ -509,6 +501,11 @@ app.get('/api/settings/welcome', (req, res) => {
     welcomeChannelId: state.welcomeChannelId, goodbyeChannelId: state.goodbyeChannelId,
     welcomeMessage: state.welcomeMessage, goodbyeMessage: state.goodbyeMessage,
     welcomeEnabled: state.welcomeEnabled, goodbyeEnabled: state.goodbyeEnabled,
+    welcomeCardText: state.welcomeCardText, welcomeCardSub: state.welcomeCardSub,
+    welcomeCardCircleColor: state.welcomeCardCircleColor || '#ffffff',
+    welcomeCardOverlay: state.welcomeCardOverlay !== undefined ? state.welcomeCardOverlay : 0.45,
+    goodbyeCardText: state.goodbyeCardText, goodbyeCardSub: state.goodbyeCardSub,
+    goodbyeCardCircleColor: state.goodbyeCardCircleColor || '#ff3555',
   });
 });
 
@@ -578,14 +575,26 @@ app.get('/api/backup/:guildId', (req, res) => {
 });
 
 app.post('/api/backup/create', async (req, res) => {
-  const { guildId } = req.body;
+  const { guildId, name } = req.body;
   try {
     const guild = client.guilds.cache.get(guildId);
     if (!guild) return res.status(404).json({ error: 'bot not in server' });
-    const backup = await createBackup(guild);
-    addLog('DASH', 'server backup created for ' + guild.name, 'green');
+    const backup = await createBackup(guild, name);
+    addLog('DASH', 'server backup created for ' + guild.name + ' — ' + backup.roles.length + ' roles, ' + backup.channels.length + ' channels', 'green');
     res.json({ ok: true, backup });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// get all backups across all servers
+app.get('/api/backup/all', (req, res) => {
+  const result = [];
+  Object.entries(state.serverBackups || {}).forEach(([guildId, backups]) => {
+    backups.forEach((b, i) => {
+      result.push({ ...b, guildId, index: i });
+    });
+  });
+  result.sort((a, b) => new Date(b.date) - new Date(a.date));
+  res.json(result);
 });
 
 app.delete('/api/backup/:guildId/:index', (req, res) => {
@@ -661,11 +670,14 @@ app.post('/api/ticket/send-panel', async (req, res) => {
 
 // ── BACKUP RESTORE ────────────────────────────────────
 app.post('/api/backup/restore', async (req, res) => {
-  const { guildId, index } = req.body;
+  const { guildId, sourceGuildId, index } = req.body;
+  // load backup from sourceGuildId (where it was saved) into guildId (target server)
+  const targetGuildId = guildId;
+  const backupGuildId = sourceGuildId || guildId;
   try {
-    const guild = client.guilds.cache.get(guildId);
-    if (!guild) return res.status(404).json({ error: 'bot not in server' });
-    const backups = state.serverBackups?.[guildId];
+    const guild = client.guilds.cache.get(targetGuildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in target server' });
+    const backups = state.serverBackups?.[backupGuildId];
     if (!backups || !backups[index]) return res.status(404).json({ error: 'backup not found' });
     const backup = backups[index];
     const results = { rolesCreated: 0, channelsCreated: 0, errors: [] };
@@ -692,8 +704,103 @@ app.post('/api/backup/restore', async (req, res) => {
         }
       } catch(e) { results.errors.push('channel '+ch.name+': '+e.message); }
     }
-    addLog('DASH', 'backup restored for '+guild.name+' — '+results.rolesCreated+' roles, '+results.channelsCreated+' channels', 'green');
+    addLog('DASH', 'backup loaded into '+guild.name+' — '+results.rolesCreated+' roles, '+results.channelsCreated+' channels created', 'green');
     res.json({ ok: true, ...results });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── SECURITY SETTINGS ────────────────────────────────
+app.get('/api/security', (req, res) => {
+  res.json({
+    antiRaidEnabled: state.antiRaidEnabled, antiRaidThreshold: state.antiRaidThreshold,
+    antiRaidWindow: state.antiRaidWindow, antiRaidAction: state.antiRaidAction,
+    altDetectEnabled: state.altDetectEnabled, altDetectDays: state.altDetectDays,
+    altDetectAction: state.altDetectAction, altDetectLogChannel: state.altDetectLogChannel,
+    autoRoleEnabled: state.autoRoleEnabled, autoRoleId: state.autoRoleId, autoRoleDelay: state.autoRoleDelay,
+    nicknameFilterEnabled: state.nicknameFilterEnabled, nicknameFilterWords: state.nicknameFilterWords,
+    muteRoleId: state.muteRoleId,
+  });
+});
+
+app.post('/api/security', (req, res) => {
+  const allowed = ['antiRaidEnabled','antiRaidThreshold','antiRaidWindow','antiRaidAction',
+    'altDetectEnabled','altDetectDays','altDetectAction','altDetectLogChannel',
+    'autoRoleEnabled','autoRoleId','autoRoleDelay','nicknameFilterEnabled','nicknameFilterWords','muteRoleId'];
+  allowed.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k]; });
+  saveState();
+  addLog('DASH', 'security settings updated', 'blue');
+  res.json({ ok: true });
+});
+
+// ── CUSTOM COMMANDS ───────────────────────────────────
+app.get('/api/customcommands', (req, res) => res.json(state.customCommands || {}));
+
+app.post('/api/customcommands', (req, res) => {
+  const { trigger, response } = req.body;
+  if (!trigger || !response) return res.status(400).json({ error: 'trigger and response required' });
+  if (!state.customCommands) state.customCommands = {};
+  state.customCommands[trigger.toLowerCase().trim()] = response.trim();
+  saveState();
+  addLog('DASH', 'custom command added: ' + trigger, 'green');
+  res.json({ ok: true });
+});
+
+app.delete('/api/customcommands/:trigger', (req, res) => {
+  const t = decodeURIComponent(req.params.trigger);
+  if (state.customCommands) delete state.customCommands[t];
+  saveState();
+  res.json({ ok: true });
+});
+
+// ── SLOWMODE ──────────────────────────────────────────
+app.post('/api/slowmode', async (req, res) => {
+  const { guildId, channelId, seconds } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    const channel = guild?.channels.cache.get(channelId);
+    if (!channel) return res.status(404).json({ error: 'channel not found' });
+    await channel.setRateLimitPerUser(parseInt(seconds) || 0);
+    if (!state.slowmodeChannels) state.slowmodeChannels = {};
+    if (seconds > 0) state.slowmodeChannels[channelId] = parseInt(seconds);
+    else delete state.slowmodeChannels[channelId];
+    saveState();
+    addLog('MOD', 'slowmode set to ' + seconds + 's in #' + channel.name, 'yellow');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ADVANCED LOG CHANNELS ────────────────────────────
+app.get('/api/logchannels/extra', (req, res) => res.json(state.logChannelsExtra || {}));
+
+app.post('/api/logchannels/extra', (req, res) => {
+  if (!state.logChannelsExtra) state.logChannelsExtra = {};
+  const allowed = ['nicknameChanges','inviteCreated','inviteDeleted','messagesBulkDelete',
+    'stageEvents','threadCreated','threadDeleted','boostEvents','emojiCreated','emojiDeleted','webhookChanges'];
+  allowed.forEach(k => { if (req.body[k] !== undefined) state.logChannelsExtra[k] = req.body[k] || null; });
+  saveState();
+  addLog('DASH', 'advanced log channels updated', 'blue');
+  res.json({ ok: true });
+});
+
+// ── LOCK/UNLOCK SERVER (anti-raid manual) ────────────
+app.post('/api/security/lockdown', async (req, res) => {
+  const { guildId, lock } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in server' });
+    const { PermissionFlagsBits } = require('discord.js');
+    let count = 0;
+    for (const [, channel] of guild.channels.cache) {
+      if (channel.type !== 0) continue;
+      try {
+        await channel.permissionOverwrites.edit(guild.id, { SendMessages: lock ? false : null });
+        count++;
+      } catch(e) {}
+    }
+    state.antiRaidLocked = !!lock;
+    addLog('SECURITY', (lock ? 'SERVER LOCKED DOWN' : 'server unlocked') + ' — ' + count + ' channels', lock ? 'red' : 'green');
+    res.json({ ok: true, channelsAffected: count });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
