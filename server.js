@@ -3,7 +3,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
-const { client, state, addLog, addWarning, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState } = require('./bot');
+const { client, state, addLog, addWarning, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState, createBackup } = require('./bot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,8 +11,10 @@ const TOKEN = process.env.BOT_TOKEN;
 const DISCORD = 'https://discord.com/api/v10';
 
 // ── AUTH ──────────────────────────────────────────────
-const USERNAME = process.env.DASH_USER || 'foufou';
-const PASSWORD = process.env.DASH_PASS || 'fouedben9911';
+const USERS = [
+  { username: process.env.DASH_USER || 'foufou',  password: process.env.DASH_PASS || 'fouedben9911' },
+  { username: 'yassine', password: 'yassine2010yassine' },
+];
 const sessions = new Set();
 
 function makeSession() {
@@ -41,7 +43,7 @@ app.get('/login', (req, res) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === USERNAME && password === PASSWORD) {
+  if (USERS.some(u => u.username === username && u.password === password)) {
     const sid = makeSession();
     res.setHeader('Set-Cookie', `session=${sid}; Path=/; HttpOnly; SameSite=Strict; Max-Age=86400`);
     return res.json({ ok: true });
@@ -483,6 +485,126 @@ app.post('/api/tempvoice/control', async (req, res) => {
     addLog('VOICE', 'temp vc ' + action + ' on #' + channel.name + ' from dashboard', 'cyan');
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── EXTENDED SETTINGS ────────────────────────────────
+app.post('/api/settings/welcome', (req, res) => {
+  const { welcomeGif, goodbyeGif, ticketGif, welcomeChannelId, goodbyeChannelId, welcomeMessage, goodbyeMessage, welcomeEnabled, goodbyeEnabled } = req.body;
+  if (welcomeGif !== undefined) state.welcomeGif = welcomeGif || null;
+  if (goodbyeGif !== undefined) state.goodbyeGif = goodbyeGif || null;
+  if (ticketGif !== undefined) state.ticketGif = ticketGif || null;
+  if (welcomeChannelId !== undefined) state.welcomeChannelId = welcomeChannelId || null;
+  if (goodbyeChannelId !== undefined) state.goodbyeChannelId = goodbyeChannelId || null;
+  if (welcomeMessage !== undefined) state.welcomeMessage = welcomeMessage;
+  if (goodbyeMessage !== undefined) state.goodbyeMessage = goodbyeMessage;
+  if (welcomeEnabled !== undefined) state.welcomeEnabled = welcomeEnabled;
+  if (goodbyeEnabled !== undefined) state.goodbyeEnabled = goodbyeEnabled;
+  saveState();
+  res.json({ ok: true });
+});
+
+app.get('/api/settings/welcome', (req, res) => {
+  res.json({
+    welcomeGif: state.welcomeGif, goodbyeGif: state.goodbyeGif, ticketGif: state.ticketGif,
+    welcomeChannelId: state.welcomeChannelId, goodbyeChannelId: state.goodbyeChannelId,
+    welcomeMessage: state.welcomeMessage, goodbyeMessage: state.goodbyeMessage,
+    welcomeEnabled: state.welcomeEnabled, goodbyeEnabled: state.goodbyeEnabled,
+  });
+});
+
+// ── REACTION ROLES ────────────────────────────────────
+app.get('/api/reactionroles', (req, res) => res.json(state.reactionRoles || {}));
+
+app.post('/api/reactionroles/create', async (req, res) => {
+  const { guildId, channelId, emoji, roleId, description } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in server' });
+    const channel = guild.channels.cache.get(channelId);
+    if (!channel) return res.status(404).json({ error: 'channel not found' });
+    const { EmbedBuilder } = require('discord.js');
+    const embed = new EmbedBuilder()
+      .setColor(0x5865f2)
+      .setTitle('🎭 reaction roles')
+      .setDescription((description || 'react to get a role') + '\n\n' + emoji + ' -> <@&' + roleId + '>')
+      .setFooter({ text: 'fa11en · react to assign role' })
+      .setTimestamp();
+    const msg = await channel.send({ embeds: [embed] });
+    await msg.react(emoji);
+    if (!state.reactionRoles) state.reactionRoles = {};
+    if (!state.reactionRoles[msg.id]) state.reactionRoles[msg.id] = { guildId, channelId, roles: {} };
+    state.reactionRoles[msg.id].roles[emoji] = roleId;
+    saveState();
+    addLog('ROLE', 'reaction role created in #' + channel.name, 'green');
+    res.json({ ok: true, messageId: msg.id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/reactionroles/add', async (req, res) => {
+  const { messageId, guildId, channelId, emoji, roleId } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    const channel = guild?.channels.cache.get(channelId);
+    const msg = await channel?.messages.fetch(messageId);
+    if (!msg) return res.status(404).json({ error: 'message not found' });
+    await msg.react(emoji);
+    if (!state.reactionRoles[messageId]) state.reactionRoles[messageId] = { guildId, channelId, roles: {} };
+    state.reactionRoles[messageId].roles[emoji] = roleId;
+    saveState();
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/reactionroles/:msgId', async (req, res) => {
+  const { msgId } = req.params;
+  const rr = state.reactionRoles?.[msgId];
+  if (rr) {
+    try {
+      const guild = client.guilds.cache.get(rr.guildId);
+      const channel = guild?.channels.cache.get(rr.channelId);
+      const msg = await channel?.messages.fetch(msgId).catch(() => null);
+      if (msg) await msg.delete();
+    } catch(e) {}
+    delete state.reactionRoles[msgId];
+    saveState();
+  }
+  res.json({ ok: true });
+});
+
+// ── SERVER BACKUP ─────────────────────────────────────
+app.get('/api/backup/:guildId', (req, res) => {
+  const backups = state.serverBackups?.[req.params.guildId] || [];
+  res.json(backups);
+});
+
+app.post('/api/backup/create', async (req, res) => {
+  const { guildId } = req.body;
+  try {
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).json({ error: 'bot not in server' });
+    const backup = await createBackup(guild);
+    addLog('DASH', 'server backup created for ' + guild.name, 'green');
+    res.json({ ok: true, backup });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/backup/:guildId/:index', (req, res) => {
+  const { guildId, index } = req.params;
+  if (state.serverBackups?.[guildId]) {
+    state.serverBackups[guildId].splice(parseInt(index), 1);
+    saveState();
+  }
+  res.json({ ok: true });
+});
+
+// ── AUTOMOD EXTENDED ──────────────────────────────────
+app.post('/api/automod/settings', (req, res) => {
+  const allowed = ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter',
+    'blockLinks','blockDuplicates','blockEmojiSpam','blockMentionSpam','emojiSpamLimit','mentionSpamLimit','autobanThreshold','muteMinutes'];
+  allowed.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k]; });
+  saveState();
+  addLog('DASH','automod settings updated','blue');
+  res.json({ ok: true });
 });
 
 // ── FALLBACK ──────────────────────────────────────────
