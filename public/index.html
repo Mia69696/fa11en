@@ -827,27 +827,39 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ TICKETS ══ -->
   <div class="page" id="page-tickets">
-    <div class="sh"><div><h2>tickets</h2><p>/ticket opens a channel, /closeticket closes it</p></div></div>
+    <div class="sh"><div><h2>tickets</h2><p>customise the panel, pick channel, send it</p></div><button class="btn btn-w" onclick="saveTicketSettings()"><i class="fas fa-check"></i> save settings</button></div>
     <div class="g2">
       <div class="card">
-        <div class="ch"><div class="ct">settings</div></div>
+        <div class="ch"><div class="ct">settings</div><div class="tog" id="tk-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
         <div class="cb">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div><div style="font-size:12px;font-weight:700">Tickets Enabled</div></div>
-            <div class="tog" id="tk-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div>
-          </div>
-          <div style="font-size:11px;color:var(--txt2);line-height:1.6;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:12px">
-            <b style="color:var(--txt)">how it works:</b><br>
-            user types <span class="mono">/ticket</span> → bot creates a private channel → staff can see it → type <span class="mono">/closeticket</span> to delete the channel
-          </div>
+          <label class="fl">Panel Title</label>
+          <input class="inp" id="ticketTitle" placeholder="Staff Support" style="margin-bottom:10px">
+          <label class="fl">Panel Description</label>
+          <textarea class="inp" id="ticketDescription" placeholder="Contact our staff team privately..." style="margin-bottom:10px;height:80px"></textarea>
+          <label class="fl">Panel GIF URL <span style="color:var(--txt2)">(shows in the embed)</span></label>
+          <input class="inp" id="ticketGifUrl" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
+          <div id="tkGifPrev" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="tkGifImg" style="width:100%;max-height:120px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:0" onclick="previewGif('ticketGifUrl','tkGifPrev','tkGifImg')"><i class="fas fa-eye"></i> preview gif</button>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ct">commands</div></div>
+        <div class="ch"><div class="ct">send ticket panel</div><span class="tag t-cyan">posts button to channel</span></div>
         <div class="cb">
-          <div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticket</span></div><div style="font-size:11px;color:var(--txt2)">creates a private ticket channel for the user</div></div>
-          <div><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/closeticket</span></div><div style="font-size:11px;color:var(--txt2)">closes and deletes the ticket (mods only)</div></div>
+          <label class="fl">Server</label>
+          <select class="inp" id="tkGuild" style="margin-bottom:10px" onchange="loadTkChannels()"></select>
+          <label class="fl">Channel to post panel in</label>
+          <select class="inp" id="tkChannel" style="margin-bottom:14px"></select>
+          <button class="btn btn-w" style="width:100%;margin-bottom:10px" onclick="sendTicketPanel()"><i class="fas fa-paper-plane"></i> send ticket panel to channel</button>
+          <div style="font-size:10px;color:var(--txt3);line-height:1.5">posts the embed with the <b>Create Ticket</b> button. saves settings first, then sends with your current gif + text.</div>
         </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="ch"><div class="ct">commands</div></div>
+      <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticket</span></div><div style="font-size:11px;color:var(--txt2)">opens a private ticket channel</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/closeticket</span></div><div style="font-size:11px;color:var(--txt2)">closes and deletes the ticket</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticketpanel</span></div><div style="font-size:11px;color:var(--txt2)">post a ticket panel in any channel</div></div>
       </div>
     </div>
   </div>
@@ -1068,7 +1080,7 @@ textarea.inp{resize:vertical;min-height:72px;}
       </div>
       <div class="card">
         <div class="ch"><div class="ct">saved backups</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadBackups()"><i class="fas fa-sync-alt"></i> refresh</button></div>
-        <div id="backupList"><div class="empty">select a server and refresh</div></div>
+        <div id="backupList"><div class="empty">select a server and click refresh</div></div>
       </div>
     </div>
   </div>
@@ -1150,7 +1162,6 @@ let cfg = {};
 let toastTmr;
 let allLogs = [];
 
-// NAV
 document.querySelectorAll('.ni[data-page]').forEach(function(el) {
   el.addEventListener('click', function() {
     document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('active'); });
@@ -1160,7 +1171,7 @@ document.querySelectorAll('.ni[data-page]').forEach(function(el) {
     document.getElementById('pageTitle').textContent = el.textContent.replace(/\d+$/, '').trim();
     var p = el.dataset.page;
     if(p==='servers') loadServers();
-    if(p==='logs'){ fillGuildSelects(); loadLogs(); var lp=document.getElementById('logGuildPicker'); if(lp) lp.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); }
+    if(p==='logs'){ fillGuildSelects(); loadLogs(); var lp=document.getElementById('logGuildPicker'); if(lp){ lp.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ lp.value=guilds[0].id; loadLogChannels(); } } }
     if(p==='infractions'){ loadInfractions(); fillGuildSelects(); }
     if(p==='analytics') loadAnalytics();
     if(p==='leveling') loadLeaderboard();
@@ -1169,758 +1180,367 @@ document.querySelectorAll('.ni[data-page]').forEach(function(el) {
     if(p==='verify'){ fillGuildSelects(); loadVerifySettings(); loadVerifyChannels(); }
     if(p==='members'){ fillGuildSelects(); fillMemberPicker(); }
     if(p==='tempvoice'){ fillGuildSelects(); loadTVSettings(); }
-    if(p==='reactionroles'){ fillGuildSelects(); var rg=document.getElementById('rrGuild'); if(rg) rg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadReactionRoles(); if(guilds.length){ document.getElementById('rrGuild').value=guilds[0].id; loadRRChannels(); } }
-    if(p==='backup'){ var bg=document.getElementById('backupGuild'); if(bg) bg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); }
-    if(p==='welcome'){ fillGuildSelects(); var wg=document.getElementById('welcomeGuildPicker'); if(wg) wg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadWelcomeFull(); if(guilds.length){ document.getElementById('welcomeGuildPicker').value=guilds[0].id; loadWelcomeChannels(); } }
+    if(p==='tickets'){ fillGuildSelects(); loadTicketSettings(); var tg=document.getElementById('tkGuild'); if(tg){ tg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ tg.value=guilds[0].id; loadTkChannels(); } } }
+    if(p==='reactionroles'){ fillGuildSelects(); var rg=document.getElementById('rrGuild'); if(rg){ rg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ rg.value=guilds[0].id; loadRRChannels(); } } loadReactionRoles(); }
+    if(p==='backup'){ var bg=document.getElementById('backupGuild'); if(bg){ bg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); } }
+    if(p==='welcome'){ fillGuildSelects(); var wg=document.getElementById('welcomeGuildPicker'); if(wg) wg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadWelcomeFull(); if(guilds.length){ setTimeout(function(){ var wp=document.getElementById('welcomeGuildPicker'); if(wp){ wp.value=guilds[0].id; loadWelcomeChannels(); } },100); } }
   });
 });
 
-function nav(p){ document.querySelector('.ni[data-page="'+p+'"]').click(); }
+function nav(p){ var el=document.querySelector('.ni[data-page="'+p+'"]'); if(el) el.click(); }
 
-// API
 async function api(path, opts){
   var r = await fetch(path, opts);
   if(!r.ok) throw new Error('HTTP '+r.status);
   return r.json();
 }
 
-// INIT
 async function initAll(){
   try {
     var results = await Promise.all([api('/api/bot'), api('/api/guilds'), api('/api/settings')]);
-    var bot = results[0], gd = results[1], s = results[2];
-    clientId = bot.id;
-    guilds = Array.isArray(gd) ? gd : [];
-    cfg = s;
-    var name = bot.username || 'fa11en';
-    document.getElementById('sbName').textContent = name;
-    document.getElementById('sbId').textContent = 'id: '+bot.id;
-    document.getElementById('footName').textContent = name;
-    document.getElementById('bnName').textContent = name;
-    document.getElementById('bnSub').textContent = 'id: '+bot.id+' | api '+bot._ping+'ms | ws '+bot._wsPing+'ms | online';
-    document.getElementById('pingTxt').textContent = bot._ping+' ms';
-    document.getElementById('iName').textContent = name;
-    document.getElementById('iId').textContent = bot.id;
-    document.getElementById('iGuilds').textContent = guilds.length;
-    document.getElementById('iApiPing').textContent = bot._ping+'ms';
-    document.getElementById('iWsPing').textContent = bot._wsPing+'ms';
-    setStat('s1v', guilds.length);
-    document.getElementById('s1b').textContent = guilds.length+' total';
-    setStat('s3v', bot._ping+'ms');
-    document.getElementById('s4v').textContent = 'online';
-    document.getElementById('statusTag').textContent = 'online';
-    document.getElementById('statusTag').className = 'tag t-green';
-    var total = guilds.reduce(function(a,g){ return a+(g.member_count||0); },0);
-    if(total){ setStat('s2v', total); document.getElementById('s2b').textContent = 'total'; }
+    var bot=results[0], gd=results[1], s=results[2];
+    clientId=bot.id; guilds=Array.isArray(gd)?gd:[]; cfg=s;
+    var name=bot.username||'fa11en';
+    ['sbName','footName','bnName','iName'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; });
+    var e; 
+    e=document.getElementById('sbId'); if(e) e.textContent='id: '+bot.id;
+    e=document.getElementById('bnSub'); if(e) e.textContent='id: '+bot.id+' | api '+bot._ping+'ms | online';
+    e=document.getElementById('pingTxt'); if(e) e.textContent=bot._ping+' ms';
+    e=document.getElementById('iId'); if(e) e.textContent=bot.id;
+    e=document.getElementById('iGuilds'); if(e) e.textContent=guilds.length;
+    e=document.getElementById('iApiPing'); if(e) e.textContent=bot._ping+'ms';
+    e=document.getElementById('iWsPing'); if(e) e.textContent=(bot._wsPing||bot._ping)+'ms';
+    setStat('s1v',guilds.length);
+    e=document.getElementById('s1b'); if(e) e.textContent=guilds.length+' total';
+    setStat('s3v',bot._ping+'ms');
+    e=document.getElementById('s4v'); if(e) e.textContent='online';
+    e=document.getElementById('statusTag'); if(e){ e.textContent='online'; e.className='tag t-green'; }
+    var total=guilds.reduce(function(a,g){return a+(g.member_count||0);},0);
+    if(total){ setStat('s2v',total); e=document.getElementById('s2b'); if(e) e.textContent='total'; }
     if(bot.avatar){
-      var url = 'https://cdn.discordapp.com/avatars/'+bot.id+'/'+bot.avatar+'.png?size=64';
-      document.getElementById('sbAv').innerHTML = '<img src="'+url+'"><span class="dot"></span>';
-      document.getElementById('footAv').innerHTML = '<img src="'+url+'">';
+      var url='https://cdn.discordapp.com/avatars/'+bot.id+'/'+bot.avatar+'.png?size=64';
+      e=document.getElementById('sbAv'); if(e) e.innerHTML='<img src="'+url+'"><span class="dot"></span>';
+      e=document.getElementById('footAv'); if(e) e.innerHTML='<img src="'+url+'">';
     }
-    applySettings(cfg);
-    loadDashLogs();
+    applySettings(cfg); loadDashLogs();
     toast('connected | '+name,'green');
-  } catch(e) {
-    document.getElementById('bnSub').textContent = 'connection error';
-    document.getElementById('statusTag').textContent = 'offline';
-    document.getElementById('statusTag').className = 'tag t-red';
+  } catch(e){
+    var st=document.getElementById('statusTag'); if(st){st.textContent='offline';st.className='tag t-red';}
     toast('error: '+e.message,'red');
   }
 }
 
-// SETTINGS
 function applySettings(s){
-  cfg = s;
-  var keys = ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled','blockDuplicates','blockEmojiSpam','verificationEnabled'];
-  keys.forEach(function(k){ document.querySelectorAll('[data-key="'+k+'"]').forEach(function(el){ el.classList.toggle('on', !!s[k]); }); });
-  if(s.welcomeMessage) document.getElementById('welcomeMessage').value = s.welcomeMessage;
-  if(s.goodbyeMessage) document.getElementById('goodbyeMessage').value = s.goodbyeMessage;
-  if(s.levelUpMessage) document.getElementById('levelUpMessage').value = s.levelUpMessage;
-  if(s.welcomeChannelId) { var w=document.getElementById('welcomeChannelId'); if(w) w.value=s.welcomeChannelId; }
-  if(s.autobanThreshold) document.getElementById('autobanThreshold').value = s.autobanThreshold;
-  if(s.muteMinutes) document.getElementById('muteMinutes').value = s.muteMinutes;
-  if(s.prefix) document.getElementById('settPrefix').value = s.prefix;
-  if(s.badWordsList) document.getElementById('badWordsList').value = Array.isArray(s.badWordsList) ? s.badWordsList.join(', ') : s.badWordsList;
+  cfg=s;
+  ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled','blockDuplicates','blockEmojiSpam','verificationEnabled'].forEach(function(k){
+    document.querySelectorAll('[data-key="'+k+'"]').forEach(function(el){ el.classList.toggle('on',!!s[k]); });
+  });
+  var pairs=[['welcomeMessage','welcomeMessage'],['goodbyeMessage','goodbyeMessage'],['levelUpMessage','levelUpMessage'],['autobanThreshold','autobanThreshold'],['muteMinutes','muteMinutes'],['prefix','settPrefix']];
+  pairs.forEach(function(p){ if(s[p[0]]){ var el=document.getElementById(p[1]); if(el) el.value=s[p[0]]; } });
+  if(s.badWordsList){ var el=document.getElementById('badWordsList'); if(el) el.value=Array.isArray(s.badWordsList)?s.badWordsList.join(', '):s.badWordsList; }
 }
 
-// TOGGLE
 async function toggle(el){
-  var key = el.dataset.key;
-  var value = !el.classList.contains('on');
-  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(e){ e.classList.toggle('on', value); });
-  try {
-    await api('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:value})});
-    toast((value?'enabled':'disabled')+' '+key.replace(/([A-Z])/g,' $1').toLowerCase(), value?'green':'yellow');
-  } catch(e){ toast('toggle failed: '+e.message,'red'); }
+  var key=el.dataset.key, value=!el.classList.contains('on');
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(e){ e.classList.toggle('on',value); });
+  try { await api('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:value})}); toast((value?'enabled':'disabled')+' '+key,'green'); }
+  catch(e){ toast('toggle failed: '+e.message,'red'); }
 }
 
-// SERVERS
 async function loadServers(){
-  var card = document.getElementById('serversCard');
-  card.innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
+  var card=document.getElementById('serversCard');
+  card.innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
   try {
-    var data = await api('/api/guilds');
-    guilds = Array.isArray(data) ? data : [];
+    var data=await api('/api/guilds'); guilds=Array.isArray(data)?data:[];
     if(guilds.length){
-      card.innerHTML = guilds.map(function(g){
-        var ico = g.icon ? '<img src="https://cdn.discordapp.com/icons/'+g.id+'/'+g.icon+'.png?size=64" onerror="this.parentElement.textContent=\''+g.name.charAt(0).toUpperCase()+'\'">' : g.name.charAt(0).toUpperCase();
-        return '<div class="svr"><div class="svr-ico">'+ico+'</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+g.name+'</div><div style="font-size:10px;color:var(--txt2)">'+g.id+(g.owner?' | <span style="color:var(--yellow)">owner</span>':'')+(g.member_count?' | '+g.member_count.toLocaleString()+' members':'')+'</div></div><span class="tag t-green">active</span></div>';
+      card.innerHTML=guilds.map(function(g){
+        var ico=g.icon?'<img src="https://cdn.discordapp.com/icons/'+g.id+'/'+g.icon+'.png?size=64" onerror="this.parentElement.textContent=\''+g.name.charAt(0).toUpperCase()+'\'">':g.name.charAt(0).toUpperCase();
+        return '<div class="svr"><div class="svr-ico">'+ico+'</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+g.name+'</div><div style="font-size:10px;color:var(--txt2)">'+g.id+(g.member_count?' | '+g.member_count.toLocaleString()+' members':'')+'</div></div><span class="tag t-green">active</span></div>';
       }).join('');
       toast(guilds.length+' servers loaded','green');
-      staggerAnimate(card, '.svr');
-    } else card.innerHTML = '<div class="empty">no servers found</div>';
-  } catch(e){ card.innerHTML = '<div class="empty" style="color:var(--red)">error: '+e.message+'</div>'; }
+    } else card.innerHTML='<div class="empty">no servers found</div>';
+  } catch(e){ card.innerHTML='<div class="empty" style="color:var(--red)">error: '+e.message+'</div>'; }
 }
 
-// MEMBERS
-function fillMemberPicker(){
-  var sel = document.getElementById('memberGuildPicker');
-  if(sel) sel.innerHTML = guilds.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('');
-}
+function fillMemberPicker(){ var sel=document.getElementById('memberGuildPicker'); if(sel) sel.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); }
 
 async function loadMembers(){
-  var id = document.getElementById('memberGuildPicker').value;
-  if(!id){ toast('select a server first','yellow'); return; }
-  var card = document.getElementById('membersCard');
-  card.innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
+  var id=document.getElementById('memberGuildPicker').value;
+  if(!id){toast('select a server first','yellow');return;}
+  var card=document.getElementById('membersCard');
+  card.innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
   try {
-    var data = await api('/api/guilds/'+id+'/members');
+    var data=await api('/api/guilds/'+id+'/members');
     if(Array.isArray(data)&&data.length){
-      var g = guilds.find(function(x){ return x.id===id; });
-      var rows = data.map(function(m){
-        var u = m.user||{};
-        var name = u.global_name||u.username||'unknown';
-        var av = u.avatar ? '<img src="https://cdn.discordapp.com/avatars/'+u.id+'/'+u.avatar+'.png?size=32">' : name.charAt(0).toUpperCase();
-        var joined = m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '-';
-        return '<div class="mrow"><div class="mav">'+av+'</div><div style="flex:1"><div style="font-size:11px;font-weight:700">'+name+(u.bot?' <span class="tag t-blue" style="font-size:8px">BOT</span>':'')+'</div><div style="font-size:9px;color:var(--txt3)">'+u.id+'</div></div><div style="font-size:10px;color:var(--txt3)">'+joined+'</div></div>';
-      }).join('');
-      card.innerHTML = '<div class="ch"><div class="ct">members - '+(g?g.name:id)+'</div><span class="tag t-white">'+data.length+' loaded</span></div><div class="scrollarea">'+rows+'</div>';
-      toast(data.length+' members loaded','green');
-      staggerAnimate(card, '.mrow');
-    } else if(data&&data.message){
-      card.innerHTML = '<div class="empty" style="color:var(--red)">'+data.message+'<br><small>enable Server Members Intent in Discord Developer Portal</small></div>';
-    } else card.innerHTML = '<div class="empty">no members found</div>';
-  } catch(e){ card.innerHTML = '<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+      var g=guilds.find(function(x){return x.id===id;});
+      card.innerHTML='<div class="ch"><div class="ct">members - '+(g?g.name:id)+'</div></div><div class="scrollarea">'+data.map(function(m){
+        var u=m.user||{}, name=u.global_name||u.username||'unknown';
+        var av=u.avatar?'<img src="https://cdn.discordapp.com/avatars/'+u.id+'/'+u.avatar+'.png?size=32">':name.charAt(0).toUpperCase();
+        return '<div class="mrow"><div class="mav">'+av+'</div><div style="flex:1"><div style="font-size:11px;font-weight:700">'+name+'</div><div style="font-size:9px;color:var(--txt3)">'+u.id+'</div></div><div style="font-size:10px;color:var(--txt3)">'+(m.joined_at?new Date(m.joined_at).toLocaleDateString():'-')+'</div></div>';
+      }).join('')+'</div>';
+    } else card.innerHTML='<div class="empty">no members found</div>';
+  } catch(e){ card.innerHTML='<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
 }
 
-// LOGS
 async function loadLogs(){
-  document.getElementById('logsList').innerHTML = '<div class="ld"><span></span><span></span><span></span></div>';
-  try { renderLogs(await api('/api/logs'), 'logsList'); }
-  catch(e){ document.getElementById('logsList').innerHTML = '<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+  document.getElementById('logsList').innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
+  try { renderLogs(await api('/api/logs'),'logsList'); }
+  catch(e){ document.getElementById('logsList').innerHTML='<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
 }
-
 async function loadDashLogs(){
-  try { renderLogs((await api('/api/logs')).slice(0,6), 'dashLogs'); }
-  catch(e){ document.getElementById('dashLogs').innerHTML = '<div class="empty">no logs yet</div>'; }
+  try { renderLogs((await api('/api/logs')).slice(0,6),'dashLogs'); }
+  catch(e){ var el=document.getElementById('dashLogs'); if(el) el.innerHTML='<div class="empty">no logs yet</div>'; }
 }
-
-function renderLogs(logs, id){
-  allLogs = logs;
-  var el = document.getElementById(id);
-  if(!logs||!logs.length){ el.innerHTML = '<div class="empty">no logs yet - actions will appear here automatically</div>'; return; }
-  displayLogs(logs, el);
-  var countEl = document.getElementById('logCount');
-  if(countEl) countEl.textContent = logs.length+' entries';
+function renderLogs(logs,id){
+  allLogs=logs; var el=document.getElementById(id); if(!el) return;
+  if(!logs||!logs.length){el.innerHTML='<div class="empty">no logs yet</div>';return;}
+  displayLogs(logs,el);
+  var ce=document.getElementById('logCount'); if(ce) ce.textContent=logs.length+' entries';
 }
-
-function displayLogs(logs, el){
-  var cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan',white:'t-white'};
-  var icons={DELETE:'DELETE',EDIT:'EDIT',JOIN:'JOIN',LEAVE:'LEAVE',MOD:'MOD',AUTOMOD:'AUTO',CMD:'CMD',VOICE:'VOICE',ROLE:'ROLE',FILE:'FILE',VERIFY:'VERIFY',LEVEL:'LEVEL',START:'START',DASH:'DASH',TICKET:'TICKET',CHANNEL:'CHANNEL'};
-  el.innerHTML = logs.map(function(l,i){
-    var icon = icons[l.type] || l.type;
-    var hasDetail = !!l.detail;
-    return '<div class="lgi" style="flex-direction:column;align-items:flex-start;gap:0;padding:10px 18px">'
-      +'<div style="display:flex;align-items:center;gap:10px;width:100%">'
-      +'<div class="lgt" style="width:52px;margin-top:0;font-size:9px">'+l.time+'</div>'
-      +'<div class="lgk"><span class="tag '+(cls[l.color]||'t-gray')+'">'+icon+'</span></div>'
-      +'<div class="lgm" style="flex:1">'+l.msg+'</div>'
-      +(hasDetail ? '<button onclick="toggleDetail('+i+')" style="background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-size:9px;color:var(--txt2);cursor:pointer;flex-shrink:0">show more</button>' : '')
-      +'</div>'
-      +(hasDetail ? '<div id="detail-'+i+'" style="display:none;margin-top:8px;margin-left:62px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:11px;color:var(--txt2);word-break:break-all;white-space:pre-wrap;max-width:100%">'+escHtml(l.detail)+'</div>' : '')
-      +'</div>';
+function displayLogs(logs,el){
+  var cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
+  el.innerHTML=logs.map(function(l,i){
+    var hasD=!!l.detail;
+    return '<div class="lgi" style="flex-direction:column;align-items:flex-start;gap:0;padding:10px 18px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div class="lgt" style="width:52px;font-size:9px">'+l.time+'</div><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span><div class="lgm" style="flex:1">'+l.msg+'</div>'+(hasD?'<button onclick="toggleDetail('+i+')" style="background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-size:9px;color:var(--txt2);cursor:pointer">more</button>':'')+'</div>'+(hasD?'<div id="detail-'+i+'" style="display:none;margin-top:8px;margin-left:62px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:11px;color:var(--txt2);word-break:break-all;white-space:pre-wrap">'+String(l.detail).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')+'</div>';
   }).join('');
-  staggerAnimate(el, '.lgi');
 }
-
-function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function toggleDetail(i){
-  var el = document.getElementById('detail-'+i);
-  if(!el) return;
-  var btn = el.previousElementSibling ? el.previousElementSibling.querySelector('button') : null;
-  if(el.style.display==='none'){ el.style.display='block'; if(btn) btn.textContent='hide'; }
-  else { el.style.display='none'; if(btn) btn.textContent='show more'; }
-}
-
-function filterLogs(){
-  var filter = document.getElementById('logFilter') ? document.getElementById('logFilter').value : '';
-  var filtered = filter ? allLogs.filter(function(l){ return l.type===filter; }) : allLogs;
-  var el = document.getElementById('logsList');
-  if(!el) return;
-  displayLogs(filtered, el);
-  var countEl = document.getElementById('logCount');
-  if(countEl) countEl.textContent = filtered.length+' entries'+(filter?' (filtered)':'');
-}
+function toggleDetail(i){ var el=document.getElementById('detail-'+i); if(!el) return; var b=el.previousElementSibling?el.previousElementSibling.querySelector('button'):null; if(el.style.display==='none'){el.style.display='block';if(b)b.textContent='less';}else{el.style.display='none';if(b)b.textContent='more';} }
+function filterLogs(){ var f=document.getElementById('logFilter')?document.getElementById('logFilter').value:''; var fd=f?allLogs.filter(function(l){return l.type===f;}):allLogs; var el=document.getElementById('logsList'); if(el) displayLogs(fd,el); var ce=document.getElementById('logCount'); if(ce) ce.textContent=fd.length+' entries'+(f?' (filtered)':''); }
 
 // LOG CHANNELS
 async function loadLogChannels(){
-  var guildId = document.getElementById('logGuildPicker').value;
-  if(!guildId) return;
+  var guildId=document.getElementById('logGuildPicker').value; if(!guildId) return;
   try {
-    var results = await Promise.all([api('/api/guilds/'+guildId+'/channels'), api('/api/logchannels')]);
-    var chs = results[0], saved = results[1];
-    var text = Array.isArray(chs) ? chs.filter(function(c){ return c.type===0; }) : [];
-    var opts = '<option value="">disabled</option>'+text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-    var keys = ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'];
-    keys.forEach(function(k){
-      var el = document.getElementById('lc-'+k);
-      if(el){ el.innerHTML = opts; if(saved[k]) el.value = saved[k]; }
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/logchannels')]);
+    var chs=results[0],saved=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'].forEach(function(k){
+      var el=document.getElementById('lc-'+k); if(el){el.innerHTML=opts;if(saved[k])el.value=saved[k];}
     });
-  } catch(e){ toast('failed to load channels: '+e.message,'red'); }
-}
-
-async function saveLogChannels(){
-  var body = {};
-  var keys = ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'];
-  keys.forEach(function(k){ var el = document.getElementById('lc-'+k); if(el) body[k] = el.value || null; });
-  try {
-    await api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    toast('log channels saved','green');
-  } catch(e){ toast('save failed: '+e.message,'red'); }
-}
-
-async function clearLogs(){
-  await api('/api/logs',{method:'DELETE'});
-  document.getElementById('logsList').innerHTML = '<div class="empty">logs cleared</div>';
-  toast('logs cleared','green');
-}
-
-// INFRACTIONS
-async function loadInfractions(){
-  try { renderInfractions(await api('/api/infractions')); }
-  catch(e){ toast('failed to load infractions','red'); }
-}
-
-function renderInfractions(data){
-  var n = data.length;
-  document.getElementById('infCount').textContent = n+' record'+(n!==1?'s':'');
-  document.getElementById('infBadge').textContent = n;
-  var empty = document.getElementById('infEmpty');
-  var body = document.getElementById('infBody');
-  if(!n){ body.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none';
-  body.innerHTML = data.map(function(i){ return '<tr><td class="mono">#'+String(i.id).padStart(3,'0')+'</td><td style="font-size:11px">'+i.user+'</td><td><span class="tag '+(i.act==='ban'||i.act==='kick'?'t-red':'t-yellow')+'">'+i.act+'</span></td><td style="color:var(--txt2);font-size:11px">'+i.reason+'</td><td style="color:var(--txt3);font-size:10px">'+i.time+'</td><td><button class="btn btn-r" style="padding:2px 7px;font-size:9px" onclick="removeInfraction('+i.id+')">remove</button></td></tr>'; }).join('');
-}
-
-async function issueInfraction(){
-  var guildId = document.getElementById('infGuild').value;
-  var userId = document.getElementById('infUser').value.trim();
-  var act = document.getElementById('infAct').value;
-  var reason = document.getElementById('infReason').value.trim()||'no reason';
-  if(!userId){ toast('enter a user id','red'); return; }
-  if(!guildId){ toast('select a server','red'); return; }
-  var eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban'};
-  try {
-    var res = await api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:10})});
-    toast(act+' executed - '+(res.message||'done'),'green');
-    loadInfractions();
-    document.getElementById('infUser').value='';
-    document.getElementById('infReason').value='';
+    toast(text.length+' channels loaded — pick a channel for each log type then hit save','blue');
   } catch(e){ toast('failed: '+e.message,'red'); }
 }
-
-async function removeInfraction(id){
-  await api('/api/infractions/'+id,{method:'DELETE'});
-  loadInfractions();
+async function saveLogChannels(){
+  var body={};
+  ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'].forEach(function(k){ var el=document.getElementById('lc-'+k); if(el) body[k]=el.value||null; });
+  try { await api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('log channels saved! bot will now send logs there','green'); }
+  catch(e){ toast('save failed: '+e.message,'red'); }
 }
+async function clearLogs(){ await api('/api/logs',{method:'DELETE'}); document.getElementById('logsList').innerHTML='<div class="empty">logs cleared</div>'; toast('logs cleared','green'); }
 
-async function clearInfractions(){
-  await api('/api/infractions',{method:'DELETE'});
-  renderInfractions([]);
-  toast('infractions cleared','green');
+// INFRACTIONS
+async function loadInfractions(){ try{renderInfractions(await api('/api/infractions'));}catch(e){toast('failed','red');} }
+function renderInfractions(data){
+  var n=data.length;
+  var ic=document.getElementById('infCount'); if(ic) ic.textContent=n+' record'+(n!==1?'s':'');
+  var ib=document.getElementById('infBadge'); if(ib) ib.textContent=n;
+  var em=document.getElementById('infEmpty'),bd=document.getElementById('infBody');
+  if(!n){if(bd)bd.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';
+  if(bd) bd.innerHTML=data.map(function(i){return '<tr><td class="mono">#'+String(i.id).padStart(3,'0')+'</td><td>'+i.user+'</td><td><span class="tag '+(i.act==='ban'||i.act==='kick'?'t-red':'t-yellow')+'">'+i.act+'</span></td><td style="color:var(--txt2);font-size:11px">'+i.reason+'</td><td style="color:var(--txt3);font-size:10px">'+i.time+'</td><td><button class="btn btn-r" style="padding:2px 7px;font-size:9px" onclick="removeInfraction('+i.id+')">remove</button></td></tr>';}).join('');
 }
+async function issueInfraction(){
+  var guildId=document.getElementById('infGuild').value,userId=document.getElementById('infUser').value.trim(),act=document.getElementById('infAct').value,reason=document.getElementById('infReason').value.trim()||'no reason';
+  if(!userId){toast('enter a user id','red');return;} if(!guildId){toast('select a server','red');return;}
+  var eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban'};
+  try { var res=await api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:10})}); toast(act+' done: '+(res.message||'ok'),'green'); loadInfractions(); }
+  catch(e){ toast('failed: '+e.message,'red'); }
+}
+async function removeInfraction(id){ await api('/api/infractions/'+id,{method:'DELETE'}); loadInfractions(); }
+async function clearInfractions(){ await api('/api/infractions',{method:'DELETE'}); renderInfractions([]); toast('cleared','green'); }
 
 // ANALYTICS
 async function loadAnalytics(){
   try {
-    var results = await Promise.all([api('/api/logs'),api('/api/infractions'),api('/api/leaderboard'),api('/api/stats')]);
-    var logs=results[0], infs=results[1], lb=results[2], stats=results[3];
-    document.getElementById('an-lv').textContent = logs.length;
-    document.getElementById('an-iv').textContent = infs.length;
-    document.getElementById('an-xv').textContent = lb.length;
-    document.getElementById('an-tv').textContent = stats.totalTickets||0;
-    document.getElementById('an-lb').textContent = logs.length;
-    document.getElementById('an-ib').textContent = infs.length;
-    var medals = ['1','2','3'];
-    document.getElementById('lbBody').innerHTML = lb.length
-      ? lb.map(function(u,i){ return '<tr><td>'+(medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-white">'+u.level+'</span></td><td>'+u.xp+'</td></tr>'; }).join('')
-      : '<tr><td colspan="4" class="empty">no xp data yet</td></tr>';
+    var r=await Promise.all([api('/api/logs'),api('/api/infractions'),api('/api/leaderboard'),api('/api/stats')]);
+    var e; e=document.getElementById('an-lv');if(e)e.textContent=r[0].length; e=document.getElementById('an-iv');if(e)e.textContent=r[1].length; e=document.getElementById('an-xv');if(e)e.textContent=r[2].length; e=document.getElementById('an-tv');if(e)e.textContent=r[3].totalTickets||0;
+    var lb=r[2],medals=['1','2','3'],bd=document.getElementById('lbBody');
+    if(bd) bd.innerHTML=lb.length?lb.map(function(u,i){return '<tr><td>'+(medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-white">'+u.level+'</span></td><td>'+u.xp+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">no xp data yet</td></tr>';
   } catch(e){ toast('analytics error: '+e.message,'red'); }
 }
-
-// LEADERBOARD
 async function loadLeaderboard(){
-  try {
-    var lb = await api('/api/leaderboard');
-    var medals=['1.','2.','3.'];
-    document.getElementById('lvlBody').innerHTML = lb.length
-      ? lb.map(function(u,i){ return '<tr><td>'+(medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-yellow">'+u.level+'</span></td><td>'+u.xp+'</td></tr>'; }).join('')
-      : '<tr><td colspan="4" class="empty">no data yet</td></tr>';
-  } catch(e){}
+  try { var lb=await api('/api/leaderboard'),bd=document.getElementById('lvlBody'); if(bd) bd.innerHTML=lb.length?lb.map(function(u,i){return '<tr><td>'+(i+1)+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-yellow">'+u.level+'</span></td><td>'+u.xp+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">no data</td></tr>'; }catch(e){}
 }
 
 // GUILD SELECTS
 function fillGuildSelects(){
-  var ids = ['actGuild','purgeGuild','msgGuild','infGuild','verifyGuild','tvSetupGuild','tvControlGuild','logGuildPicker','memberGuildPicker'];
-  var opts = guilds.map(function(g){ return '<option value="'+g.id+'">'+g.name+'</option>'; }).join('');
+  var ids=['actGuild','purgeGuild','msgGuild','infGuild','verifyGuild','tvSetupGuild','tvControlGuild','logGuildPicker','memberGuildPicker'];
+  var opts=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
   ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=opts; });
 }
-
-async function loadChannelsFor(guildId, targetId){
+async function loadChannelsFor(guildId,targetId){
   if(!guildId) return;
-  try {
-    var chs = await api('/api/guilds/'+guildId+'/channels');
-    if(!Array.isArray(chs)) return;
-    var text = chs.filter(function(c){ return c.type===0; });
-    var el = document.getElementById(targetId);
-    if(el) el.innerHTML = '<option value="">select channel</option>'+text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-  } catch(e){ console.error('loadChannelsFor error:', e.message); }
+  try { var chs=await api('/api/guilds/'+guildId+'/channels'); if(!Array.isArray(chs)) return; var text=chs.filter(function(c){return c.type===0;}); var el=document.getElementById(targetId); if(el) el.innerHTML='<option value="">select channel</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); }
+  catch(e){ console.error(e.message); }
 }
-
 function loadChForPurge(){ loadChannelsFor(document.getElementById('purgeGuild').value,'purgeChannel'); }
 function loadChForMsg(){ loadChannelsFor(document.getElementById('msgGuild').value,'msgChannel'); }
 
 // ACTIONS
 function doAction(act){
-  var guildId = document.getElementById('actGuild').value;
-  var userId = document.getElementById('actUser').value.trim();
-  var reason = document.getElementById('actReason').value.trim()||'action from dashboard';
-  if(!userId){ toast('enter a user id','red'); return; }
-  openModal('confirm '+act,'about to <b>'+act+'</b> user <span class="mono">'+userId+'</span>.<br>reason: '+reason, function(){
+  var guildId=document.getElementById('actGuild').value,userId=document.getElementById('actUser').value.trim(),reason=document.getElementById('actReason').value.trim()||'dashboard action';
+  if(!userId){toast('enter a user id','red');return;}
+  openModal('confirm '+act,'about to <b>'+act+'</b> <span class="mono">'+userId+'</span><br>reason: '+reason,function(){
     var eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban',unban:'/api/action/unban',clearwarnings:'/api/action/clearwarnings'};
-    var mins = parseInt(document.getElementById('muteMinutes') ? document.getElementById('muteMinutes').value : 10)||10;
-    api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:mins})})
-      .then(function(res){ toast(act+' done: '+(res.message||'success'),'green'); closeModal(); loadInfractions(); })
-      .catch(function(e){ toast('failed: '+e.message,'red'); });
+    api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:10})})
+      .then(function(res){toast(act+' done','green');closeModal();loadInfractions();}).catch(function(e){toast('failed: '+e.message,'red');});
   });
 }
-
 function doPurge(){
-  var guildId = document.getElementById('purgeGuild').value;
-  var channelId = document.getElementById('purgeChannel').value;
-  var amount = parseInt(document.getElementById('purgeAmt').value)||10;
-  openModal('confirm purge','delete <b>'+amount+' messages</b> from the selected channel?<br>this cannot be undone.', function(){
+  var guildId=document.getElementById('purgeGuild').value,channelId=document.getElementById('purgeChannel').value,amount=parseInt(document.getElementById('purgeAmt').value)||10;
+  openModal('confirm purge','delete <b>'+amount+' messages</b>? cannot be undone.',function(){
     api('/api/action/purge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,amount:amount})})
-      .then(function(res){ toast('deleted '+res.deleted+' messages','green'); closeModal(); })
-      .catch(function(e){ toast('failed: '+e.message,'red'); });
+      .then(function(res){toast('deleted '+res.deleted+' messages','green');closeModal();}).catch(function(e){toast('failed: '+e.message,'red');});
   });
 }
-
-// SEND MESSAGE
 async function sendMsg(){
-  var guildId = document.getElementById('msgGuild').value;
-  var channelId = document.getElementById('msgChannel').value;
-  var message = document.getElementById('msgContent').value.trim();
-  if(!message){ toast('enter a message','red'); return; }
-  try {
-    await api('/api/action/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,message:message})});
-    toast('message sent','green');
-    document.getElementById('msgContent').value='';
-  } catch(e){ toast('failed: '+e.message,'red'); }
+  var guildId=document.getElementById('msgGuild').value,channelId=document.getElementById('msgChannel').value,message=document.getElementById('msgContent').value.trim();
+  if(!message){toast('enter a message','red');return;}
+  try { await api('/api/action/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,message:message})}); toast('message sent','green'); document.getElementById('msgContent').value=''; }
+  catch(e){ toast('failed: '+e.message,'red'); }
 }
+async function saveAutomod(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold').value)||3,muteMinutes:parseInt(document.getElementById('muteMinutes').value)||10}; try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('automod saved','green');}catch(e){toast('save failed','red');} }
+async function saveBadWords(){ var list=document.getElementById('badWordsList').value.split(',').map(function(w){return w.trim();}).filter(Boolean); try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({badWordsList:list})});toast('bad words updated ('+list.length+')','green');}catch(e){toast('save failed','red');} }
+async function saveLeveling(){ try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({levelUpMessage:document.getElementById('levelUpMessage').value})});toast('leveling saved','green');}catch(e){toast('save failed','red');} }
+async function saveGeneral(){ try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefix:document.getElementById('settPrefix').value})});toast('settings saved','green');}catch(e){toast('save failed','red');} }
+async function logout(){ await fetch('/api/logout',{method:'POST'}); window.location.href='/login'; }
+function inviteBot(){ if(clientId) window.open('https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot+applications.commands&permissions=8','_blank'); else toast('refresh first','yellow'); }
 
-// SAVE SETTINGS
-async function saveAutomod(){
-  var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold').value)||3,muteMinutes:parseInt(document.getElementById('muteMinutes').value)||10,logChannelId:document.getElementById('logChannelId').value.trim()||null};
-  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('automod saved','green'); }
-  catch(e){ toast('save failed','red'); }
-}
-
-async function saveBadWords(){
-  var raw = document.getElementById('badWordsList').value;
-  var list = raw.split(',').map(function(w){ return w.trim(); }).filter(Boolean);
-  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({badWordsList:list})}); toast('bad words list updated ('+list.length+' words)','green'); }
-  catch(e){ toast('save failed','red'); }
-}
-
-async function saveWelcome(){
-  var body={welcomeMessage:document.getElementById('welcomeMessage').value,goodbyeMessage:document.getElementById('goodbyeMessage').value,welcomeChannelId:document.getElementById('welcomeChannelId') ? document.getElementById('welcomeChannelId').value : null};
-  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('welcome settings saved','green'); }
-  catch(e){ toast('save failed','red'); }
-}
-
-async function saveLeveling(){
-  var body={levelUpMessage:document.getElementById('levelUpMessage').value};
-  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('leveling settings saved','green'); }
-  catch(e){ toast('save failed','red'); }
-}
-
-async function saveGeneral(){
-  try { await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefix:document.getElementById('settPrefix').value})}); toast('settings saved','green'); }
-  catch(e){ toast('save failed','red'); }
-}
-
-// INVITE/LOGOUT
-async function logout(){
-  await fetch('/api/logout',{method:'POST'});
-  window.location.href='/login';
-}
-
-function inviteBot(){
-  if(clientId) window.open('https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot+applications.commands&permissions=8','_blank');
-  else toast('refresh first','yellow');
-}
-
-// MODAL
-function openModal(title, body, onOk){
-  document.getElementById('modalT').textContent = title;
-  document.getElementById('modalB').innerHTML = body;
-  document.getElementById('modalOk').onclick = onOk;
-  document.getElementById('modal').classList.add('open');
-}
+function openModal(title,body,onOk){ document.getElementById('modalT').textContent=title; document.getElementById('modalB').innerHTML=body; document.getElementById('modalOk').onclick=onOk; document.getElementById('modal').classList.add('open'); }
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 
-// TOAST
-function toast(msg, type){
-  type = type || 'green';
-  var el = document.getElementById('toastEl');
-  document.getElementById('toastMsg').textContent = msg;
+function toast(msg,type){
+  type=type||'green'; var el=document.getElementById('toastEl'); document.getElementById('toastMsg').textContent=msg;
   var map={green:['fa-check-circle','var(--green)'],red:['fa-circle-xmark','var(--red)'],blue:['fa-circle-info','var(--blue)'],yellow:['fa-triangle-exclamation','var(--yellow)']};
-  var pair = map[type]||map.green;
-  var ico = document.getElementById('toastIco');
-  ico.className = 'fas '+pair[0];
-  ico.style.color = pair[1];
-  el.classList.add('show');
-  clearTimeout(toastTmr);
-  toastTmr = setTimeout(function(){ el.classList.remove('show'); },3000);
+  var pair=map[type]||map.green; var ico=document.getElementById('toastIco'); ico.className='fas '+pair[0]; ico.style.color=pair[1];
+  el.classList.add('show'); clearTimeout(toastTmr); toastTmr=setTimeout(function(){el.classList.remove('show');},3500);
 }
+var t=toast;
 
-// Alias for older calls
-var t = toast;
+// TICKET SETTINGS (FIX 1 + FIX 5)
+async function loadTicketSettings(){
+  try { var s=await api('/api/ticket/settings'); var e=document.getElementById('ticketTitle');if(e&&s.ticketTitle)e.value=s.ticketTitle; e=document.getElementById('ticketDescription');if(e&&s.ticketDescription)e.value=s.ticketDescription; e=document.getElementById('ticketGifUrl');if(e&&s.ticketGif)e.value=s.ticketGif; var tog=document.getElementById('tk-ticketsEnabled');if(tog)tog.classList.toggle('on',!!s.ticketsEnabled); }catch(e){}
+}
+async function saveTicketSettings(){
+  var body={ticketTitle:document.getElementById('ticketTitle')?document.getElementById('ticketTitle').value:'Staff Support',ticketDescription:document.getElementById('ticketDescription')?document.getElementById('ticketDescription').value:'',ticketGif:document.getElementById('ticketGifUrl')?document.getElementById('ticketGifUrl').value.trim()||null:null};
+  try{await api('/api/ticket/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('ticket settings saved','green');}catch(e){toast('save failed: '+e.message,'red');}
+}
+async function loadTkChannels(){ var gid=document.getElementById('tkGuild')?document.getElementById('tkGuild').value:''; if(gid) await loadChannelsFor(gid,'tkChannel'); }
+async function sendTicketPanel(){
+  var guildId=document.getElementById('tkGuild')?document.getElementById('tkGuild').value:'';
+  var channelId=document.getElementById('tkChannel')?document.getElementById('tkChannel').value:'';
+  if(!guildId||!channelId){toast('select a server and channel','yellow');return;}
+  await saveTicketSettings();
+  try{await api('/api/ticket/send-panel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId})});toast('ticket panel sent to channel!','green');}
+  catch(e){toast('failed: '+e.message,'red');}
+}
 
 // VERIFY
-async function saveVerifySettings(){
-  var verifiedRoleId = document.getElementById('verifiedRoleId').value.trim() || null;
-  var unverifiedRoleId = document.getElementById('unverifiedRoleId').value.trim() || null;
-  var verifyEmoji = document.getElementById('verifyEmoji').value.trim() || 'check';
-  try {
-    await api('/api/verify/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({verifiedRoleId:verifiedRoleId,unverifiedRoleId:unverifiedRoleId,verifyEmoji:verifyEmoji})});
-    toast('verification settings saved','green');
-  } catch(e){ toast('save failed: '+e.message,'red'); }
-}
-
-async function loadVerifySettings(){
-  try {
-    var s = await api('/api/verify/settings');
-    if(s.verifiedRoleId) document.getElementById('verifiedRoleId').value = s.verifiedRoleId;
-    if(s.unverifiedRoleId) document.getElementById('unverifiedRoleId').value = s.unverifiedRoleId;
-    if(s.verifyEmoji) document.getElementById('verifyEmoji').value = s.verifyEmoji;
-    var tog = document.getElementById('vfy-verificationEnabled');
-    if(tog) tog.classList.toggle('on', !!s.verificationEnabled);
-    if(s.verifyMessageId){ toast('verify message active - id: '+s.verifyMessageId,'green'); }
-  } catch(e){}
-}
-
-async function loadVerifyChannels(){
-  var guildId = document.getElementById('verifyGuild').value;
-  if(!guildId) return;
-  try {
-    var chs = await api('/api/guilds/'+guildId+'/channels');
-    var text = Array.isArray(chs) ? chs.filter(function(c){ return c.type===0; }) : [];
-    document.getElementById('verifyChannel').innerHTML = text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-  } catch(e){}
-}
-
-async function sendVerifyPanel(){
-  var guildId = document.getElementById('verifyGuild').value;
-  var channelId = document.getElementById('verifyChannel').value;
-  if(!guildId||!channelId){ toast('select a server and channel','yellow'); return; }
-  try {
-    await api('/api/verify/send-panel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId})});
-    toast('verification panel posted','green');
-  } catch(e){ toast('failed: '+e.message,'red'); }
-}
-
-function copyVerifyLink(){
-  var link = 'https://mia69696.github.io/verify/';
-  navigator.clipboard.writeText(link).then(function(){ toast('verify link copied','green'); }).catch(function(){ toast('copy failed','red'); });
-}
+async function saveVerifySettings(){ var body={verifiedRoleId:document.getElementById('verifiedRoleId').value.trim()||null,unverifiedRoleId:document.getElementById('unverifiedRoleId').value.trim()||null,verifyEmoji:document.getElementById('verifyEmoji').value.trim()||'check'}; try{await api('/api/verify/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('verify settings saved','green');}catch(e){toast('save failed','red');} }
+async function loadVerifySettings(){ try{var s=await api('/api/verify/settings');var e; e=document.getElementById('verifiedRoleId');if(e&&s.verifiedRoleId)e.value=s.verifiedRoleId; e=document.getElementById('unverifiedRoleId');if(e&&s.unverifiedRoleId)e.value=s.unverifiedRoleId; e=document.getElementById('verifyEmoji');if(e&&s.verifyEmoji)e.value=s.verifyEmoji; var tog=document.getElementById('vfy-verificationEnabled');if(tog)tog.classList.toggle('on',!!s.verificationEnabled);}catch(e){} }
+async function loadVerifyChannels(){ var gid=document.getElementById('verifyGuild').value; if(gid) await loadChannelsFor(gid,'verifyChannel'); }
+async function sendVerifyPanel(){ var gid=document.getElementById('verifyGuild').value,chid=document.getElementById('verifyChannel').value; if(!gid||!chid){toast('select server + channel','yellow');return;} try{await api('/api/verify/send-panel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid})});toast('verify panel posted','green');}catch(e){toast('failed: '+e.message,'red');} }
+function copyVerifyLink(){ navigator.clipboard.writeText('https://mia69696.github.io/verify/').then(function(){toast('verify link copied','green');}).catch(function(){toast('copy failed','red');}); }
 
 // TEMP VOICE
-async function loadTVSettings(){
-  try {
-    var s = await api('/api/tempvoice/settings');
-    var tog = document.getElementById('tv-toggle');
-    if(tog) tog.classList.toggle('on', !!s.tempVoiceEnabled);
-    if(s.tempVoiceCreatorId) document.getElementById('tvCreatorId').value = s.tempVoiceCreatorId;
-    if(s.tempVoiceCategoryId) document.getElementById('tvCategoryId').value = s.tempVoiceCategoryId;
-    if(s.tempVoiceControlChannelId) document.getElementById('tvControlChannelId').value = s.tempVoiceControlChannelId;
-    renderTVChannels(s.activeChannels || []);
-  } catch(e){}
-}
+async function loadTVSettings(){ try{var s=await api('/api/tempvoice/settings'); var tog=document.getElementById('tv-toggle');if(tog)tog.classList.toggle('on',!!s.tempVoiceEnabled); var e; e=document.getElementById('tvCreatorId');if(e&&s.tempVoiceCreatorId)e.value=s.tempVoiceCreatorId; e=document.getElementById('tvCategoryId');if(e&&s.tempVoiceCategoryId)e.value=s.tempVoiceCategoryId; e=document.getElementById('tvControlChannelId');if(e&&s.tempVoiceControlChannelId)e.value=s.tempVoiceControlChannelId; renderTVChannels(s.activeChannels||[]);}catch(e){} }
+function renderTVChannels(channels){ var el=document.getElementById('tvChannelList');if(!el)return; if(!channels.length){el.innerHTML='<div class="empty">no active temp voice channels</div>';return;} el.innerHTML=channels.map(function(ch){return '<div class="svr"><div class="svr-ico">VC</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+ch.name+'</div><div style="font-size:10px;color:var(--txt2)">owner: '+ch.ownerId+' | limit: '+(ch.limit||'unlimited')+'</div></div><span class="tag t-cyan">active</span></div>';}).join(''); }
+async function loadTVChannels(){ try{var s=await api('/api/tempvoice/settings');renderTVChannels(s.activeChannels||[]);toast('refreshed','green');}catch(e){toast('failed','red');} }
+function tvToggle(el){ el.classList.toggle('on'); var v=el.classList.contains('on'); api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceEnabled:v})}).then(function(){toast('temp voice '+(v?'enabled':'disabled'),v?'green':'yellow');}).catch(function(e){toast('failed','red');}); }
+async function saveTVSettings(){ var body={tempVoiceCreatorId:document.getElementById('tvCreatorId').value.trim()||null,tempVoiceCategoryId:document.getElementById('tvCategoryId').value.trim()||null,tempVoiceControlChannelId:document.getElementById('tvControlChannelId').value.trim()||null}; try{await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('tv settings saved','green');}catch(e){toast('save failed','red');} }
+async function tvAutoSetup(){ var gid=document.getElementById('tvSetupGuild').value; if(!gid){toast('select a server','yellow');return;} try{var res=await api('/api/tempvoice/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid})}); var e; e=document.getElementById('tvCreatorId');if(e&&res.creatorId)e.value=res.creatorId; e=document.getElementById('tvCategoryId');if(e&&res.categoryId)e.value=res.categoryId; e=document.getElementById('tvControlChannelId');if(e&&res.controlChannelId)e.value=res.controlChannelId; var tog=document.getElementById('tv-toggle');if(tog)tog.classList.add('on'); toast('setup complete!','green');}catch(e){toast('setup failed: '+e.message,'red');} }
+async function tvControl(action,value){ var gid=document.getElementById('tvControlGuild').value,chid=document.getElementById('tvControlChannel').value.trim(); if(!chid){toast('enter channel id','yellow');return;} if(action==='delete'&&!confirm('delete this temp voice channel?'))return; try{await api('/api/tempvoice/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid,action:action,value:value})});toast(action+' done','green');loadTVChannels();}catch(e){toast('failed','red');} }
 
-function renderTVChannels(channels){
-  var el = document.getElementById('tvChannelList');
-  if(!el) return;
-  if(!channels.length){ el.innerHTML = '<div class="empty">no active temp voice channels right now</div>'; return; }
-  el.innerHTML = channels.map(function(ch){
-    return '<div class="svr"><div class="svr-ico" style="font-size:16px">VC</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+ch.name+'</div><div style="font-size:10px;color:var(--txt2)">owner: '+ch.ownerId+' | limit: '+(ch.limit||'unlimited')+'</div></div><span class="tag t-cyan">active</span></div>';
-  }).join('');
-}
+// WELCOME
+async function saveWelcomeFull(){ var g=function(id){var el=document.getElementById(id);return el?el.value:null;}; var body={welcomeMessage:g('welcomeMessage')||'',goodbyeMessage:g('goodbyeMessage')||'',welcomeGif:g('welcomeGif')?g('welcomeGif').trim()||null:null,goodbyeGif:g('goodbyeGif')?g('goodbyeGif').trim()||null:null,ticketGif:g('ticketGif')?g('ticketGif').trim()||null:null,welcomeChannelId:g('welcomeChannelId')||null,goodbyeChannelId:g('goodbyeChannelId')||null}; try{await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('welcome settings saved','green');}catch(e){toast('save failed','red');} }
+async function loadWelcomeFull(){ try{var s=await api('/api/settings/welcome');var set=function(id,v){if(v){var el=document.getElementById(id);if(el)el.value=v;}}; set('welcomeMessage',s.welcomeMessage);set('goodbyeMessage',s.goodbyeMessage);set('welcomeGif',s.welcomeGif);set('goodbyeGif',s.goodbyeGif);set('ticketGif',s.ticketGif); var t1=document.getElementById('wlc-welcomeEnabled');if(t1)t1.classList.toggle('on',!!s.welcomeEnabled); var t2=document.getElementById('wlc-goodbyeEnabled');if(t2)t2.classList.toggle('on',!!s.goodbyeEnabled);}catch(e){} }
+async function loadWelcomeChannels(){ var gid=document.getElementById('welcomeGuildPicker')?document.getElementById('welcomeGuildPicker').value:''; if(!gid) return; try{var chs=await api('/api/guilds/'+gid+'/channels');var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; var base=text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); var wc=document.getElementById('welcomeChannelId');if(wc)wc.innerHTML='<option value="">system channel</option>'+base; var gc=document.getElementById('goodbyeChannelId');if(gc)gc.innerHTML='<option value="">same as welcome</option>'+base;}catch(e){} }
+function previewGif(inputId,previewId,imgId){ var url=document.getElementById(inputId)?document.getElementById(inputId).value.trim():''; if(!url){toast('enter a gif url first','yellow');return;} var p=document.getElementById(previewId),i=document.getElementById(imgId); if(p&&i){p.style.display='block';i.src=url;} }
+async function saveAutomodFull(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold')?document.getElementById('autobanThreshold').value:3)||3,muteMinutes:parseInt(document.getElementById('muteMinutes')?document.getElementById('muteMinutes').value:10)||10,emojiSpamLimit:parseInt(document.getElementById('emojiSpamLimit')?document.getElementById('emojiSpamLimit').value:5)||5}; try{await api('/api/automod/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('automod settings saved','green');}catch(e){toast('save failed','red');} }
 
-async function loadTVChannels(){
-  try {
-    var s = await api('/api/tempvoice/settings');
-    renderTVChannels(s.activeChannels || []);
-    toast('refreshed','green');
-  } catch(e){ toast('failed: '+e.message,'red'); }
-}
-
-function tvToggle(el){
-  el.classList.toggle('on');
-  var value = el.classList.contains('on');
-  api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceEnabled:value})})
-    .then(function(){ toast('temp voice '+(value?'enabled':'disabled'),value?'green':'yellow'); })
-    .catch(function(e){ toast('failed: '+e.message,'red'); });
-}
-
-async function saveTVSettings(){
-  var creatorId = document.getElementById('tvCreatorId').value.trim()||null;
-  var categoryId = document.getElementById('tvCategoryId').value.trim()||null;
-  var controlChannelId = document.getElementById('tvControlChannelId').value.trim()||null;
-  try {
-    await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceCreatorId:creatorId,tempVoiceCategoryId:categoryId,tempVoiceControlChannelId:controlChannelId})});
-    toast('temp voice settings saved','green');
-  } catch(e){ toast('save failed: '+e.message,'red'); }
-}
-
-async function tvAutoSetup(){
-  var guildId = document.getElementById('tvSetupGuild').value;
-  if(!guildId){ toast('select a server','yellow'); return; }
-  try {
-    var res = await api('/api/tempvoice/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId})});
-    if(res.creatorId) document.getElementById('tvCreatorId').value = res.creatorId;
-    if(res.categoryId) document.getElementById('tvCategoryId').value = res.categoryId;
-    if(res.controlChannelId) document.getElementById('tvControlChannelId').value = res.controlChannelId;
-    document.getElementById('tv-toggle').classList.add('on');
-    toast('setup complete! category + voice + control channel created','green');
-  } catch(e){ toast('setup failed: '+e.message,'red'); }
-}
-
-async function tvControl(action, value){
-  var guildId = document.getElementById('tvControlGuild').value;
-  var channelId = document.getElementById('tvControlChannel').value.trim();
-  if(!channelId){ toast('enter a channel id','yellow'); return; }
-  if(action==='delete' && !confirm('delete this temp voice channel?')) return;
-  try {
-    await api('/api/tempvoice/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,action:action,value:value})});
-    toast(action+' done','green');
-    loadTVChannels();
-  } catch(e){ toast('failed: '+e.message,'red'); }
-}
-
-// WELCOME FULL
-async function saveWelcomeFull(){
-  var body = {
-    welcomeMessage: document.getElementById('welcomeMessage') ? document.getElementById('welcomeMessage').value : '',
-    goodbyeMessage: document.getElementById('goodbyeMessage') ? document.getElementById('goodbyeMessage').value : '',
-    welcomeGif: document.getElementById('welcomeGif') ? document.getElementById('welcomeGif').value.trim() || null : null,
-    goodbyeGif: document.getElementById('goodbyeGif') ? document.getElementById('goodbyeGif').value.trim() || null : null,
-    ticketGif: document.getElementById('ticketGif') ? document.getElementById('ticketGif').value.trim() || null : null,
-    welcomeChannelId: document.getElementById('welcomeChannelId') ? document.getElementById('welcomeChannelId').value || null : null,
-    goodbyeChannelId: document.getElementById('goodbyeChannelId') ? document.getElementById('goodbyeChannelId').value || null : null
-  };
-  try {
-    await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    toast('welcome settings saved!','green');
-  } catch(e){ toast('save failed: '+e.message,'red'); }
-}
-
-async function loadWelcomeFull(){
-  try {
-    var s = await api('/api/settings/welcome');
-    if(s.welcomeMessage && document.getElementById('welcomeMessage')) document.getElementById('welcomeMessage').value = s.welcomeMessage;
-    if(s.goodbyeMessage && document.getElementById('goodbyeMessage')) document.getElementById('goodbyeMessage').value = s.goodbyeMessage;
-    if(s.welcomeGif && document.getElementById('welcomeGif')) document.getElementById('welcomeGif').value = s.welcomeGif;
-    if(s.goodbyeGif && document.getElementById('goodbyeGif')) document.getElementById('goodbyeGif').value = s.goodbyeGif;
-    if(s.ticketGif && document.getElementById('ticketGif')) document.getElementById('ticketGif').value = s.ticketGif;
-    var tog1 = document.getElementById('wlc-welcomeEnabled');
-    var tog2 = document.getElementById('wlc-goodbyeEnabled');
-    if(tog1) tog1.classList.toggle('on', !!s.welcomeEnabled);
-    if(tog2) tog2.classList.toggle('on', !!s.goodbyeEnabled);
-  } catch(e){}
-}
-
-async function loadWelcomeChannels(){
-  var guildId = document.getElementById('welcomeGuildPicker') ? document.getElementById('welcomeGuildPicker').value : '';
-  if(!guildId) return;
-  try {
-    var chs = await api('/api/guilds/'+guildId+'/channels');
-    var text = Array.isArray(chs) ? chs.filter(function(c){ return c.type===0; }) : [];
-    var opts = '<option value="">system channel</option>'+text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-    document.getElementById('welcomeChannelId').innerHTML = opts;
-    document.getElementById('goodbyeChannelId').innerHTML = '<option value="">same as welcome</option>'+text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-  } catch(e){}
-}
-
-function previewGif(inputId, previewId, imgId){
-  var url = document.getElementById(inputId) ? document.getElementById(inputId).value.trim() : '';
-  if(!url){ toast('enter a gif url first','yellow'); return; }
-  var preview = document.getElementById(previewId);
-  var img = document.getElementById(imgId);
-  if(preview && img){ preview.style.display='block'; img.src=url; }
-}
-
-// AUTOMOD FULL
-async function saveAutomodFull(){
-  var body = {
-    autobanThreshold: parseInt(document.getElementById('autobanThreshold') ? document.getElementById('autobanThreshold').value : 3)||3,
-    muteMinutes: parseInt(document.getElementById('muteMinutes') ? document.getElementById('muteMinutes').value : 10)||10,
-    emojiSpamLimit: parseInt(document.getElementById('emojiSpamLimit') ? document.getElementById('emojiSpamLimit').value : 5)||5
-  };
-  try {
-    await api('/api/automod/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    toast('automod settings saved','green');
-  } catch(e){ toast('save failed','red'); }
-}
-
-// REACTION ROLES
+// REACTION ROLES (FIX 4 — proper validation + auto-load)
 async function loadRRChannels(){
-  var guildId = document.getElementById('rrGuild').value;
-  if(!guildId) return;
+  var guildId=document.getElementById('rrGuild')?document.getElementById('rrGuild').value:''; if(!guildId) return;
   try {
-    var results = await Promise.all([api('/api/guilds/'+guildId+'/channels'), api('/api/guilds/'+guildId+'/roles')]);
-    var chs = results[0], roles = results[1];
-    var text = Array.isArray(chs) ? chs.filter(function(c){ return c.type===0; }) : [];
-    document.getElementById('rrChannel').innerHTML = '<option value="">select channel</option>'+text.map(function(c){ return '<option value="'+c.id+'">#'+c.name+'</option>'; }).join('');
-    var filteredRoles = Array.isArray(roles) ? roles.filter(function(r){ return r.name!=='@everyone'&&!r.managed; }).sort(function(a,b){ return b.position-a.position; }) : [];
-    document.getElementById('rrRole').innerHTML = '<option value="">select role</option>'+filteredRoles.map(function(r){ return '<option value="'+r.id+'">@'+r.name+'</option>'; }).join('');
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/guilds/'+guildId+'/roles')]);
+    var chs=results[0],roles=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var rrCh=document.getElementById('rrChannel'); if(rrCh) rrCh.innerHTML='<option value="">select channel</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; 
+    var rrRole=document.getElementById('rrRole'); if(rrRole) rrRole.innerHTML='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join('');
+    toast(text.length+' channels + '+filtered.length+' roles loaded','green');
   } catch(e){ toast('failed to load: '+e.message,'red'); }
 }
-
 async function createReactionRole(){
-  var guildId = document.getElementById('rrGuild').value;
-  var channelId = document.getElementById('rrChannel').value;
-  var roleId = document.getElementById('rrRole').value;
-  var emoji = document.getElementById('rrEmoji').value.trim();
-  var description = document.getElementById('rrDesc').value.trim();
-  if(!guildId||!channelId||!roleId||!emoji){ toast('fill all fields','yellow'); return; }
+  var guildId=document.getElementById('rrGuild')?document.getElementById('rrGuild').value.trim():'';
+  var channelId=document.getElementById('rrChannel')?document.getElementById('rrChannel').value.trim():'';
+  var roleId=document.getElementById('rrRole')?document.getElementById('rrRole').value.trim():'';
+  var emoji=document.getElementById('rrEmoji')?document.getElementById('rrEmoji').value.trim():'';
+  var description=document.getElementById('rrDesc')?document.getElementById('rrDesc').value.trim():'';
+  if(!guildId){toast('no server loaded — wait a moment and try again','yellow');return;}
+  if(!channelId){toast('select a channel from the dropdown','yellow');return;}
+  if(!roleId){toast('select a role from the dropdown','yellow');return;}
+  if(!emoji){toast('type an emoji (e.g. check or a discord emoji)','yellow');return;}
   try {
     await api('/api/reactionroles/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,roleId:roleId,emoji:emoji,description:description})});
-    toast('reaction role created!','green');
-    document.getElementById('rrEmoji').value='';
-    document.getElementById('rrDesc').value='';
+    toast('reaction role created! bot posted the message in the channel','green');
+    document.getElementById('rrEmoji').value=''; document.getElementById('rrDesc').value='';
     loadReactionRoles();
   } catch(e){ toast('failed: '+e.message,'red'); }
 }
-
 async function loadReactionRoles(){
   try {
-    var rr = await api('/api/reactionroles');
-    var el = document.getElementById('rrList');
-    var entries = Object.entries(rr||{});
-    if(!entries.length){ el.innerHTML='<div class="empty">no reaction roles yet</div>'; return; }
-    el.innerHTML = entries.map(function(entry){
-      var msgId = entry[0], data = entry[1];
-      var rolesStr = Object.entries(data.roles||{}).map(function(e){ return e[0]+' -> role ...'+e[1].slice(-4); }).join(' | ');
-      return '<div class="svr"><div style="flex:1"><div style="font-size:12px;font-weight:700">msg ...'+msgId.slice(-6)+'</div><div style="font-size:10px;color:var(--txt2)">'+rolesStr+'</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteRR(this)" data-id="'+msgId+'"><i class="fas fa-trash"></i></button></div>';
+    var rr=await api('/api/reactionroles'),el=document.getElementById('rrList');
+    var entries=Object.entries(rr||{});
+    if(!entries.length){el.innerHTML='<div class="empty">no reaction roles yet</div>';return;}
+    el.innerHTML=entries.map(function(entry){
+      var msgId=entry[0],data=entry[1];
+      var rs=Object.entries(data.roles||{}).map(function(e){return e[0]+' -> ...'+e[1].slice(-4);}).join(' | ');
+      return '<div class="svr"><div style="flex:1"><div style="font-size:12px;font-weight:700">msg ...'+msgId.slice(-6)+'</div><div style="font-size:10px;color:var(--txt2)">'+rs+'</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteRR(this)" data-id="'+msgId+'"><i class="fas fa-trash"></i></button></div>';
     }).join('');
   } catch(e){}
 }
+async function deleteRR(btn){ var msgId=btn.dataset?btn.dataset.id:btn; await api('/api/reactionroles/'+msgId,{method:'DELETE'}); toast('deleted','yellow'); loadReactionRoles(); }
 
-async function deleteRR(btn){
-  var msgId = btn.dataset ? btn.dataset.id : btn;
-  await api('/api/reactionroles/'+msgId,{method:'DELETE'});
-  toast('reaction role deleted','green');
-  loadReactionRoles();
-}
-
-// SERVER BACKUP
-async function createBackup(){
-  var guildId = document.getElementById('backupGuild').value;
-  if(!guildId){ toast('select a server','yellow'); return; }
-  try {
-    await api('/api/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId})});
-    toast('backup created!','green');
-    loadBackups();
-  } catch(e){ toast('failed: '+e.message,'red'); }
-}
-
+// BACKUP (FIX 3 — add restore button)
+async function createBackup(){ var gid=document.getElementById('backupGuild').value; if(!gid){toast('select a server','yellow');return;} try{await api('/api/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid})});toast('backup created!','green');loadBackups();}catch(e){toast('failed: '+e.message,'red');} }
 async function loadBackups(){
-  var guildId = document.getElementById('backupGuild').value;
-  if(!guildId){ toast('select a server first','yellow'); return; }
+  var gid=document.getElementById('backupGuild').value; if(!gid){toast('select a server first','yellow');return;}
   try {
-    var backups = await api('/api/backup/'+guildId);
-    var el = document.getElementById('backupList');
-    if(!backups.length){ el.innerHTML='<div class="empty">no backups yet - create one!</div>'; return; }
-    el.innerHTML = backups.map(function(b,idx){
-      return '<div class="svr"><div style="flex:1"><div style="font-size:12px;font-weight:700">'+b.name+'</div><div style="font-size:10px;color:var(--txt2)">'+new Date(b.date).toLocaleString()+' | '+b.roles.length+' roles | '+b.channels.length+' channels</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteBackup(this)" data-guild="'+guildId+'" data-idx="'+idx+'"><i class="fas fa-trash"></i></button></div>';
+    var backups=await api('/api/backup/'+gid),el=document.getElementById('backupList');
+    if(!backups.length){el.innerHTML='<div class="empty">no backups yet</div>';return;}
+    el.innerHTML=backups.map(function(b,idx){
+      return '<div class="svr" style="flex-direction:column;align-items:flex-start;gap:8px;padding:14px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div style="flex:1"><div style="font-size:12px;font-weight:700">'+b.name+'</div><div style="font-size:10px;color:var(--txt2)">'+new Date(b.date).toLocaleString()+' | '+b.roles.length+' roles | '+b.channels.length+' channels</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-trash"></i></button></div><button class="btn btn-w" style="width:100%;font-size:10px;padding:6px" onclick="restoreBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-rotate-left"></i> load this backup into server</button></div>';
     }).join('');
   } catch(e){ toast('failed: '+e.message,'red'); }
 }
-
-async function deleteBackup(btn){
-  var guildId = btn.dataset.guild;
-  var index = btn.dataset.idx;
-  await api('/api/backup/'+guildId+'/'+index,{method:'DELETE'});
-  toast('backup deleted','yellow');
-  loadBackups();
+async function restoreBackup(btn){
+  var gid=btn.dataset.guild,idx=btn.dataset.idx;
+  if(!confirm('load this backup? missing roles + channels will be created. existing ones stay.')) return;
+  var orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> restoring...'; btn.disabled=true;
+  try {
+    var res=await api('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,index:parseInt(idx)})});
+    var msg='loaded: '+res.rolesCreated+' roles + '+res.channelsCreated+' channels created';
+    if(res.errors&&res.errors.length) msg+=' ('+res.errors.length+' skipped)';
+    toast(msg,'green');
+  } catch(e){ toast('restore failed: '+e.message,'red'); }
+  btn.innerHTML=orig; btn.disabled=false;
 }
+async function deleteBackup(btn){ var gid=btn.dataset.guild,idx=btn.dataset.idx; if(!confirm('delete this backup?')) return; await api('/api/backup/'+gid+'/'+idx,{method:'DELETE'}); toast('backup deleted','yellow'); loadBackups(); }
 
-// COUNT UP ANIMATION
-function countUp(el, target, duration){
-  duration = duration || 800;
-  if(isNaN(target)){ el.textContent = target; return; }
-  var startTime = performance.now();
-  el.classList.add('counting');
-  function update(now){
-    var elapsed = now - startTime;
-    var progress = Math.min(elapsed / duration, 1);
-    var eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.floor(eased * target).toLocaleString();
-    if(progress < 1) requestAnimationFrame(update);
-    else { el.textContent = target.toLocaleString ? target.toLocaleString() : target; el.classList.remove('counting'); }
-  }
-  requestAnimationFrame(update);
+// ANIMATIONS
+function countUp(el,target,duration){
+  if(isNaN(target)){el.textContent=target;return;} duration=duration||800;
+  var startTime=performance.now();
+  (function update(now){ var p=Math.min((now-startTime)/duration,1),e=1-Math.pow(1-p,3); el.textContent=Math.floor(e*target).toLocaleString(); if(p<1)requestAnimationFrame(update); else el.textContent=target.toLocaleString?target.toLocaleString():target; })(performance.now());
 }
+function setStat(id,value){ var el=document.getElementById(id);if(!el)return; el.classList.remove('updated');void el.offsetWidth;el.classList.add('updated'); var num=parseInt(String(value).replace(/[^0-9]/g,'')); if(!isNaN(num)&&num>0)countUp(el,num);else el.textContent=value; }
+function staggerAnimate(parentEl,sel){ if(!parentEl)return; parentEl.querySelectorAll(sel||'.lgi,.svr,.mrow').forEach(function(el,i){ el.style.opacity='0';el.style.transform='translateX(-8px)'; setTimeout(function(){el.style.transition='opacity .2s ease,transform .2s ease';el.style.opacity='1';el.style.transform='translateX(0)';},i*40); }); }
 
-function setStat(id, value){
-  var el = document.getElementById(id);
-  if(!el) return;
-  el.classList.remove('updated');
-  void el.offsetWidth;
-  el.classList.add('updated');
-  var num = parseInt(String(value).replace(/[^0-9]/g,''));
-  if(!isNaN(num) && num > 0) countUp(el, num);
-  else el.textContent = value;
-}
-
-function staggerAnimate(parentEl, childSelector){
-  if(!parentEl) return;
-  var children = parentEl.querySelectorAll(childSelector || '.lgi, .svr, .mrow');
-  children.forEach(function(el, i){
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(-8px)';
-    setTimeout(function(){
-      el.style.transition = 'opacity .2s ease, transform .2s ease';
-      el.style.opacity = '1';
-      el.style.transform = 'translateX(0)';
-    }, i * 40);
-  });
-}
-
-// AUTO REFRESH
-setInterval(loadDashLogs, 8000);
-setInterval(function(){
-  api('/api/bot').then(function(b){
-    document.getElementById('pingTxt').textContent = b._ping+' ms';
-    var ip = document.getElementById('iApiPing'); if(ip) ip.textContent = b._ping+'ms';
-    var wp = document.getElementById('iWsPing'); if(wp) wp.textContent = b._wsPing+'ms';
-  }).catch(function(){});
-}, 30000);
-
-// BOOT
+// AUTO REFRESH + BOOT
+setInterval(loadDashLogs,8000);
+setInterval(function(){ api('/api/bot').then(function(b){var e=document.getElementById('pingTxt');if(e)e.textContent=b._ping+' ms';}).catch(function(){}); },30000);
 initAll();
 </script>
 </body>
