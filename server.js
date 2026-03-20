@@ -489,7 +489,7 @@ app.post('/api/tempvoice/control', async (req, res) => {
 
 // ── EXTENDED SETTINGS ────────────────────────────────
 app.post('/api/settings/welcome', (req, res) => {
-  const fields = ['welcomeGif','goodbyeGif','ticketGif','welcomeChannelId','goodbyeChannelId','welcomeMessage','goodbyeMessage','welcomeEnabled','goodbyeEnabled','welcomeCardText','welcomeCardSub','welcomeCardCircleColor','welcomeCardOverlay','goodbyeCardText','goodbyeCardSub','goodbyeCardCircleColor'];
+  const fields = ['welcomeGif','goodbyeGif','ticketGif','welcomeChannelId','goodbyeChannelId','welcomeMessage','goodbyeMessage','welcomeEnabled','goodbyeEnabled','welcomeCardText','welcomeCardSub','welcomeCardCircleColor','welcomeCardOverlay','goodbyeCardText','goodbyeCardSub','goodbyeCardCircleColor','goodbyeChannelId'];
   fields.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k] === '' ? null : req.body[k]; });
   saveState();
   res.json({ ok: true });
@@ -802,6 +802,46 @@ app.post('/api/security/lockdown', async (req, res) => {
     addLog('SECURITY', (lock ? 'SERVER LOCKED DOWN' : 'server unlocked') + ' — ' + count + ' channels', lock ? 'red' : 'green');
     res.json({ ok: true, channelsAffected: count });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── CONFIG EXPORT / IMPORT ────────────────────────────
+app.get('/api/config/export', (req, res) => {
+  const exportKeys = [
+    'blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks',
+    'blockDuplicates','blockEmojiSpam','emojiSpamLimit','autobanThreshold','muteMinutes',
+    'badWordsList','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled',
+    'welcomeMessage','goodbyeMessage','levelUpMessage','welcomeChannelId','goodbyeChannelId',
+    'welcomeGif','goodbyeGif','ticketGif','ticketTitle','ticketDescription',
+    'logChannelId','logChannels','tempVoiceEnabled','verificationEnabled',
+    'verifiedRoleId','unverifiedRoleId','verifyEmoji',
+    'antiRaidEnabled','antiRaidThreshold','antiRaidWindow','antiRaidAction',
+    'altDetectEnabled','altDetectDays','altDetectAction','altDetectLogChannel',
+    'autoRoleEnabled','autoRoleId','autoRoleDelay','nicknameFilterEnabled','nicknameFilterWords',
+    'customCommands','reactionRoles',
+  ];
+  const out = {};
+  exportKeys.forEach(k => { if (state[k] !== undefined) out[k] = state[k]; });
+  res.json(out);
+});
+
+app.post('/api/config/import', (req, res) => {
+  const allowed = [
+    'blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks',
+    'blockDuplicates','blockEmojiSpam','emojiSpamLimit','autobanThreshold','muteMinutes',
+    'badWordsList','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled',
+    'welcomeMessage','goodbyeMessage','levelUpMessage','welcomeChannelId','goodbyeChannelId',
+    'welcomeGif','goodbyeGif','ticketGif','ticketTitle','ticketDescription',
+    'logChannelId','logChannels','verificationEnabled','verifiedRoleId','unverifiedRoleId','verifyEmoji',
+    'antiRaidEnabled','antiRaidThreshold','antiRaidWindow','antiRaidAction',
+    'altDetectEnabled','altDetectDays','altDetectAction','altDetectLogChannel',
+    'autoRoleEnabled','autoRoleId','autoRoleDelay','nicknameFilterEnabled','nicknameFilterWords',
+    'customCommands',
+  ];
+  allowed.forEach(k => { if (req.body[k] !== undefined) state[k] = req.body[k]; });
+  saveState();
+  addLog('DASH', 'config imported from dashboard', 'green');
+  res.json({ ok: true });
 });
 
 // ── FALLBACK ──────────────────────────────────────────
