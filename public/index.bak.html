@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fa11en</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{--bg:#080808;--bg2:#0f0f0f;--bg3:#161616;--bg4:#1e1e1e;--bg5:#262626;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--txt:#f0f0f0;--txt2:#888;--txt3:#444;--accent:#fff;--red:#ff4455;--yellow:#e8c547;--green:#5ef0a0;--blue:#e0e0e0;--purple:#c0c0c0;--cyan:#b0b0b0;--pink:#ccc;}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+*::-webkit-scrollbar{width:3px;height:3px;}*::-webkit-scrollbar-track{background:transparent;}*::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:13px;overflow:hidden;}
+.mono{font-family:'JetBrains Mono',monospace;}
+@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
+@keyframes lb{0%,80%,100%{transform:scale(.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+@keyframes cardPop{from{opacity:0;transform:translateY(8px) scale(.98);}to{opacity:1;transform:none;}}
+@keyframes togOn{0%{transform:scale(1);}50%{transform:scale(1.06);}100%{transform:scale(1);}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:none;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+@keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+@keyframes logEntry{from{opacity:0;transform:translateX(-10px);filter:blur(1px);}to{opacity:1;transform:none;filter:none;}}
+@keyframes numberPop{0%{opacity:0;transform:scale(.85);}60%{transform:scale(1.06);}100%{opacity:1;transform:none;}}
+@keyframes pageIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+@keyframes sideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:none;}}
+@keyframes popIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:none;}}
+@keyframes badgePop{0%{transform:scale(.6);}70%{transform:scale(1.1);}100%{transform:scale(1);}}
+body{display:flex;height:100vh;overflow:hidden;}
+aside.sb{width:192px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
+aside.sb::-webkit-scrollbar{display:none;}
+.sb-logo{padding:16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg2);position:sticky;top:0;z-index:10;}
+.sb-av{width:33px;height:33px;border-radius:8px;flex-shrink:0;background:var(--bg4);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--txt);position:relative;overflow:hidden;transition:transform .18s;}
+.sb-av:hover{transform:scale(1.04);}
+.sb-av img{width:100%;height:100%;object-fit:cover;}
+.dot{position:absolute;bottom:2px;right:2px;width:7px;height:7px;background:#5ef0a0;border-radius:50%;border:2px solid var(--bg2);animation:pulse 2.5s ease infinite;}
+.sb-name{font-size:11px;font-weight:700;color:var(--txt);}
+.sb-id{font-size:9px;color:var(--txt3);margin-top:1px;font-family:'JetBrains Mono',monospace;}
+.sb-sec{padding:6px 0;}
+.sb-lbl{font-size:9px;font-weight:600;color:var(--txt3);letter-spacing:1.4px;text-transform:uppercase;padding:7px 14px 3px;}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:11px;font-weight:500;color:var(--txt2);cursor:pointer;border-left:2px solid transparent;transition:all .14s;animation:sideIn .25s ease both;position:relative;}
+.ni:hover{color:var(--txt);background:rgba(255,255,255,.04);border-left-color:rgba(255,255,255,.2);}
+.ni.active{color:var(--txt);background:rgba(255,255,255,.06);border-left-color:#fff;}
+.ni.active i{color:#fff;}
+.ni i{font-size:11px;width:14px;text-align:center;transition:transform .14s;}
+.ni:hover i{transform:scale(1.08);}
+.nbadge{background:var(--red);color:#fff;border-radius:8px;font-size:8px;padding:1px 5px;font-weight:700;margin-left:auto;}
+.sb-foot{margin-top:auto;padding:10px 14px;border-top:1px solid var(--border);}
+.sb-bc{display:flex;align-items:center;gap:8px;}
+.fav{width:26px;height:26px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;overflow:hidden;flex-shrink:0;}
+.fav img{width:100%;height:100%;object-fit:cover;}
+.fnm{font-size:10px;font-weight:600;color:var(--txt);}
+.fst{font-size:9px;color:var(--txt3);display:flex;align-items:center;gap:4px;margin-top:1px;}
+.pd{width:6px;height:6px;background:#5ef0a0;border-radius:50%;display:inline-block;animation:pulse 2.5s ease infinite;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.topbar{height:44px;padding:0 20px;flex-shrink:0;background:rgba(8,8,8,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+.tb-l{display:flex;align-items:center;gap:6px;font-size:12px;}
+.tb-crumb{color:var(--txt3);font-weight:500;}
+.tb-sep{color:var(--txt3);margin:0 2px;}
+.tb-title{font-weight:700;color:var(--txt);}
+.tb-r{display:flex;align-items:center;gap:6px;}
+.tb-btn{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--txt2);cursor:pointer;font-size:12px;transition:all .14s;}
+.tb-btn:hover{background:rgba(255,255,255,.07);color:var(--txt);}
+.ping-pill{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--txt2);border-radius:5px;padding:3px 8px;display:flex;align-items:center;gap:5px;}
+.page{display:none;}
+.page.active{display:block;animation:pageIn .2s ease both;overflow-y:auto;padding:20px 22px 40px;flex:1;}
+.page.active::-webkit-scrollbar{width:3px;}
+.page.active::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+.banner{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:16px;position:relative;overflow:hidden;animation:fi .25s ease both;}
+.banner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);}
+.banner-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.3px;}
+.banner-sub{font-size:10px;color:var(--txt3);margin-top:4px;font-family:'JetBrains Mono',monospace;}
+.bn-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.sc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:15px;position:relative;overflow:hidden;transition:all .18s;animation:cardPop .28s ease both;}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);}
+.sc:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.5);border-color:rgba(255,255,255,.1);}
+.sc:nth-child(1){animation-delay:.04s;}.sc:nth-child(2){animation-delay:.08s;}.sc:nth-child(3){animation-delay:.12s;}.sc:nth-child(4){animation-delay:.16s;}
+.sv{font-size:26px;font-weight:700;color:#fff;transition:transform .18s;}
+.sc:hover .sv{transform:scale(1.04);}
+.sb2{font-size:9px;color:var(--txt3);margin-top:3px;text-transform:uppercase;letter-spacing:.6px;}
+.si{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:22px;opacity:.07;}
+.updated{animation:numberPop .32s cubic-bezier(.34,1.56,.64,1);}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:13px;overflow:hidden;transition:border-color .15s,box-shadow .15s;animation:cardPop .22s ease both;}
+.card:hover{border-color:rgba(255,255,255,.1);box-shadow:0 4px 16px rgba(0,0,0,.4);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
+.gstack{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);}
+.ct{font-size:11px;font-weight:600;letter-spacing:.1px;color:var(--txt);}
+.cs{font-size:9px;color:var(--txt3);margin-top:2px;}
+.cb{padding:14px 16px;}
+.inp{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;padding:8px 11px;color:var(--txt);font-size:11px;font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color .14s,box-shadow .14s;}
+.inp:focus{border-color:rgba(255,255,255,.4);box-shadow:0 0 0 3px rgba(255,255,255,.05);}
+.inp:hover:not(:focus){border-color:rgba(255,255,255,.16);}
+select.inp{cursor:pointer;}
+textarea.inp{resize:vertical;min-height:72px;}
+.fl{font-size:10px;font-weight:600;color:var(--txt2);margin-bottom:4px;display:block;letter-spacing:.2px;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.tag{display:inline-flex;align-items:center;font-size:9px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:4px;text-transform:uppercase;}
+.t-green{background:rgba(94,240,160,.1);color:#5ef0a0;border:1px solid rgba(94,240,160,.2);}
+.t-red{background:rgba(255,68,85,.1);color:#ff4455;border:1px solid rgba(255,68,85,.2);}
+.t-blue{background:rgba(255,255,255,.07);color:#ddd;border:1px solid rgba(255,255,255,.1);}
+.t-yellow{background:rgba(232,197,71,.1);color:#e8c547;border:1px solid rgba(232,197,71,.2);}
+.t-purple{background:rgba(255,255,255,.06);color:#bbb;border:1px solid rgba(255,255,255,.09);}
+.t-cyan{background:rgba(255,255,255,.06);color:#aaa;border:1px solid rgba(255,255,255,.08);}
+.t-gray{background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid rgba(255,255,255,.07);}
+.t-white{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12);}
+.t-pink{background:rgba(255,255,255,.06);color:#ccc;border:1px solid rgba(255,255,255,.08);}
+.tog{width:36px;height:20px;border-radius:10px;background:var(--bg5);border:1px solid var(--border2);cursor:pointer;position:relative;transition:all .18s;flex-shrink:0;}
+.tog::after{content:'';position:absolute;width:13px;height:13px;background:rgba(255,255,255,.3);border-radius:50%;top:3px;left:3px;transition:left .18s cubic-bezier(.34,1.56,.64,1),background .18s;box-shadow:0 1px 4px rgba(0,0,0,.5);}
+.tog.on{background:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.15);animation:togOn .18s ease;}
+.tog.on::after{left:19px;background:#111;}
+.btn{border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .14s;letter-spacing:.1px;}
+.btn:active{transform:scale(.94);}
+.btn-w{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.1);}
+.btn-w:hover{background:rgba(255,255,255,.13);transform:translateY(-1px);}
+.btn-g{background:rgba(94,240,160,.08);color:#5ef0a0;border:1px solid rgba(94,240,160,.15);}
+.btn-g:hover{background:rgba(94,240,160,.14);transform:translateY(-1px);}
+.btn-r{background:rgba(255,68,85,.08);color:#ff4455;border:1px solid rgba(255,68,85,.15);}
+.btn-r:hover{background:rgba(255,68,85,.14);transform:translateY(-1px);}
+.btn-b{background:rgba(255,255,255,.07);color:#ddd;border:1px solid rgba(255,255,255,.1);}
+.btn-b:hover{background:rgba(255,255,255,.12);transform:translateY(-1px);}
+.btn-y{background:rgba(232,197,71,.08);color:#e8c547;border:1px solid rgba(232,197,71,.15);}
+.btn-y:hover{background:rgba(232,197,71,.14);transform:translateY(-1px);}
+.btn-gr{background:rgba(255,255,255,.06);color:#bbb;border:1px solid rgba(255,255,255,.09);}
+.btn-gr:hover{background:rgba(255,255,255,.1);transform:translateY(-1px);}
+.sr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.sr:last-child{border-bottom:none;padding-bottom:0;}
+.sr-l{font-size:10px;color:var(--txt2);font-weight:500;width:110px;flex-shrink:0;}
+.sr-v{font-size:11px;font-weight:600;}
+.lgi{display:flex;gap:0;padding:0;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px;position:relative;transition:background .12s;overflow:hidden;}
+.lgi:last-child{border-bottom:none;}
+.lgi:hover{background:rgba(255,255,255,.02);}
+.lgi-bar{width:3px;flex-shrink:0;opacity:.55;transition:opacity .12s;}
+.lgi:hover .lgi-bar{opacity:1;}
+.lgi-inner{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;flex:1;}
+.lgt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txt3);width:52px;flex-shrink:0;margin-top:2px;}
+.lgk{width:60px;flex-shrink:0;}
+.lgk .tag{animation:badgePop .2s ease both;font-size:9px;}
+.lgm{color:var(--txt2);flex:1;line-height:1.5;}
+.lgm b{color:var(--txt);}
+.lgi-detail{overflow:hidden;}
+.lgi-more{background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:9px;color:var(--txt2);cursor:pointer;transition:all .12s;flex-shrink:0;font-family:'Space Grotesk',sans-serif;font-weight:600;}
+.lgi-more:hover{background:var(--bg5);color:var(--txt);}
+.lgi[data-type="DELETE"] .lgi-bar{background:#ff4455;}
+.lgi[data-type="EDIT"]   .lgi-bar{background:#e8c547;}
+.lgi[data-type="JOIN"]   .lgi-bar{background:#5ef0a0;}
+.lgi[data-type="LEAVE"]  .lgi-bar{background:#ff8844;}
+.lgi[data-type="MOD"]    .lgi-bar{background:#ff4455;}
+.lgi[data-type="AUTOMOD"].lgi-bar{background:#ff8844;}
+.lgi[data-type="VOICE"]  .lgi-bar{background:#88aaff;}
+.lgi[data-type="ROLE"]   .lgi-bar{background:#bb88ff;}
+.lgi[data-type="SECURITY"].lgi-bar{background:#ff4455;}
+.lgi[data-type="TICKET"] .lgi-bar{background:#8899ff;}
+.lgi[data-type="VERIFY"] .lgi-bar{background:#5ef0a0;}
+.lgi[data-type="BOOST"]  .lgi-bar{background:#ff99ee;}
+.log-live{display:flex;align-items:center;gap:6px;font-size:10px;color:#5ef0a0;font-weight:600;}
+.log-live-dot{width:6px;height:6px;background:#5ef0a0;border-radius:50%;animation:liveDot 1.4s ease infinite;}
+.logch-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:0;overflow:hidden;transition:border-color .14s,transform .14s;animation:cardPop .2s ease both;}
+.logch-card:hover{border-color:rgba(255,255,255,.13);transform:translateY(-1px);}
+.logch-top{display:flex;align-items:center;gap:8px;padding:9px 12px 8px;}
+.logch-label{font-size:10px;font-weight:600;color:var(--txt);letter-spacing:.1px;}
+.logch-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.logch-card .inp{border:none;border-top:1px solid rgba(255,255,255,.04);border-radius:0;background:transparent;padding:8px 12px;font-size:11px;}
+.logch-card .inp:focus{background:rgba(255,255,255,.02);outline:none;}
+.log-tab:hover{background:rgba(255,255,255,.07) !important;color:var(--txt) !important;}
+.log-tab.active{background:#fff !important;color:#111 !important;}
+.svr{display:flex;align-items:center;gap:11px;padding:11px 18px;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.03);animation:rowIn .18s ease both;cursor:pointer;}
+.svr:last-child{border-bottom:none;}
+.svr:hover{background:rgba(255,255,255,.02);}
+.svr-ico{width:36px;height:36px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;transition:transform .14s;}
+.svr:hover .svr-ico{transform:scale(1.05);}
+.svr-ico img{width:100%;height:100%;object-fit:cover;}
+.mrow{display:flex;align-items:center;gap:10px;padding:8px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .12s;animation:rowIn .16s ease both;}
+.mrow:last-child{border-bottom:none;}
+.mrow:hover{background:rgba(255,255,255,.02);}
+.mav{width:26px;height:26px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
+.mav img{width:100%;height:100%;object-fit:cover;}
+.tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.tbl th{padding:9px 14px;text-align:left;font-size:9px;font-weight:600;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--txt2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr{animation:rowIn .16s ease both;transition:background .1s;}
+.tbl tbody tr:hover{background:rgba(255,255,255,.02);}
+.tbl tbody tr:nth-child(1){animation-delay:.02s;}.tbl tbody tr:nth-child(2){animation-delay:.04s;}.tbl tbody tr:nth-child(3){animation-delay:.06s;}.tbl tbody tr:nth-child(4){animation-delay:.08s;}.tbl tbody tr:nth-child(5){animation-delay:.1s;}
+.mi{display:flex;align-items:center;justify-content:space-between;padding:10px 6px;border-bottom:1px solid rgba(255,255,255,.04);animation:rowIn .16s ease both;transition:background .12s;border-radius:6px;margin:0 -6px;}
+.mi:last-child{border-bottom:none;}
+.mi:hover{background:rgba(255,255,255,.02);}
+.mi-l{display:flex;align-items:center;gap:10px;}
+.mi-ico{width:30px;height:30px;border-radius:7px;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:transform .14s;}
+.mi:hover .mi-ico{transform:scale(1.06);}
+.mi-name{font-size:11px;font-weight:600;color:var(--txt);}
+.mi-desc{font-size:9px;color:var(--txt3);margin-top:1px;}
+.backup-card{background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:14px;margin-bottom:10px;transition:all .16s;animation:cardPop .22s ease both;position:relative;overflow:hidden;}
+.backup-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25);}
+.backup-card:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.45);border-color:rgba(255,255,255,.16);}
+.backup-name{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:4px;}
+.backup-meta{font-size:10px;color:var(--txt3);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.ld{display:flex;align-items:center;justify-content:center;padding:26px;gap:5px;}
+.ld span{width:5px;height:5px;background:var(--txt3);border-radius:50%;animation:lb 1.2s infinite;}
+.ld span:nth-child(2){animation-delay:.2s;}.ld span:nth-child(3){animation-delay:.4s;}
+.empty{padding:26px;text-align:center;color:var(--txt3);font-size:11px;}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.sh h2{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.2px;}
+.sh p{font-size:10px;color:var(--txt2);margin-top:2px;}
+.scrollarea{max-height:400px;overflow-y:auto;}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:11px 16px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:9px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.7);transform:translateY(90px) scale(.9);opacity:0;transition:all .24s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:310px;}
+.toast.show{transform:translateY(0) scale(1);opacity:1;}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.mbg.open{display:flex;animation:fi .14s ease;}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:22px;width:420px;max-width:92vw;animation:popIn .16s cubic-bezier(.34,1.56,.64,1) both;}
+.modal-t{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.modal-t span{cursor:pointer;color:var(--txt2);font-size:12px;padding:2px 6px;border-radius:4px;transition:all .12s;}
+.modal-t span:hover{background:rgba(255,255,255,.06);color:var(--txt);}
+.modal-b{font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.7;}
+.modal-b b{color:var(--txt);}
+.bars{display:flex;align-items:flex-end;gap:3px;height:44px;}
+.bar{flex:1;border-radius:2px 2px 0 0;background:rgba(255,255,255,.18);transition:all .22s;min-height:3px;transform-origin:bottom;}
+.bar:hover{background:rgba(255,255,255,.42);transform:scaleY(1.06);}
+.barlbls{display:flex;gap:3px;margin-top:3px;}
+.barlbl{flex:1;font-size:8px;color:var(--txt3);text-align:center;}
+.banner-title{font-size:22px;font-weight:700;color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-av" id="sbAv">f<span class="dot"></span></div>
+    <div><div class="sb-name" id="sbName">fa11en</div><div class="sb-id" id="sbId">loading...</div></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Overview</div>
+    <div class="ni active" data-page="dashboard"><i class="fas fa-grip-vertical"></i> Dashboard</div>
+    <div class="ni" data-page="servers"><i class="fas fa-server"></i> Servers</div>
+    <div class="ni" data-page="members"><i class="fas fa-users"></i> Members</div>
+    <div class="ni" data-page="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Moderation</div>
+    <div class="ni" data-page="automod"><i class="fas fa-shield-halved"></i> Auto Mod</div>
+    <div class="ni" data-page="infractions"><i class="fas fa-gavel"></i> Infractions <span class="nbadge" id="infBadge">0</span></div>
+    <div class="ni" data-page="logs"><i class="fas fa-scroll"></i> Logs</div>
+    <div class="ni" data-page="actions"><i class="fas fa-bolt"></i> Actions</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Features</div>
+    <div class="ni" data-page="leveling"><i class="fas fa-star"></i> Leveling</div>
+    <div class="ni" data-page="welcome"><i class="fas fa-door-open"></i> Welcome</div>
+    <div class="ni" data-page="tickets"><i class="fas fa-ticket"></i> Tickets</div>
+    <div class="ni" data-page="verify"><i class="fas fa-shield-halved"></i> Verification</div>
+    <div class="ni" data-page="commands"><i class="fas fa-terminal"></i> Commands</div>
+    <div class="ni" data-page="tempvoice"><i class="fas fa-headphones"></i> Temp Voice</div>
+    <div class="ni" data-page="send"><i class="fas fa-paper-plane"></i> Send Message</div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-lbl">Config</div>
+    <div class="ni" data-page="settings"><i class="fas fa-sliders"></i> Settings</div>
+    <div class="ni" data-page="reactionroles"><i class="fas fa-face-smile"></i> Reaction Roles</div>
+    <div class="ni" data-page="backup"><i class="fas fa-database"></i> Server Backup</div>
+    <div class="ni" data-page="security"><i class="fas fa-lock"></i> Security</div>
+    <div class="ni" data-page="config"><i class="fas fa-floppy-disk"></i> Config Save</div>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-bc">
+      <div class="fav" id="footAv">f</div>
+      <div><div class="fnm" id="footName">fa11en</div><div class="fst"><span class="pd"></span> online</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-l">
+      <span class="tb-crumb">fa11en</span><span class="tb-sep">/</span>
+      <span class="tb-title" id="pageTitle">Dashboard</span>
+    </div>
+    <div class="tb-r">
+      <div class="ping-pill"><span class="pd"></span><span id="pingTxt">— ms</span></div>
+      <div class="tb-btn" title="Refresh" onclick="initAll()"><i class="fas fa-rotate-right"></i></div>
+      <div class="tb-btn" title="Invite Bot" onclick="inviteBot()"><i class="fas fa-plus"></i></div>
+      <div class="tb-btn" title="Logout" onclick="logout()" style="color:var(--red)"><i class="fas fa-sign-out-alt"></i></div>
+    </div>
+  </header>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="banner">
+      <div>
+        <div class="banner-title">ahh <span id="bnName" style="color:var(--txt2)">—</span></div>
+        <div class="banner-sub" id="bnSub">connecting to Discord...</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g" onclick="inviteBot()"><i class="fas fa-plus"></i> invite</button>
+        <button class="btn btn-w" onclick="initAll()"><i class="fas fa-sync-alt"></i> refresh</button>
+      </div>
+    </div>
+    <div class="sgrid">
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-server" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s1b">—</span></div><div class="sc-val" id="s1v">—</div><div class="sc-lbl">servers</div><div class="sc-bar"><div class="sc-fill" style="width:60%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-users" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s2b">—</span></div><div class="sc-val" id="s2v">—</div><div class="sc-lbl">members</div><div class="sc-bar"><div class="sc-fill" style="width:72%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-bolt" style="color:var(--txt2)"></i></div><span class="sc-badge" id="s3b">—</span></div><div class="sc-val" id="s3v">—</div><div class="sc-lbl">ping</div><div class="sc-bar"><div class="sc-fill" style="width:35%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-circle-check" style="color:var(--green)"></i></div><span class="sc-badge t-green">live</span></div><div class="sc-val" id="s4v" style="color:var(--green)">—</div><div class="sc-lbl">status</div><div class="sc-bar"><div class="sc-fill" style="width:95%"></div></div></div>
+    </div>
+    <!-- DASHBOARD BOTTOM: 3-col grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;align-items:start">
+
+      <!-- MODULES -->
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><div><div class="ct">modules</div><div class="cs">toggles apply instantly</div></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-shield-halved" style="color:var(--red)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">auto-delete + warn</div></div></div><div class="tog" id="m-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--yellow)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 msgs/5s = timeout</div></div></div><div class="tog" id="m-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--red)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn</div></div></div><div class="tog" id="m-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--yellow)"></i></div><div><div class="mi-name">Mass Mention</div><div class="mi-desc">3+ mentions = warn</div></div></div><div class="tog" id="m-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--yellow)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">70%+ caps = delete</div></div></div><div class="tog" id="m-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-globe" style="color:var(--red)"></i></div><div><div class="mi-name">Block Links</div><div class="mi-desc">delete any URL</div></div></div><div class="tog" id="m-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-door-open" style="color:var(--green)"></i></div><div><div class="mi-name">Welcome</div><div class="mi-desc">greet new members</div></div></div><div class="tog" id="m-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-star" style="color:var(--yellow)"></i></div><div><div class="mi-name">Leveling / XP</div><div class="mi-desc">xp for chatting</div></div></div><div class="tog" id="m-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-ticket" style="color:var(--cyan)"></i></div><div><div class="mi-name">Tickets</div><div class="mi-desc">/ticket command</div></div></div><div class="tog" id="m-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
+      </div>
+
+      <!-- BOT INFO -->
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><div class="ct">bot info</div><span class="tag t-green" id="statusTag">online</span></div>
+        <div class="cb" style="padding:12px 16px">
+          <div class="sr"><div class="sr-l">name</div><div class="sr-v" id="iName">—</div></div>
+          <div class="sr"><div class="sr-l">id</div><div class="sr-v mono" style="font-size:9px" id="iId">—</div></div>
+          <div class="sr"><div class="sr-l">servers</div><div class="sr-v" id="iGuilds">—</div></div>
+          <div class="sr"><div class="sr-l">ws ping</div><div class="sr-v" id="iWsPing">—</div></div>
+          <div class="sr"><div class="sr-l">api ping</div><div class="sr-v" id="iApiPing">—</div></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-g" style="flex:1;font-size:10px" onclick="inviteBot()"><i class="fas fa-plus"></i> invite</button>
+          <button class="btn btn-w" style="flex:1;font-size:10px" onclick="initAll()"><i class="fas fa-sync-alt"></i> refresh</button>
+        </div>
+      </div>
+
+      <!-- RECENT ACTIVITY -->
+      <div class="card" style="margin-bottom:0">
+        <div class="ch">
+          <div class="ct">recent activity</div>
+          <a class="btn btn-g" style="font-size:10px;padding:4px 9px;cursor:pointer" onclick="nav('logs')">view all</a>
+        </div>
+        <div id="dashLogs" style="max-height:340px;overflow-y:auto"><div class="empty">loading...</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SERVERS ══ -->
+  <div class="page" id="page-servers">
+    <div class="sh"><div><h2>servers</h2><p>guilds your bot is in</p></div><button class="btn btn-w" onclick="loadServers()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="card" id="serversCard"><div class="ld"><span></span><span></span><span></span></div></div>
+  </div>
+
+  <!-- ══ MEMBERS ══ -->
+  <div class="page" id="page-members">
+    <div class="sh"><div><h2>members</h2><p>users in your server</p></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="inp" id="memberGuildPicker" style="width:170px"></select>
+        <button class="btn btn-w" onclick="loadMembers()"><i class="fas fa-sync-alt"></i> load</button>
+      </div>
+    </div>
+    <div class="card" id="membersCard"><div class="empty">select a server and click load</div></div>
+  </div>
+
+  <!-- ══ ANALYTICS ══ -->
+  <div class="page" id="page-analytics">
+    <div class="sh"><div><h2>analytics</h2><p>live stats from the bot</p></div><button class="btn btn-w" onclick="loadAnalytics()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="sgrid">
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-scroll" style="color:var(--txt2)"></i></div><span class="sc-badge" id="an-lb">—</span></div><div class="sc-val" id="an-lv">—</div><div class="sc-lbl">log entries</div><div class="sc-bar"><div class="sc-fill" style="width:50%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-gavel" style="color:var(--txt2)"></i></div><span class="sc-badge" id="an-ib">—</span></div><div class="sc-val" id="an-iv">—</div><div class="sc-lbl">infractions</div><div class="sc-bar"><div class="sc-fill" style="width:30%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-star" style="color:var(--yellow)"></i></div><span class="sc-badge t-yellow">xp</span></div><div class="sc-val" id="an-xv">—</div><div class="sc-lbl">users with xp</div><div class="sc-bar"><div class="sc-fill" style="width:60%"></div></div></div>
+      <div class="sc"><div class="sc-top"><div class="sc-ico"><i class="fas fa-ticket" style="color:var(--cyan)"></i></div><span class="sc-badge t-cyan">tickets</span></div><div class="sc-val" id="an-tv">—</div><div class="sc-lbl">total tickets</div><div class="sc-bar"><div class="sc-fill" style="width:40%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">xp leaderboard</div><span class="tag t-white">live</span></div>
+      <table class="tbl"><thead><tr><th>#</th><th>user id</th><th>level</th><th>xp</th></tr></thead>
+      <tbody id="lbBody"><tr><td colspan="4" class="empty">no xp data yet</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ AUTO MOD ══ -->
+  <div class="page" id="page-automod">
+    <div class="sh"><div><h2>moderation</h2><p>automod filters, custom commands, slowmode manager</p></div><button class="btn btn-w" onclick="saveAutomod()"><i class="fas fa-check"></i> save</button></div>
+
+    <!-- TAB BAR -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px;">
+      <button class="log-tab active" onclick="switchModTab('filters',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:var(--bg4);color:var(--txt);transition:all .18s;">Auto Filters</button>
+      <button class="log-tab" onclick="switchModTab('commands',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Custom Commands</button>
+      <button class="log-tab" onclick="switchModTab('slowmode',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Slowmode</button>
+    </div>
+
+    <!-- FILTERS TAB -->
+    <div id="modtab-filters">
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ct">filters</div><span class="tag t-green">live</span></div>
+          <div class="cb">
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-link" style="color:var(--red)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">auto-delete + warn</div></div></div><div class="tog" id="m-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--yellow)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 msgs/5sec = timeout</div></div></div><div class="tog" id="m-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--red)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn</div></div></div><div class="tog" id="m-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--yellow)"></i></div><div><div class="mi-name">Mass Mention Block</div><div class="mi-desc">3+ mentions = warning</div></div></div><div class="tog" id="m-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--yellow)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">70%+ caps = delete</div></div></div><div class="tog" id="m-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-globe" style="color:var(--red)"></i></div><div><div class="mi-name">Block All Links</div><div class="mi-desc">delete any http:// URL</div></div></div><div class="tog" id="m-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-clone" style="color:var(--yellow)"></i></div><div><div class="mi-name">Duplicate Text</div><div class="mi-desc">repeated words deleted</div></div></div><div class="tog" id="m-blockDuplicates" data-key="blockDuplicates" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-face-grin-squint" style="color:var(--yellow)"></i></div><div><div class="mi-name">Emoji Spam</div><div class="mi-desc">too many emojis = delete</div></div></div><div class="tog" id="m-blockEmojiSpam" data-key="blockEmojiSpam" onclick="toggle(this)"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">thresholds</div></div>
+          <div class="cb">
+            <label class="fl">Auto-ban after X warnings</label>
+            <input class="inp" type="number" id="autobanThreshold" value="3" min="1" max="20" style="margin-bottom:10px">
+            <label class="fl">Timeout duration (minutes)</label>
+            <input class="inp" type="number" id="muteMinutes" value="10" min="1" max="1440" style="margin-bottom:10px">
+            <label class="fl">Emoji spam limit</label>
+            <input class="inp" type="number" id="emojiSpamLimit" value="5" min="1" max="30" style="margin-bottom:10px">
+            <label class="fl">Log Channel (optional global)</label>
+            <input class="inp" id="logChannelId" placeholder="channel id for all logs" style="margin-bottom:14px">
+            <button class="btn btn-w" style="width:100%" onclick="saveAutomodFull()"><i class="fas fa-check"></i> save thresholds</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">bad words list</div></div>
+          <div class="cb">
+            <label class="fl">Words (comma separated)</label>
+            <textarea class="inp" id="badWordsList" style="margin-bottom:10px;height:80px"></textarea>
+            <button class="btn btn-w" style="width:100%" onclick="saveBadWords()"><i class="fas fa-check"></i> save words</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM COMMANDS TAB -->
+    <div id="modtab-commands" style="display:none">
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ct">add command</div><span class="tag t-cyan">triggers in chat</span></div>
+          <div class="cb">
+            <label class="fl">Trigger (what user types)</label>
+            <input class="inp" id="ccTrigger" placeholder="!gg or !rules" style="margin-bottom:10px">
+            <label class="fl">Response</label>
+            <textarea class="inp" id="ccResponse" placeholder="use {user} {server} {username}" style="margin-bottom:10px;height:70px"></textarea>
+            <div style="font-size:10px;color:var(--txt3);margin-bottom:10px">variables: <span class="mono">{user}</span> = mention, <span class="mono">{username}</span> = name, <span class="mono">{server}</span> = server name</div>
+            <button class="btn btn-w" style="width:100%" onclick="addCustomCommand()"><i class="fas fa-plus"></i> add command</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">active commands</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadCustomCommands()"><i class="fas fa-sync-alt"></i></button></div>
+          <div id="ccList"><div class="empty">no custom commands yet</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLOWMODE TAB -->
+    <div id="modtab-slowmode" style="display:none">
+      <div class="card" style="max-width:480px">
+        <div class="ch"><div class="ct">slowmode manager</div><span class="tag t-yellow">per channel</span></div>
+        <div class="cb">
+          <label class="fl">Server</label>
+          <select class="inp" id="slowGuild" style="margin-bottom:10px" onchange="loadSlowChannels()"></select>
+          <label class="fl">Channel</label>
+          <select class="inp" id="slowChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Slowmode in seconds (0 = off)</label>
+          <input class="inp" type="number" id="slowSeconds" value="0" min="0" max="21600" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="applySlowmode()"><i class="fas fa-clock"></i> apply slowmode</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INFRACTIONS ══ -->
+  <div class="page" id="page-infractions">
+    <div class="sh">
+      <div><h2>infractions</h2><p id="infCount">0 records</p></div>
+      <div style="display:flex;gap:8px">
+        <select class="inp" id="infGuild" style="width:160px"></select>
+        <button class="btn btn-r" onclick="clearInfractions()"><i class="fas fa-trash"></i> clear all</button>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">issue action</div></div>
+        <div class="cb">
+          <label class="fl">User ID</label>
+          <input class="inp" id="infUser" placeholder="user id" style="margin-bottom:10px">
+          <label class="fl">Action</label>
+          <select class="inp" id="infAct" style="margin-bottom:10px">
+            <option value="warn">warn</option>
+            <option value="timeout">timeout</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+          </select>
+          <label class="fl">Reason</label>
+          <input class="inp" id="infReason" placeholder="reason..." style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="issueInfraction()"><i class="fas fa-bolt"></i> execute</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">infraction log</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadInfractions()"><i class="fas fa-sync-alt"></i></button></div>
+        <div id="infEmpty" style="display:none" class="empty">no infractions recorded</div>
+        <table class="tbl" style="display:table">
+          <thead><tr><th>#</th><th>user</th><th>action</th><th>reason</th><th>time</th><th></th></tr></thead>
+          <tbody id="infBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGS ══ -->
+  <div class="page" id="page-logs">
+    <div class="sh">
+      <div>
+        <h2>logs &amp; channels</h2>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+          <p>live audit trail + configure where each log type goes</p>
+          <div class="log-live"><div class="log-live-dot"></div>live</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-g" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> refresh</button>
+        <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear all</button>
+      </div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px;">
+      <button class="log-tab active" onclick="switchLogTab('live',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:var(--bg4);color:var(--txt);transition:all .18s;">Live Logs</button>
+      <button class="log-tab" onclick="switchLogTab('channels',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Log Channels</button>
+      <button class="log-tab" onclick="switchLogTab('advanced',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Advanced Channels</button>
+    </div>
+
+    <!-- LIVE LOGS TAB -->
+    <div id="logtab-live">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #ff3555;animation:cardPop .3s ease .05s both">
+          <div style="font-size:18px;font-weight:800;color:#ff3555" id="logStat-del">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">DELETED</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #ffb700;animation:cardPop .3s ease .1s both">
+          <div style="font-size:18px;font-weight:800;color:#ffb700" id="logStat-mod">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">MOD ACTIONS</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #00e87a;animation:cardPop .3s ease .15s both">
+          <div style="font-size:18px;font-weight:800;color:#00e87a" id="logStat-join">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">JOINS</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #9b8cff;animation:cardPop .3s ease .2s both">
+          <div style="font-size:18px;font-weight:800;color:#9b8cff" id="logStat-total">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">TOTAL</div></div>
+      </div>
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">live events</div><span class="tag t-gray" id="logCount">0 entries</span></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="inp" id="logFilter" style="width:140px" onchange="filterLogs()">
+              <option value="">all types</option>
+              <option value="DELETE">deleted msgs</option>
+              <option value="EDIT">edited msgs</option>
+              <option value="JOIN">joins</option>
+              <option value="LEAVE">leaves</option>
+              <option value="MOD">mod actions</option>
+              <option value="AUTOMOD">automod</option>
+              <option value="VOICE">voice</option>
+              <option value="ROLE">roles</option>
+              <option value="SECURITY">security</option>
+              <option value="TICKET">tickets</option>
+              <option value="BOOST">boosts</option>
+            </select>
+            <input class="inp" id="logSearch" placeholder="search..." style="width:130px" oninput="filterLogs()">
+          </div>
+        </div>
+        <div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>
+
+    <!-- LOG CHANNELS TAB -->
+    <div id="logtab-channels" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <div><div class="ct">log channels</div><div class="cs">pick a Discord channel for each event type</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="inp" id="logGuildPicker" style="width:160px" onchange="loadLogChannels()"></select>
+            <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Deleted Messages</div></div><select class="inp" id="lc-deletedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 5px #ffb70088"></span><div class="logch-label">Edited Messages</div></div><select class="inp" id="lc-editedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Joins &amp; Leaves</div></div><select class="inp" id="lc-joinLeave"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Mod Actions</div></div><select class="inp" id="lc-modActions"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#4488ff;box-shadow:0 0 5px #4488ff88"></span><div class="logch-label">Commands Used</div></div><select class="inp" id="lc-commands"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Images &amp; Files</div></div><select class="inp" id="lc-images"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Voice Activity</div></div><select class="inp" id="lc-voiceActivity"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#9b8cff;box-shadow:0 0 5px #9b8cff88"></span><div class="logch-label">Role Changes</div></div><select class="inp" id="lc-roleChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Member Banned</div></div><select class="inp" id="lc-memberBanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Member Unbanned</div></div><select class="inp" id="lc-memberUnbanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 5px #ff880088"></span><div class="logch-label">Member Kicked</div></div><select class="inp" id="lc-memberKicked"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffb700;box-shadow:0 0 5px #ffb70088"></span><div class="logch-label">Member Timeout</div></div><select class="inp" id="lc-memberTimeout"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Channel Created</div></div><select class="inp" id="lc-channelCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Channel Deleted</div></div><select class="inp" id="lc-channelDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00e87a;box-shadow:0 0 5px #00e87a88"></span><div class="logch-label">Role Created</div></div><select class="inp" id="lc-roleCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Role Deleted</div></div><select class="inp" id="lc-roleDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Joined Voice</div></div><select class="inp" id="lc-memberJoinedVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff8800;box-shadow:0 0 5px #ff880088"></span><div class="logch-label">Left Voice</div></div><select class="inp" id="lc-memberLeftVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Server Invites</div></div><select class="inp" id="lc-serverInvites"><option value="">disabled</option></select></div>
+      </div>
+    </div>
+
+    <!-- ADVANCED CHANNELS TAB -->
+    <div id="logtab-advanced" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <div><div class="ct">advanced log channels</div><div class="cs">extra event types — nickname changes, threads, boosts and more</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="inp" id="advLogGuild" style="width:160px" onchange="loadAdvLogChannels()"></select>
+            <button class="btn btn-w" onclick="saveAdvLogChannels()"><i class="fas fa-check"></i> save</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd70088"></span><div class="logch-label">Nickname Changes</div></div><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Invite Created</div></div><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Invite Deleted</div></div><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Bulk Delete</div></div><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#00d4ff;box-shadow:0 0 5px #00d4ff88"></span><div class="logch-label">Thread Created</div></div><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Thread Deleted</div></div><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff73fa;box-shadow:0 0 5px #ff73fa88"></span><div class="logch-label">Boost Events</div></div><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd70088"></span><div class="logch-label">Emoji Created</div></div><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#ff3555;box-shadow:0 0 5px #ff355588"></span><div class="logch-label">Emoji Deleted</div></div><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-top"><span class="logch-dot" style="background:#888;box-shadow:0 0 5px #88888"></span><div class="logch-label">Webhook Changes</div></div><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ACTIONS ══ -->
+  <div class="page" id="page-actions">
+    <div class="sh"><div><h2>actions</h2><p>execute bot actions directly — everything is real</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">moderation</div><span class="tag t-red">executes in Discord</span></div>
+        <div class="cb">
+          <label class="fl">Server</label><select class="inp" id="actGuild" style="margin-bottom:10px"></select>
+          <label class="fl">User ID</label><input class="inp" id="actUser" placeholder="paste user id" style="margin-bottom:10px">
+          <label class="fl">Reason</label><input class="inp" id="actReason" placeholder="reason..." style="margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-y" onclick="doAction('warn')"><i class="fas fa-exclamation-triangle"></i> warn</button>
+            <button class="btn btn-y" onclick="doAction('timeout')"><i class="fas fa-clock"></i> timeout</button>
+            <button class="btn btn-r" onclick="doAction('kick')"><i class="fas fa-sign-out-alt"></i> kick</button>
+            <button class="btn btn-r" onclick="doAction('ban')"><i class="fas fa-hammer"></i> ban</button>
+          </div>
+          <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-gr" onclick="doAction('unban')"><i class="fas fa-unlock"></i> unban</button>
+            <button class="btn btn-gr" onclick="doAction('clearwarnings')"><i class="fas fa-eraser"></i> clear warns</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">purge messages</div><span class="tag t-red">deletes real messages</span></div>
+        <div class="cb">
+          <label class="fl">Server</label><select class="inp" id="purgeGuild" style="margin-bottom:10px" onchange="loadChForPurge()"></select>
+          <label class="fl">Channel</label><select class="inp" id="purgeChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Amount (max 100)</label><input class="inp" id="purgeAmt" type="number" value="10" min="1" max="100" style="margin-bottom:14px">
+          <button class="btn btn-r" style="width:100%" onclick="doPurge()"><i class="fas fa-trash"></i> purge messages</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LEVELING ══ -->
+  <div class="page" id="page-leveling">
+    <div class="sh"><div><h2>leveling</h2><p>xp system — live leaderboard</p></div><button class="btn btn-w" onclick="loadLeaderboard()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:12px;font-weight:700">Leveling Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">xp for every message (60s cooldown)</div></div>
+            <div class="tog" id="lv-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div>
+          </div>
+          <label class="fl">Level Up Message</label>
+          <input class="inp" id="levelUpMessage" placeholder="gg {user}, you hit level {level}!" style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:14px">variables: {user} {level}</div>
+          <button class="btn btn-w" style="width:100%" onclick="saveLeveling()"><i class="fas fa-check"></i> save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">leaderboard</div><span class="tag t-yellow">live</span></div>
+        <table class="tbl"><thead><tr><th>#</th><th>user id</th><th>lvl</th><th>xp</th></tr></thead>
+        <tbody id="lvlBody"><tr><td colspan="4" class="empty">no data yet</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WELCOME ══ -->
+  <div class="page" id="page-welcome">
+    <div class="sh"><div><h2>welcome & goodbye</h2><p>custom card with pfp on background — fully customisable</p></div><button class="btn btn-w" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save all</button></div>
+
+    <!-- how it works banner -->
+    <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">🎨</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:3px">custom welcome card</div>
+        <div style="font-size:11px;color:var(--txt2);line-height:1.5">bot generates a card with the <b style="color:var(--txt)">user&apos;s pfp in a circle</b> over your background gif. text + circle color are fully customisable.</div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <!-- WELCOME -->
+      <div class="card">
+        <div class="ch"><div class="ct">welcome card</div><div class="tog" id="wlc-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <label class="fl">Server &amp; Channel</label>
+          <select class="inp" id="welcomeGuildPicker" style="margin-bottom:6px" onchange="loadWelcomeChannels()"></select>
+          <select class="inp" id="welcomeChannelId" style="margin-bottom:10px"><option value="">system channel</option></select>
+          <label class="fl">Welcome Message <span style="color:var(--txt2)">({user} {count} {server})</span></label>
+          <textarea class="inp" id="welcomeMessage" placeholder="welcome {user}! you are member #{count}" style="margin-bottom:10px"></textarea>
+          <label class="fl">Background Image/GIF URL <span style="color:var(--txt2)">(shown behind the pfp)</span></label>
+          <input class="inp" id="welcomeGif" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
+          <div id="welcomeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="welcomeGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:12px" onclick="previewGif('welcomeGif','welcomeGifPreview','welcomeGifImg')"><i class="fas fa-eye"></i> preview background</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label class="fl">Main card text</label>
+              <input class="inp" id="welcomeCardText" placeholder="{username} is now a member >_<">
+            </div>
+            <div>
+              <label class="fl">Sub text</label>
+              <input class="inp" id="welcomeCardSub" placeholder="member #{count}">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label class="fl">Circle border color</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="welcomeCardCircleColor" value="#ffffff" style="width:40px;height:32px;border:none;background:none;cursor:pointer;padding:0">
+                <input class="inp" id="welcomeCardCircleColorHex" placeholder="#ffffff" style="flex:1" oninput="document.getElementById('welcomeCardCircleColor').value=this.value">
+              </div>
+            </div>
+            <div>
+              <label class="fl">Overlay darkness (0-1)</label>
+              <input class="inp" id="welcomeCardOverlay" type="number" min="0" max="1" step="0.05" value="0.45" placeholder="0.45">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOODBYE -->
+      <div class="card">
+        <div class="ch"><div class="ct">goodbye card</div><div class="tog" id="wlc-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <label class="fl">Goodbye Channel <span style="color:var(--txt2)">(can be different)</span></label>
+          <select class="inp" id="goodbyeChannelId" style="margin-bottom:10px"><option value="">same as welcome</option></select>
+          <label class="fl">Goodbye Message</label>
+          <textarea class="inp" id="goodbyeMessage" placeholder="{user} has left the server." style="margin-bottom:10px"></textarea>
+          <label class="fl">Background Image/GIF URL</label>
+          <input class="inp" id="goodbyeGif" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
+          <div id="goodbyeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="goodbyeGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:12px" onclick="previewGif('goodbyeGif','goodbyeGifPreview','goodbyeGifImg')"><i class="fas fa-eye"></i> preview background</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label class="fl">Main card text</label>
+              <input class="inp" id="goodbyeCardText" placeholder="{username} has left >_<">
+            </div>
+            <div>
+              <label class="fl">Sub text</label>
+              <input class="inp" id="goodbyeCardSub" placeholder="members remaining: {count}">
+            </div>
+          </div>
+          <div>
+            <label class="fl">Circle border color</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="color" id="goodbyeCardCircleColor" value="#ff3555" style="width:40px;height:32px;border:none;background:none;cursor:pointer;padding:0">
+              <input class="inp" id="goodbyeCardCircleColorHex" placeholder="#ff3555" style="flex:1" oninput="document.getElementById('goodbyeCardCircleColor').value=this.value">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TICKETS ══ -->
+  <div class="page" id="page-tickets">
+    <div class="sh"><div><h2>tickets</h2><p>customise the panel, pick channel, send it</p></div><button class="btn btn-w" onclick="saveTicketSettings()"><i class="fas fa-check"></i> save settings</button></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div><div class="tog" id="tk-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <label class="fl">Panel Title</label>
+          <input class="inp" id="ticketTitle" placeholder="Staff Support" style="margin-bottom:10px">
+          <label class="fl">Panel Description</label>
+          <textarea class="inp" id="ticketDescription" placeholder="Contact our staff team privately..." style="margin-bottom:10px;height:80px"></textarea>
+          <label class="fl">Panel GIF URL <span style="color:var(--txt2)">(shows in the embed)</span></label>
+          <input class="inp" id="ticketGifUrl" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
+          <div id="tkGifPrev" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="tkGifImg" style="width:100%;max-height:120px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:0" onclick="previewGif('ticketGifUrl','tkGifPrev','tkGifImg')"><i class="fas fa-eye"></i> preview gif</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">send ticket panel</div><span class="tag t-cyan">posts button to channel</span></div>
+        <div class="cb">
+          <label class="fl">Server</label>
+          <select class="inp" id="tkGuild" style="margin-bottom:10px" onchange="loadTkChannels()"></select>
+          <label class="fl">Channel to post panel in</label>
+          <select class="inp" id="tkChannel" style="margin-bottom:14px"></select>
+          <button class="btn btn-w" style="width:100%;margin-bottom:10px" onclick="sendTicketPanel()"><i class="fas fa-paper-plane"></i> send ticket panel to channel</button>
+          <div style="font-size:10px;color:var(--txt3);line-height:1.5">posts the embed with the <b>Create Ticket</b> button. saves settings first, then sends with your current gif + text.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="ch"><div class="ct">commands</div></div>
+      <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticket</span></div><div style="font-size:11px;color:var(--txt2)">opens a private ticket channel</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/closeticket</span></div><div style="font-size:11px;color:var(--txt2)">closes and deletes the ticket</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px"><div style="font-size:12px;font-weight:700;margin-bottom:3px"><span class="mono">/ticketpanel</span></div><div style="font-size:11px;color:var(--txt2)">post a ticket panel in any channel</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VERIFICATION ══ -->
+  <div class="page" id="page-verify">
+    <div class="sh"><div><h2>verification</h2><p>reaction-based — user reacts → gets verified role instantly</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">settings</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div><div style="font-size:12px;font-weight:700">Verification Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">react to message → get verified role</div></div>
+            <div class="tog" id="vfy-verificationEnabled" data-key="verificationEnabled" onclick="toggle(this)"></div>
+          </div>
+          <label class="fl">Verified Role ID <span style="color:var(--red)">*</span></label>
+          <input class="inp" id="verifiedRoleId" placeholder="role given when user reacts" style="margin-bottom:10px">
+          <label class="fl">Unverified Role ID <span style="color:var(--txt2)">(optional — gets removed on verify)</span></label>
+          <input class="inp" id="unverifiedRoleId" placeholder="role taken away after verifying" style="margin-bottom:10px">
+          <label class="fl">Verify Emoji</label>
+          <input class="inp" id="verifyEmoji" placeholder="✅" value="✅" style="margin-bottom:10px">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:14px">💡 to get a role id: enable developer mode → right-click the role → copy id</div>
+          <button class="btn btn-w" style="width:100%" onclick="saveVerifySettings()"><i class="fas fa-check"></i> save settings</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">post verify message</div><span class="tag t-green">bot posts it</span></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.6">
+            bot posts an embed with a ✅ reaction. user clicks it → gets <b style="color:var(--txt)">@verified</b> role → loses <b style="color:var(--txt)">@unverified</b> role. that's it.
+          </div>
+          <label class="fl">Server</label>
+          <select class="inp" id="verifyGuild" style="margin-bottom:10px" onchange="loadVerifyChannels()"></select>
+          <label class="fl">Channel</label>
+          <select class="inp" id="verifyChannel" style="margin-bottom:14px"></select>
+          <button class="btn btn-w" style="width:100%" onclick="sendVerifyPanel()"><i class="fas fa-paper-plane"></i> post verify message</button>
+          <div style="margin-top:8px;font-size:10px;color:var(--txt3)">⚠️ save your settings first before posting</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">how it works</div></div>
+      <div class="cb">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">📌</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">bot posts message</div>
+            <div style="font-size:10px;color:var(--txt2)">with ✅ reaction</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">✅</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">user reacts</div>
+            <div style="font-size:10px;color:var(--txt2)">clicks the emoji</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">🎉</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">gets verified role</div>
+            <div style="font-size:10px;color:var(--txt2)">instantly assigned</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:6px">🔓</div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:3px">full access</div>
+            <div style="font-size:10px;color:var(--txt2)">unverified role removed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEND MESSAGE ══ -->
+  <div class="page" id="page-send">
+    <div class="sh"><div><h2>send message</h2><p>make the bot send a message to any channel</p></div></div>
+    <div class="card" style="max-width:560px">
+      <div class="ch"><div class="ct">compose</div><span class="tag t-white">bot sends it</span></div>
+      <div class="cb">
+        <label class="fl">Server</label><select class="inp" id="msgGuild" style="margin-bottom:10px" onchange="loadChForMsg()"></select>
+        <label class="fl">Channel</label><select class="inp" id="msgChannel" style="margin-bottom:10px"></select>
+        <label class="fl">Message</label><textarea class="inp" id="msgContent" placeholder="what should the bot say?" style="margin-bottom:14px;min-height:100px"></textarea>
+        <button class="btn btn-w" style="width:100%" onclick="sendMsg()"><i class="fas fa-paper-plane"></i> send via bot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TEMP VOICE ══ -->
+  <div class="page" id="page-tempvoice">
+    <div class="sh"><div><h2>temp voice</h2><p>users join a channel → bot creates their own private vc</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">setup</div></div>
+        <div class="cb">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div><div style="font-size:12px;font-weight:700">Temp Voice Enabled</div><div style="font-size:10px;color:var(--txt2);margin-top:2px">auto-create/delete voice channels</div></div>
+            <div class="tog" id="tv-toggle" onclick="tvToggle(this)"></div>
+          </div>
+          <label class="fl">Creator Channel ID <span style="color:var(--txt2)">(the "join to create" voice channel)</span></label>
+          <input class="inp" id="tvCreatorId" placeholder="paste channel id" style="margin-bottom:10px">
+          <label class="fl">Category ID <span style="color:var(--txt2)">(temp channels go here)</span></label>
+          <input class="inp" id="tvCategoryId" placeholder="paste category id" style="margin-bottom:10px">
+          <label class="fl">Control Text Channel ID <span style="color:var(--txt2)">(where control panels get posted)</span></label>
+          <input class="inp" id="tvControlChannelId" placeholder="paste text channel id" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%;margin-bottom:8px" onclick="saveTVSettings()"><i class="fas fa-check"></i> save settings</button>
+          <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
+            <div style="font-size:11px;color:var(--txt2);margin-bottom:10px">or let the bot create everything automatically:</div>
+            <select class="inp" id="tvSetupGuild" style="margin-bottom:8px"></select>
+            <button class="btn btn-gr" style="width:100%" onclick="tvAutoSetup()"><i class="fas fa-magic"></i> auto setup (creates category + channel)</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">how it works</div></div>
+        <div class="cb">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">➕</div>
+              <div><div style="font-size:11px;font-weight:700">user joins "Join to Create"</div><div style="font-size:10px;color:var(--txt2)">the special creator channel</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">🤖</div>
+              <div><div style="font-size:11px;font-weight:700">bot creates their own VC</div><div style="font-size:10px;color:var(--txt2)">named after them, they are owner</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">👑</div>
+              <div><div style="font-size:11px;font-weight:700">owner controls the channel</div><div style="font-size:10px;color:var(--txt2)">rename, limit, kick, lock</div></div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center">
+              <div style="font-size:20px">🗑️</div>
+              <div><div style="font-size:11px;font-weight:700">auto-deleted when empty</div><div style="font-size:10px;color:var(--txt2)">no clutter left behind</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Channels -->
+    <div class="card">
+      <div class="ch"><div class="ct">active temp channels</div><button class="btn btn-g" style="font-size:11px;padding:5px 10px" onclick="loadTVChannels()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+      <div id="tvChannelList"><div class="empty">no active temp voice channels</div></div>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card">
+      <div class="ch"><div class="ct">control a channel</div><span class="tag t-cyan">dashboard control</span></div>
+      <div class="cb">
+        <div class="fr">
+          <div><label class="fl">Server</label><select class="inp" id="tvControlGuild"></select></div>
+          <div><label class="fl">Channel ID</label><input class="inp" id="tvControlChannel" placeholder="paste channel id"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <label class="fl">Rename to</label>
+            <div style="display:flex;gap:6px">
+              <input class="inp" id="tvNewName" placeholder="new name">
+              <button class="btn btn-g" style="flex-shrink:0" onclick="tvControl('rename',document.getElementById('tvNewName').value)"><i class="fas fa-pen"></i></button>
+            </div>
+          </div>
+          <div>
+            <label class="fl">User limit (0 = unlimited)</label>
+            <div style="display:flex;gap:6px">
+              <input class="inp" id="tvLimit" type="number" placeholder="0" min="0" max="99">
+              <button class="btn btn-g" style="flex-shrink:0" onclick="tvControl('limit',document.getElementById('tvLimit').value)"><i class="fas fa-check"></i></button>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          <button class="btn btn-g" onclick="tvControl('lock')"><i class="fas fa-lock"></i> lock</button>
+          <button class="btn btn-g" onclick="tvControl('unlock')"><i class="fas fa-lock-open"></i> unlock</button>
+          <div style="display:flex;gap:6px;grid-column:span 2">
+            <input class="inp" id="tvKickUser" placeholder="user id to kick">
+            <button class="btn btn-y" style="flex-shrink:0;white-space:nowrap" onclick="tvControl('kick',document.getElementById('tvKickUser').value)"><i class="fas fa-sign-out-alt"></i> kick</button>
+            <button class="btn btn-r" style="flex-shrink:0;white-space:nowrap" onclick="tvControl('delete')"><i class="fas fa-trash"></i> delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REACTION ROLES ══ -->
+  <div class="page" id="page-reactionroles">
+    <div class="sh">
+      <div><h2>reaction roles</h2><p>add multiple emoji→role pairs to a single message</p></div>
+      <button class="btn btn-w" onclick="loadReactionRoles()"><i class="fas fa-sync-alt"></i> refresh</button>
+    </div>
+    <div class="g2">
+      <!-- LEFT: CREATE / ADD TO EXISTING -->
+      <div>
+        <!-- Step 1: Create new message -->
+        <div class="card">
+          <div class="ch"><div><div class="ct">step 1 — create message</div><div class="cs">posts a new reaction role embed in a channel</div></div><span class="tag t-purple">new message</span></div>
+          <div class="cb">
+            <label class="fl">Server</label>
+            <select class="inp" id="rrGuild" style="margin-bottom:10px" onchange="loadRRChannels()"></select>
+            <label class="fl">Channel</label>
+            <select class="inp" id="rrChannel" style="margin-bottom:10px"></select>
+            <label class="fl">Embed description</label>
+            <input class="inp" id="rrDesc" placeholder="React below to get your roles!" style="margin-bottom:14px">
+
+            <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:12px;margin-bottom:14px">
+              <div style="font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:10px;letter-spacing:.3px">REACTIONS TO ADD</div>
+              <div id="rrPairs" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+              <button class="btn btn-gr" style="width:100%;font-size:10px" onclick="addRRPair()"><i class="fas fa-plus"></i> add emoji → role pair</button>
+            </div>
+
+            <button class="btn btn-w" style="width:100%" onclick="createReactionRoleMulti()"><i class="fas fa-paper-plane"></i> create reaction role message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: ADD TO EXISTING + LIST -->
+      <div>
+        <!-- Step 2: Add to existing message -->
+        <div class="card" style="margin-bottom:13px">
+          <div class="ch"><div><div class="ct">step 2 — add to existing</div><div class="cs">add more emoji→role pairs to an existing message</div></div><span class="tag t-cyan">existing msg</span></div>
+          <div class="cb">
+            <label class="fl">Message ID</label>
+            <input class="inp" id="rrExistingMsg" placeholder="paste message id here" style="margin-bottom:10px">
+            <label class="fl">Channel (where the message is)</label>
+            <select class="inp" id="rrExistingChannel" style="margin-bottom:10px"></select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <div>
+                <label class="fl">Emoji</label>
+                <input class="inp" id="rrAddEmoji" placeholder="✅">
+              </div>
+              <div>
+                <label class="fl">Role</label>
+                <select class="inp" id="rrAddRole"></select>
+              </div>
+            </div>
+            <button class="btn btn-w" style="width:100%" onclick="addToExistingRR()"><i class="fas fa-plus"></i> add to message</button>
+          </div>
+        </div>
+
+        <!-- Active list -->
+        <div class="card">
+          <div class="ch"><div class="ct">active reaction roles</div></div>
+          <div id="rrList"><div class="empty">no reaction roles yet</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SERVER BACKUP ══ -->
+  <div class="page" id="page-backup">
+    <div class="sh"><div><h2>server backup</h2><p>save roles &amp; channels — load into any server you want</p></div>
+      <button class="btn btn-g" onclick="loadAllBackups()"><i class="fas fa-sync-alt"></i> refresh all</button>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">create new backup</div><span class="tag t-yellow">up to 5 per server</span></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--blue)">
+            saves all roles (name, color, permissions, position) and channels (name, type, category, topic). load into any server the bot is in.
+          </div>
+          <label class="fl">Server to backup</label>
+          <select class="inp" id="backupGuild" style="margin-bottom:10px" onchange="loadBackups()"></select>
+          <label class="fl">Backup name (optional)</label>
+          <input class="inp" id="backupName" placeholder="e.g. before-redesign, v2-layout..." style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="createBackup()"><i class="fas fa-database"></i> create backup</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">backups for selected server</div></div>
+        <div id="backupList"><div class="empty">select a server above</div></div>
+      </div>
+    </div>
+
+    <!-- ALL BACKUPS -->
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">all saved backups</div><div class="cs">load any backup into any server</div></div>
+      </div>
+      <div class="cb">
+        <label class="fl">Load into server</label>
+        <select class="inp" id="restoreTargetGuild" style="margin-bottom:14px"></select>
+        <div id="allBackupsList"><div class="empty">click refresh to load backups</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECURITY ══ -->
+  <div class="page" id="page-security">
+    <div class="sh"><div><h2>security</h2><p>anti-raid, alt detection, auto-role, nickname filter</p></div><button class="btn btn-w" onclick="saveSecuritySettings()"><i class="fas fa-check"></i> save all</button></div>
+
+    <div class="g2">
+      <!-- ANTI-RAID -->
+      <div class="card">
+        <div class="ch"><div class="ct">anti-raid</div><div class="tog" id="sec-antiRaidEnabled" data-key="antiRaidEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">if X members join within Y seconds, auto-action all of them</div>
+          <label class="fl">Joins to trigger raid detection</label>
+          <input class="inp" type="number" id="antiRaidThreshold" value="10" min="2" max="50" style="margin-bottom:10px">
+          <label class="fl">Time window (seconds)</label>
+          <input class="inp" type="number" id="antiRaidWindow" value="10" min="3" max="60" style="margin-bottom:10px">
+          <label class="fl">Action when raid detected</label>
+          <select class="inp" id="antiRaidAction" style="margin-bottom:10px">
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (30min)</option>
+          </select>
+          <label class="fl">Log Channel (for raid alerts)</label>
+          <select class="inp" id="antiRaidLogCh" style="margin-bottom:10px"></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-r" onclick="lockdownServer(true)"><i class="fas fa-lock"></i> lockdown server</button>
+            <button class="btn btn-gr" onclick="lockdownServer(false)"><i class="fas fa-unlock"></i> unlock server</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALT DETECTOR -->
+      <div class="card">
+        <div class="ch"><div class="ct">alt account detector</div><div class="tog" id="sec-altDetectEnabled" data-key="altDetectEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">flags or actions accounts newer than X days</div>
+          <label class="fl">Account must be older than (days)</label>
+          <input class="inp" type="number" id="altDetectDays" value="7" min="1" max="365" style="margin-bottom:10px">
+          <label class="fl">Action on new accounts</label>
+          <select class="inp" id="altDetectAction" style="margin-bottom:10px">
+            <option value="flag">flag only (log + no action)</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (1 hour)</option>
+          </select>
+          <label class="fl">Alert Channel</label>
+          <select class="inp" id="altDetectLogCh" style="margin-bottom:0"></select>
+        </div>
+      </div>
+
+      <!-- AUTO ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">auto-role on join</div><div class="tog" id="sec-autoRoleEnabled" data-key="autoRoleEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">automatically give a role to every member who joins</div>
+          <label class="fl">Server</label>
+          <select class="inp" id="secGuild" style="margin-bottom:10px" onchange="loadSecurityRoles()"></select>
+          <label class="fl">Role to give</label>
+          <select class="inp" id="autoRoleId" style="margin-bottom:10px"></select>
+          <label class="fl">Delay before giving role (seconds, 0 = instant)</label>
+          <input class="inp" type="number" id="autoRoleDelay" value="0" min="0" max="600" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <!-- NICKNAME FILTER -->
+      <div class="card">
+        <div class="ch"><div class="ct">nickname filter</div><div class="tog" id="sec-nicknameFilterEnabled" data-key="nicknameFilterEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">reverts nicknames that contain blocked words</div>
+          <label class="fl">Blocked words (comma separated)</label>
+          <textarea class="inp" id="nicknameFilterWords" placeholder="word1, word2, word3..." style="margin-bottom:0;height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ SECURITY ══ -->
+  <div class="page" id="page-security">
+    <div class="sh"><div><h2>security</h2><p>anti-raid, alt detection, auto-role, nickname filter</p></div><button class="btn btn-w" onclick="saveSecuritySettings()"><i class="fas fa-check"></i> save all</button></div>
+
+    <div class="g2">
+      <!-- ANTI-RAID -->
+      <div class="card">
+        <div class="ch"><div class="ct">anti-raid</div><div class="tog" id="sec-antiRaidEnabled" data-key="antiRaidEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">if X members join within Y seconds, auto-action all of them</div>
+          <label class="fl">Joins to trigger raid detection</label>
+          <input class="inp" type="number" id="antiRaidThreshold" value="10" min="2" max="50" style="margin-bottom:10px">
+          <label class="fl">Time window (seconds)</label>
+          <input class="inp" type="number" id="antiRaidWindow" value="10" min="3" max="60" style="margin-bottom:10px">
+          <label class="fl">Action when raid detected</label>
+          <select class="inp" id="antiRaidAction" style="margin-bottom:10px">
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (30min)</option>
+          </select>
+          <label class="fl">Log Channel (for raid alerts)</label>
+          <select class="inp" id="antiRaidLogCh" style="margin-bottom:10px"></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-r" onclick="lockdownServer(true)"><i class="fas fa-lock"></i> lockdown server</button>
+            <button class="btn btn-gr" onclick="lockdownServer(false)"><i class="fas fa-unlock"></i> unlock server</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALT DETECTOR -->
+      <div class="card">
+        <div class="ch"><div class="ct">alt account detector</div><div class="tog" id="sec-altDetectEnabled" data-key="altDetectEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">flags or actions accounts newer than X days</div>
+          <label class="fl">Account must be older than (days)</label>
+          <input class="inp" type="number" id="altDetectDays" value="7" min="1" max="365" style="margin-bottom:10px">
+          <label class="fl">Action on new accounts</label>
+          <select class="inp" id="altDetectAction" style="margin-bottom:10px">
+            <option value="flag">flag only (log + no action)</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (1 hour)</option>
+          </select>
+          <label class="fl">Alert Channel</label>
+          <select class="inp" id="altDetectLogCh" style="margin-bottom:0"></select>
+        </div>
+      </div>
+
+      <!-- AUTO ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">auto-role on join</div><div class="tog" id="sec-autoRoleEnabled" data-key="autoRoleEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">automatically give a role to every member who joins</div>
+          <label class="fl">Server</label>
+          <select class="inp" id="secGuild" style="margin-bottom:10px" onchange="loadSecurityRoles()"></select>
+          <label class="fl">Role to give</label>
+          <select class="inp" id="autoRoleId" style="margin-bottom:10px"></select>
+          <label class="fl">Delay before giving role (seconds, 0 = instant)</label>
+          <input class="inp" type="number" id="autoRoleDelay" value="0" min="0" max="600" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <!-- NICKNAME FILTER -->
+      <div class="card">
+        <div class="ch"><div class="ct">nickname filter</div><div class="tog" id="sec-nicknameFilterEnabled" data-key="nicknameFilterEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">reverts nicknames that contain blocked words</div>
+          <label class="fl">Blocked words (comma separated)</label>
+          <textarea class="inp" id="nicknameFilterWords" placeholder="word1, word2, word3..." style="margin-bottom:0;height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOD++ ══ -->
+  <div class="page" id="page-modplus">
+    <div class="sh"><div><h2>moderation++</h2><p>custom commands, slowmode manager</p></div></div>
+    <div class="g2">
+      <!-- CUSTOM COMMANDS -->
+      <div class="card">
+        <div class="ch"><div class="ct">custom commands</div><span class="tag t-cyan">triggers in chat</span></div>
+        <div class="cb">
+          <label class="fl">Trigger (what user types)</label>
+          <input class="inp" id="ccTrigger" placeholder="!gg or !rules" style="margin-bottom:10px">
+          <label class="fl">Response</label>
+          <textarea class="inp" id="ccResponse" placeholder="use {user} {server} {username}" style="margin-bottom:10px;height:70px"></textarea>
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:10px">variables: <span class="mono">{user}</span> = mention, <span class="mono">{username}</span> = name, <span class="mono">{server}</span> = server name</div>
+          <button class="btn btn-w" style="width:100%" onclick="addCustomCommand()"><i class="fas fa-plus"></i> add command</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">active custom commands</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadCustomCommands()"><i class="fas fa-sync-alt"></i></button></div>
+        <div id="ccList"><div class="empty">no custom commands yet</div></div>
+      </div>
+
+      <!-- SLOWMODE -->
+      <div class="card">
+        <div class="ch"><div class="ct">slowmode manager</div><span class="tag t-yellow">per channel</span></div>
+        <div class="cb">
+          <label class="fl">Server</label>
+          <select class="inp" id="slowGuild" style="margin-bottom:10px" onchange="loadSlowChannels()"></select>
+          <label class="fl">Channel</label>
+          <select class="inp" id="slowChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Slowmode (seconds, 0 = off)</label>
+          <input class="inp" type="number" id="slowSeconds" value="0" min="0" max="21600" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="applySlowmode()"><i class="fas fa-clock"></i> apply slowmode</button>
+        </div>
+      </div>
+
+      <!-- MUTE ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">mute role</div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">set which role gets assigned when a user is muted via dashboard or automod</div>
+          <label class="fl">Mute Role</label>
+          <select class="inp" id="muteRoleId" style="margin-bottom:14px"></select>
+          <button class="btn btn-w" style="width:100%" onclick="saveMuteRole()"><i class="fas fa-check"></i> save mute role</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ CONFIG SAVE ══ -->
+  <div class="page" id="page-config">
+    <div class="sh"><div><h2>config save</h2><p>export and import all your dashboard settings — never lose them on redeploy</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">export config</div><span class="tag t-green">save everything</span></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--green)">
+            saves <b style="color:var(--txt)">all settings</b> to a JSON file you download — automod, welcome, ticket, log channels, security, temp voice, verification and more.
+          </div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:10px" onclick="exportConfig()"><i class="fas fa-download"></i> download config.json</button>
+          <button class="btn btn-w" style="width:100%" onclick="copyConfigToClipboard()"><i class="fas fa-copy"></i> copy to clipboard</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">import config</div><span class="tag t-blue">load settings</span></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--blue)">
+            paste your previously exported config JSON below and hit load — all settings will be applied immediately.
+          </div>
+          <label class="fl">Paste config JSON</label>
+          <textarea class="inp" id="configImportText" placeholder='{"blockInvites":true,...}' style="height:120px;margin-bottom:10px;font-family:DM Mono,monospace;font-size:10px"></textarea>
+          <button class="btn btn-b" style="width:100%" onclick="importConfig()"><i class="fas fa-upload"></i> load config</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">current config snapshot</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadConfigSnapshot()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+      <div class="cb">
+        <pre id="configSnapshot" style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:14px;font-family:DM Mono,monospace;font-size:9px;color:var(--txt2);overflow-x:auto;max-height:300px;overflow-y:auto;line-height:1.6;white-space:pre-wrap">click refresh to load current config</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COMMANDS ══ -->
+  <div class="page" id="page-commands">
+    <div class="sh"><div><h2>commands</h2><p>auto-registered slash commands</p></div></div>
+    <div class="card">
+      <div class="ch"><div class="ct">all slash commands</div><span class="tag t-green">auto-registered</span></div>
+      <table class="tbl"><thead><tr><th>command</th><th>what it does</th><th>category</th><th>who can use</th></tr></thead><tbody>
+        <tr><td><span class="mono">/ban</span></td><td style="color:var(--txt2)">ban a member from the server</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Ban Members</td></tr>
+        <tr><td><span class="mono">/kick</span></td><td style="color:var(--txt2)">kick a member</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Kick Members</td></tr>
+        <tr><td><span class="mono">/warn</span></td><td style="color:var(--txt2)">give a warning (auto-bans at limit)</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/mute</span></td><td style="color:var(--txt2)">timeout a member</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/unmute</span></td><td style="color:var(--txt2)">remove timeout</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/warnings</span></td><td style="color:var(--txt2)">check how many warnings a user has</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/clearwarnings</span></td><td style="color:var(--txt2)">clear all warnings for a user</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Moderate Members</td></tr>
+        <tr><td><span class="mono">/purge</span></td><td style="color:var(--txt2)">bulk delete up to 100 messages</td><td><span class="tag t-red">mod</span></td><td style="color:var(--txt2)">Manage Messages</td></tr>
+        <tr><td><span class="mono">/rank</span></td><td style="color:var(--txt2)">view your xp rank card</td><td><span class="tag t-yellow">level</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/leaderboard</span></td><td style="color:var(--txt2)">top members by xp</td><td><span class="tag t-yellow">level</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/ticket</span></td><td style="color:var(--txt2)">open a private support ticket</td><td><span class="tag t-cyan">support</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/closeticket</span></td><td style="color:var(--txt2)">close and delete a ticket</td><td><span class="tag t-cyan">support</span></td><td style="color:var(--txt2)">Manage Channels</td></tr>
+        <tr><td><span class="mono">/say</span></td><td style="color:var(--txt2)">make the bot say something</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">Manage Messages</td></tr>
+        <tr><td><span class="mono">/ping</span></td><td style="color:var(--txt2)">check bot ping</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/serverinfo</span></td><td style="color:var(--txt2)">server details</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/userinfo</span></td><td style="color:var(--txt2)">user details + level</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+        <tr><td><span class="mono">/help</span></td><td style="color:var(--txt2)">list all commands</td><td><span class="tag t-gray">util</span></td><td style="color:var(--txt2)">everyone</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="page" id="page-settings">
+    <div class="sh"><div><h2>settings</h2><p>bot configuration</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">general</div></div>
+        <div class="cb">
+          <label class="fl">Bot Prefix</label><input class="inp" id="settPrefix" value="!" style="margin-bottom:14px">
+          <button class="btn btn-w" onclick="saveGeneral()"><i class="fas fa-check"></i> save</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">all feature toggles</div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Block Invite Links</div><div class="tog" id="st-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Anti Spam</div><div class="tog" id="st-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Bad Words Filter</div><div class="tog" id="st-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Mass Mention Block</div><div class="tog" id="st-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Caps Filter</div><div class="tog" id="st-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Block All Links</div><div class="tog" id="st-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Welcome Messages</div><div class="tog" id="st-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Goodbye Messages</div><div class="tog" id="st-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Leveling / XP</div><div class="tog" id="st-levelingEnabled" data-key="levelingEnabled" onclick="toggle(this)"></div></div>
+        <div class="mi"><div class="mi-name" style="font-size:11px">Tickets</div><div class="tog" id="st-ticketsEnabled" data-key="ticketsEnabled" onclick="toggle(this)"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="mbg" id="modal">
+  <div class="modal">
+    <div class="modal-t"><span id="modalT">confirm</span><span onclick="closeModal()"><i class="fas fa-times"></i></span></div>
+    <div class="modal-b" id="modalB"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-r" id="modalOk">confirm</button>
+      <button class="btn btn-g" onclick="closeModal()">cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"><i id="toastIco" class="fas fa-check-circle"></i><span id="toastMsg">done</span></div>
+
+<script>
+let clientId = null;
+let guilds = [];
+let cfg = {};
+let toastTmr;
+let allLogs = [];
+window._rrRoleOpts = '';
+window._rrRoles = [];
+
+// NAV
+document.querySelectorAll('.ni[data-page]').forEach(function(el) {
+  el.addEventListener('click', function() {
+    document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('active'); });
+    document.querySelectorAll('.page').forEach(function(pg){ pg.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('page-' + el.dataset.page).classList.add('active');
+    document.getElementById('pageTitle').textContent = el.textContent.replace(/\d+$/, '').trim();
+    var p = el.dataset.page;
+    if(p==='servers') loadServers();
+    if(p==='logs'){ fillGuildSelects(); loadLogs(); fillLogGuildPickers(); }
+    if(p==='infractions'){ loadInfractions(); fillGuildSelects(); }
+    if(p==='analytics') loadAnalytics();
+    if(p==='leveling') loadLeaderboard();
+    if(p==='actions'){ fillGuildSelects(); if(guilds.length){ setTimeout(function(){ var el=document.getElementById('purgeGuild'); if(el){ el.value=guilds[0].id; loadChForPurge(); } },100); } }
+    if(p==='send'){ fillGuildSelects(); if(guilds.length){ setTimeout(function(){ var el=document.getElementById('msgGuild'); if(el){ el.value=guilds[0].id; loadChForMsg(); } },100); } }
+    if(p==='verify'){ fillGuildSelects(); loadVerifySettings(); loadVerifyChannels(); }
+    if(p==='members'){ fillGuildSelects(); fillMemberPicker(); }
+    if(p==='tempvoice'){ fillGuildSelects(); loadTVSettings(); }
+    if(p==='tickets'){ fillGuildSelects(); loadTicketSettings(); var tg=document.getElementById('tkGuild'); if(tg){ tg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ tg.value=guilds[0].id; loadTkChannels(); } } }
+    if(p==='reactionroles'){ fillGuildSelects(); var rg=document.getElementById('rrGuild'); if(rg){ rg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ rg.value=guilds[0].id; loadRRChannels(); } } loadReactionRoles(); var pairs=document.getElementById('rrPairs'); if(pairs && pairs.children.length===0) addRRPair(); }
+    if(p==='backup'){ var bg=document.getElementById('backupGuild'); var rt=document.getElementById('restoreTargetGuild'); var opts=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(bg) bg.innerHTML=opts; if(rt) rt.innerHTML=opts; loadAllBackups(); if(guilds.length){ if(bg){ bg.value=guilds[0].id; loadBackups(); } } }
+    if(p==='security'){ loadSecuritySettings(); var sg=document.getElementById('secGuild'); if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ sg.value=guilds[0].id; loadSecurityRoles(); loadSecurityChannels(); } } }
+    if(p==='automod'){ loadCustomCommands(); var smg=document.getElementById('slowGuild'); if(smg){ smg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ smg.value=guilds[0].id; loadSlowChannels(); } } }
+    if(p==='config'){ loadConfigSnapshot(); }
+    if(p==='welcome'){ fillGuildSelects(); var wg=document.getElementById('welcomeGuildPicker'); if(wg) wg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadWelcomeFull(); if(guilds.length){ setTimeout(function(){ var wp=document.getElementById('welcomeGuildPicker'); if(wp){ wp.value=guilds[0].id; loadWelcomeChannels(); } },100); } }
+  });
+});
+
+function nav(p){ var el=document.querySelector('.ni[data-page="'+p+'"]'); if(el) el.click(); }
+
+async function api(path, opts){
+  var r = await fetch(path, opts);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function initAll(){
+  try {
+    var results = await Promise.all([api('/api/bot'), api('/api/guilds'), api('/api/settings')]);
+    var bot=results[0], gd=results[1], s=results[2];
+    clientId=bot.id; guilds=Array.isArray(gd)?gd:[]; cfg=s;
+    var name=bot.username||'fa11en';
+    ['sbName','footName','bnName','iName'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=name; });
+    var e;
+    e=document.getElementById('sbId'); if(e) e.textContent='id: '+bot.id;
+    e=document.getElementById('bnSub'); if(e) e.textContent='id: '+bot.id+' | api '+bot._ping+'ms | online';
+    e=document.getElementById('pingTxt'); if(e) e.textContent=bot._ping+' ms';
+    e=document.getElementById('iId'); if(e) e.textContent=bot.id;
+    e=document.getElementById('iGuilds'); if(e) e.textContent=guilds.length;
+    e=document.getElementById('iApiPing'); if(e) e.textContent=bot._ping+'ms';
+    e=document.getElementById('iWsPing'); if(e) e.textContent=(bot._wsPing||bot._ping)+'ms';
+    setStat('s1v',guilds.length); e=document.getElementById('s1b'); if(e) e.textContent=guilds.length+' total';
+    setStat('s3v',bot._ping+'ms');
+    e=document.getElementById('s4v'); if(e) e.textContent='online';
+    e=document.getElementById('statusTag'); if(e){ e.textContent='online'; e.className='tag t-green'; }
+    var total=guilds.reduce(function(a,g){return a+(g.member_count||0);},0);
+    if(total){ setStat('s2v',total); e=document.getElementById('s2b'); if(e) e.textContent='total'; }
+    if(bot.avatar){
+      var url='https://cdn.discordapp.com/avatars/'+bot.id+'/'+bot.avatar+'.png?size=64';
+      e=document.getElementById('sbAv'); if(e) e.innerHTML='<img src="'+url+'"><span class="dot"></span>';
+      e=document.getElementById('footAv'); if(e) e.innerHTML='<img src="'+url+'">';
+    }
+    applySettings(cfg); loadDashLogs();
+    toast('connected | '+name,'green');
+  } catch(e){
+    var st=document.getElementById('statusTag'); if(st){st.textContent='offline';st.className='tag t-red';}
+    toast('error: '+e.message,'red');
+  }
+}
+
+function applySettings(s){
+  cfg=s;
+  ['blockInvites','blockSpam','badWordsFilter','blockMassMentions','capsFilter','blockLinks','welcomeEnabled','goodbyeEnabled','levelingEnabled','ticketsEnabled','blockDuplicates','blockEmojiSpam','verificationEnabled'].forEach(function(k){
+    document.querySelectorAll('[data-key="'+k+'"]').forEach(function(el){ el.classList.toggle('on',!!s[k]); });
+  });
+  var pairs=[['welcomeMessage','welcomeMessage'],['goodbyeMessage','goodbyeMessage'],['levelUpMessage','levelUpMessage'],['autobanThreshold','autobanThreshold'],['muteMinutes','muteMinutes'],['prefix','settPrefix']];
+  pairs.forEach(function(p){ if(s[p[0]]){ var el=document.getElementById(p[1]); if(el) el.value=s[p[0]]; } });
+  if(s.badWordsList){ var el=document.getElementById('badWordsList'); if(el) el.value=Array.isArray(s.badWordsList)?s.badWordsList.join(', '):s.badWordsList; }
+}
+
+async function toggle(el){
+  var key=el.dataset.key, value=!el.classList.contains('on');
+  document.querySelectorAll('[data-key="'+key+'"]').forEach(function(e){ e.classList.toggle('on',value); });
+  try { await api('/api/toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:value})}); toast((value?'enabled':'disabled')+' '+key,'green'); }
+  catch(e){ toast('toggle failed: '+e.message,'red'); }
+}
+
+async function loadServers(){
+  var card=document.getElementById('serversCard');
+  card.innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
+  try {
+    var data=await api('/api/guilds'); guilds=Array.isArray(data)?data:[];
+    if(guilds.length){
+      card.innerHTML=guilds.map(function(g){
+        var ico=g.icon?'<img src="https://cdn.discordapp.com/icons/'+g.id+'/'+g.icon+'.png?size=64" onerror="this.parentElement.textContent=\''+g.name.charAt(0).toUpperCase()+'\'">':g.name.charAt(0).toUpperCase();
+        return '<div class="svr"><div class="svr-ico">'+ico+'</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+g.name+'</div><div style="font-size:10px;color:var(--txt2)">'+g.id+(g.member_count?' | '+g.member_count.toLocaleString()+' members':'')+'</div></div><span class="tag t-green">active</span></div>';
+      }).join('');
+      toast(guilds.length+' servers loaded','green');
+    } else card.innerHTML='<div class="empty">no servers found</div>';
+  } catch(e){ card.innerHTML='<div class="empty" style="color:var(--red)">error: '+e.message+'</div>'; }
+}
+
+function fillMemberPicker(){ var sel=document.getElementById('memberGuildPicker'); if(sel) sel.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); }
+
+async function loadMembers(){
+  var id=document.getElementById('memberGuildPicker').value;
+  if(!id){toast('select a server first','yellow');return;}
+  var card=document.getElementById('membersCard');
+  card.innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
+  try {
+    var data=await api('/api/guilds/'+id+'/members');
+    if(Array.isArray(data)&&data.length){
+      var g=guilds.find(function(x){return x.id===id;});
+      card.innerHTML='<div class="ch"><div class="ct">members - '+(g?g.name:id)+'</div></div><div class="scrollarea">'+data.map(function(m){
+        var u=m.user||{}, name=u.global_name||u.username||'unknown';
+        var av=u.avatar?'<img src="https://cdn.discordapp.com/avatars/'+u.id+'/'+u.avatar+'.png?size=32">':name.charAt(0).toUpperCase();
+        return '<div class="mrow"><div class="mav">'+av+'</div><div style="flex:1"><div style="font-size:11px;font-weight:700">'+name+'</div><div style="font-size:9px;color:var(--txt3)">'+u.id+'</div></div><div style="font-size:10px;color:var(--txt3)">'+(m.joined_at?new Date(m.joined_at).toLocaleDateString():'-')+'</div></div>';
+      }).join('')+'</div>';
+    } else card.innerHTML='<div class="empty">no members found</div>';
+  } catch(e){ card.innerHTML='<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+}
+
+// LOGS
+async function loadLogs(){
+  document.getElementById('logsList').innerHTML='<div class="ld"><span></span><span></span><span></span></div>';
+  try { renderLogs(await api('/api/logs'),'logsList'); }
+  catch(e){ document.getElementById('logsList').innerHTML='<div class="empty" style="color:var(--red)">'+e.message+'</div>'; }
+}
+async function loadDashLogs(){
+  try { renderLogs((await api('/api/logs')).slice(0,6),'dashLogs'); }
+  catch(e){ var el=document.getElementById('dashLogs'); if(el) el.innerHTML='<div class="empty">no logs yet</div>'; }
+}
+function renderLogs(logs,id){
+  allLogs=logs; var el=document.getElementById(id); if(!el) return;
+  if(!logs||!logs.length){el.innerHTML='<div class="empty">no logs yet</div>';return;}
+  displayLogs(logs,el);
+  var ce=document.getElementById('logCount'); if(ce) ce.textContent=logs.length+' entries';
+}
+function displayLogs(logs,el){
+  var cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
+  var typeColor={DELETE:'#ff4060',EDIT:'#ffcc44',JOIN:'#00dfa2',LEAVE:'#ff8800',MOD:'#ff4060',AUTOMOD:'#ff8800',VOICE:'#00c9f0',ROLE:'#9d7fff',SECURITY:'#ff0044',TICKET:'#7c6af7',VERIFY:'#00dfa2',LEVEL:'#ffcc44',BOOST:'#f77cff',INVITE:'#00c9f0',CHANNEL:'#ffcc44',EMOJI:'#ffcc44',START:'#00dfa2'};
+  el.innerHTML=logs.map(function(l,i){
+    var col=typeColor[l.type]||'#888';
+    var tagCls=cls[l.color]||'t-gray';
+    var delay=Math.min(i,15)*30;
+    var hasD=!!l.detail;
+    return '<div class="lgi" data-type="'+l.type+'" style="animation:logEntry .25s ease '+delay+'ms both">'
+      +'<div class="lgi-bar" style="background:'+col+'"></div>'
+      +'<div class="lgi-inner">'
+      +'<div class="lgt">'+l.time+'</div>'
+      +'<div class="lgk"><span class="tag '+tagCls+'" style="font-size:9px">'+l.type+'</span></div>'
+      +'<div class="lgm">'+l.msg+'</div>'
+      +(hasD?'<button class="lgi-more" onclick="toggleDetail('+i+')">more</button>':'')
+      +'</div>'
+      +(hasD?'<div class="lgi-detail" id="detail-'+i+'" style="display:none;padding:0 16px 10px 81px"><div style="background:var(--bg4);border:1px solid var(--border2);border-left:3px solid '+col+';border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:10px;color:var(--txt2);word-break:break-all;white-space:pre-wrap;line-height:1.7">'+String(l.detail).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div>':'')
+      +'</div>';
+  }).join('');
+  updateLogStats(logs);
+}
+function updateLogStats(logs){
+  var del=logs.filter(function(l){return l.type==='DELETE';}).length;
+  var mod=logs.filter(function(l){return l.type==='MOD'||l.type==='AUTOMOD';}).length;
+  var join=logs.filter(function(l){return l.type==='JOIN';}).length;
+  var sd=document.getElementById('logStat-del'); if(sd) sd.textContent=del;
+  var sm=document.getElementById('logStat-mod'); if(sm) sm.textContent=mod;
+  var sj=document.getElementById('logStat-join'); if(sj) sj.textContent=join;
+  var st=document.getElementById('logStat-total'); if(st) st.textContent=logs.length;
+}
+function toggleDetail(i){
+  var el=document.getElementById('detail-'+i); if(!el) return;
+  var parent=el.closest('.lgi');
+  var b=parent?parent.querySelector('.lgi-more'):null;
+  if(el.style.display==='none'){el.style.display='block';if(b)b.textContent='less';if(parent)parent.style.background='rgba(255,255,255,.018)';}
+  else{el.style.display='none';if(b)b.textContent='more';if(parent)parent.style.background='';}
+}
+function filterLogs(){
+  var f=document.getElementById('logFilter')?document.getElementById('logFilter').value:'';
+  var search=(document.getElementById('logSearch')?document.getElementById('logSearch').value:'').toLowerCase().trim();
+  var fd=allLogs;
+  if(f) fd=fd.filter(function(l){return l.type===f;});
+  if(search) fd=fd.filter(function(l){return (l.msg||'').toLowerCase().includes(search)||(l.type||'').toLowerCase().includes(search)||(l.detail||'').toLowerCase().includes(search);});
+  var el=document.getElementById('logsList'); if(el) displayLogs(fd,el);
+  var ce=document.getElementById('logCount'); if(ce) ce.textContent=fd.length+' entries'+((f||search)?' (filtered)':'');
+}
+
+// LOG TABS
+function switchLogTab(name,btn){
+  ['live','channels','advanced'].forEach(function(t){
+    var el=document.getElementById('logtab-'+t); if(el) el.style.display=(t===name?'block':'none');
+  });
+  var logPage=document.getElementById('page-logs');
+  if(logPage) logPage.querySelectorAll('.log-tab').forEach(function(b){ b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active'); });
+  if(btn){ btn.style.background='#fff'; btn.style.color='#111'; btn.classList.add('active'); }
+  if(name==='channels'&&guilds.length){ fillLogGuildPickers(); loadLogChannels(); }
+  if(name==='advanced'&&guilds.length){ fillLogGuildPickers(); loadAdvLogChannels(); }
+}
+
+function fillLogGuildPickers(){
+  var opts=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
+  var lp=document.getElementById('logGuildPicker'); if(lp&&guilds.length){ lp.innerHTML=opts; lp.value=guilds[0].id; }
+  var alg=document.getElementById('advLogGuild'); if(alg&&guilds.length){ alg.innerHTML=opts; alg.value=guilds[0].id; }
+}
+
+async function loadLogChannels(){
+  var guildId=document.getElementById('logGuildPicker')?document.getElementById('logGuildPicker').value:''; if(!guildId) return;
+  try {
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/logchannels')]);
+    var chs=results[0],saved=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'].forEach(function(k){
+      var el=document.getElementById('lc-'+k); if(el){el.innerHTML=opts;if(saved[k])el.value=saved[k];}
+    });
+    toast(text.length+' channels loaded — pick one for each log type then save','blue');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+async function saveLogChannels(){
+  var body={};
+  ['deletedMessages','editedMessages','joinLeave','modActions','commands','images','voiceActivity','roleChanges','memberBanned','memberUnbanned','memberKicked','memberTimeout','channelCreated','channelDeleted','roleCreated','roleDeleted','memberJoinedVoice','memberLeftVoice','serverInvites'].forEach(function(k){
+    var el=document.getElementById('lc-'+k); if(el) body[k]=el.value||null;
+  });
+  try { await api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('log channels saved!','green'); }
+  catch(e){ toast('save failed: '+e.message,'red'); }
+}
+async function clearLogs(){ await api('/api/logs',{method:'DELETE'}); document.getElementById('logsList').innerHTML='<div class="empty">logs cleared</div>'; toast('logs cleared','green'); }
+
+async function loadAdvLogChannels(){
+  var guildId=document.getElementById('advLogGuild')?document.getElementById('advLogGuild').value:''; if(!guildId) return;
+  try {
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/logchannels/extra')]);
+    var chs=results[0],saved=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    ['nicknameChanges','inviteCreated','inviteDeleted','messagesBulkDelete','stageEvents','threadCreated','threadDeleted','boostEvents','emojiCreated','emojiDeleted','webhookChanges'].forEach(function(k){
+      var el=document.getElementById('alc-'+k); if(el){el.innerHTML=opts;if(saved[k])el.value=saved[k];}
+    });
+    toast(text.length+' channels loaded','blue');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+async function saveAdvLogChannels(){
+  var body={};
+  ['nicknameChanges','inviteCreated','inviteDeleted','messagesBulkDelete','stageEvents','threadCreated','threadDeleted','boostEvents','emojiCreated','emojiDeleted','webhookChanges'].forEach(function(k){ var el=document.getElementById('alc-'+k); if(el) body[k]=el.value||null; });
+  try { await api('/api/logchannels/extra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); toast('advanced log channels saved!','green'); }
+  catch(e){ toast('save failed: '+e.message,'red'); }
+}
+
+// MOD TABS
+function switchModTab(name,btn){
+  ['filters','commands','slowmode'].forEach(function(t){ var el=document.getElementById('modtab-'+t); if(el) el.style.display=(t===name?'block':'none'); });
+  var page=document.getElementById('page-automod');
+  if(page) page.querySelectorAll('.log-tab').forEach(function(b){ b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active'); });
+  if(btn){ btn.style.background='#fff'; btn.style.color='#111'; btn.classList.add('active'); }
+  if(name==='commands') loadCustomCommands();
+  if(name==='slowmode'&&guilds.length){ var sg=document.getElementById('slowGuild'); if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); sg.value=guilds[0].id; loadSlowChannels(); } }
+}
+
+// INFRACTIONS
+async function loadInfractions(){ try{renderInfractions(await api('/api/infractions'));}catch(e){toast('failed','red');} }
+function renderInfractions(data){
+  var n=data.length;
+  var ic=document.getElementById('infCount'); if(ic) ic.textContent=n+' record'+(n!==1?'s':'');
+  var ib=document.getElementById('infBadge'); if(ib) ib.textContent=n;
+  var em=document.getElementById('infEmpty'),bd=document.getElementById('infBody');
+  if(!n){if(bd)bd.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';
+  if(bd) bd.innerHTML=data.map(function(i){return '<tr><td class="mono">#'+String(i.id).padStart(3,'0')+'</td><td>'+i.user+'</td><td><span class="tag '+(i.act==='ban'||i.act==='kick'?'t-red':'t-yellow')+'">'+i.act+'</span></td><td style="color:var(--txt2);font-size:11px">'+i.reason+'</td><td style="color:var(--txt3);font-size:10px">'+i.time+'</td><td><button class="btn btn-r" style="padding:2px 7px;font-size:9px" onclick="removeInfraction('+i.id+')">remove</button></td></tr>';}).join('');
+}
+async function issueInfraction(){
+  var guildId=document.getElementById('infGuild').value,userId=document.getElementById('infUser').value.trim(),act=document.getElementById('infAct').value,reason=document.getElementById('infReason').value.trim()||'no reason';
+  if(!userId){toast('enter a user id','red');return;} if(!guildId){toast('select a server','red');return;}
+  var eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban'};
+  try { var res=await api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:10})}); toast(act+' done: '+(res.message||'ok'),'green'); loadInfractions(); }
+  catch(e){ toast('failed: '+e.message,'red'); }
+}
+async function removeInfraction(id){ await api('/api/infractions/'+id,{method:'DELETE'}); loadInfractions(); }
+async function clearInfractions(){ await api('/api/infractions',{method:'DELETE'}); renderInfractions([]); toast('cleared','green'); }
+
+// ANALYTICS
+async function loadAnalytics(){
+  try {
+    var r=await Promise.all([api('/api/logs'),api('/api/infractions'),api('/api/leaderboard'),api('/api/stats')]);
+    var e; e=document.getElementById('an-lv');if(e)e.textContent=r[0].length; e=document.getElementById('an-iv');if(e)e.textContent=r[1].length; e=document.getElementById('an-xv');if(e)e.textContent=r[2].length; e=document.getElementById('an-tv');if(e)e.textContent=r[3].totalTickets||0;
+    var lb=r[2],medals=['1','2','3'],bd=document.getElementById('lbBody');
+    if(bd) bd.innerHTML=lb.length?lb.map(function(u,i){return '<tr><td>'+(medals[i]||(i+1))+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-white">'+u.level+'</span></td><td>'+u.xp+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">no xp data yet</td></tr>';
+  } catch(e){ toast('analytics error: '+e.message,'red'); }
+}
+async function loadLeaderboard(){
+  try { var lb=await api('/api/leaderboard'),bd=document.getElementById('lvlBody'); if(bd) bd.innerHTML=lb.length?lb.map(function(u,i){return '<tr><td>'+(i+1)+'</td><td class="mono">'+u.id+'</td><td><span class="tag t-yellow">'+u.level+'</span></td><td>'+u.xp+'</td></tr>';}).join(''):'<tr><td colspan="4" class="empty">no data</td></tr>'; }catch(e){}
+}
+
+// GUILD SELECTS
+function fillGuildSelects(){
+  var ids=['actGuild','purgeGuild','msgGuild','infGuild','verifyGuild','tvSetupGuild','tvControlGuild','memberGuildPicker'];
+  var opts=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=opts; });
+}
+async function loadChannelsFor(guildId,targetId){
+  if(!guildId) return;
+  try { var chs=await api('/api/guilds/'+guildId+'/channels'); if(!Array.isArray(chs)) return; var text=chs.filter(function(c){return c.type===0;}); var el=document.getElementById(targetId); if(el) el.innerHTML='<option value="">select channel</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); }
+  catch(e){ console.error(e.message); }
+}
+function loadChForPurge(){ loadChannelsFor(document.getElementById('purgeGuild').value,'purgeChannel'); }
+function loadChForMsg(){ loadChannelsFor(document.getElementById('msgGuild').value,'msgChannel'); }
+
+// ACTIONS
+function doAction(act){
+  var guildId=document.getElementById('actGuild').value;
+  var userId=document.getElementById('actUser').value.trim();
+  var reason=document.getElementById('actReason').value.trim()||'dashboard action';
+  if(!userId){toast('enter a user id','red');return;}
+  openModal('Confirm '+act,'About to '+act+' user '+userId+'. Reason: '+reason,function(){
+    var eps={warn:'/api/action/warn',timeout:'/api/action/timeout',kick:'/api/action/kick',ban:'/api/action/ban',unban:'/api/action/unban',clearwarnings:'/api/action/clearwarnings'};
+    api(eps[act],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,userId:userId,reason:reason,minutes:10})})
+      .then(function(res){toast(act+' done','green');closeModal();loadInfractions();})
+      .catch(function(e){toast('failed: '+e.message,'red');});
+  });
+}
+function doPurge(){
+  var guildId=document.getElementById('purgeGuild').value,channelId=document.getElementById('purgeChannel').value,amount=parseInt(document.getElementById('purgeAmt').value)||10;
+  openModal('Confirm Purge','Delete '+amount+' messages? Cannot be undone.',function(){
+    api('/api/action/purge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,amount:amount})})
+      .then(function(res){toast('deleted '+res.deleted+' messages','green');closeModal();})
+      .catch(function(e){toast('failed: '+e.message,'red');});
+  });
+}
+async function sendMsg(){
+  var guildId=document.getElementById('msgGuild').value,channelId=document.getElementById('msgChannel').value,message=document.getElementById('msgContent').value.trim();
+  if(!message){toast('enter a message','red');return;}
+  try { await api('/api/action/send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,message:message})}); toast('message sent','green'); document.getElementById('msgContent').value=''; }
+  catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+// SETTINGS SAVE
+async function saveAutomod(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold').value)||3,muteMinutes:parseInt(document.getElementById('muteMinutes').value)||10}; try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('automod saved','green');}catch(e){toast('save failed','red');} }
+async function saveAutomodFull(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold')?document.getElementById('autobanThreshold').value:3)||3,muteMinutes:parseInt(document.getElementById('muteMinutes')?document.getElementById('muteMinutes').value:10)||10,emojiSpamLimit:parseInt(document.getElementById('emojiSpamLimit')?document.getElementById('eojiSpamLimit').value:5)||5}; try{await api('/api/automod/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('settings saved','green');}catch(e){toast('save failed','red');} }
+async function saveBadWords(){ var list=document.getElementById('badWordsList').value.split(',').map(function(w){return w.trim();}).filter(Boolean); try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({badWordsList:list})});toast('bad words updated ('+list.length+')','green');}catch(e){toast('save failed','red');} }
+async function saveLeveling(){ try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({levelUpMessage:document.getElementById('levelUpMessage').value})});toast('leveling saved','green');}catch(e){toast('save failed','red');} }
+async function saveGeneral(){ try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefix:document.getElementById('settPrefix').value})});toast('settings saved','green');}catch(e){toast('save failed','red');} }
+async function logout(){ await fetch('/api/logout',{method:'POST'}); window.location.href='/login'; }
+function inviteBot(){ if(clientId) window.open('https://discord.com/oauth2/authorize?client_id='+clientId+'&scope=bot+applications.commands&permissions=8','_blank'); else toast('refresh first','yellow'); }
+
+// MODAL
+function openModal(title,body,onOk){ document.getElementById('modalT').textContent=title; document.getElementById('modalB').textContent=body; document.getElementById('modalOk').onclick=onOk; document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+// TOAST
+function toast(msg,type){
+  type=type||'green'; var el=document.getElementById('toastEl'); document.getElementById('toastMsg').textContent=msg;
+  var map={green:['fa-check-circle','var(--green)'],red:['fa-circle-xmark','var(--red)'],blue:['fa-circle-info','var(--blue)'],yellow:['fa-triangle-exclamation','var(--yellow)']};
+  var pair=map[type]||map.green; var ico=document.getElementById('toastIco'); ico.className='fas '+pair[0]; ico.style.color=pair[1];
+  el.classList.add('show'); clearTimeout(toastTmr); toastTmr=setTimeout(function(){el.classList.remove('show');},3500);
+}
+var t=toast;
+
+// TICKET
+async function loadTicketSettings(){ try{var s=await api('/api/ticket/settings');var e; e=document.getElementById('ticketTitle');if(e&&s.ticketTitle)e.value=s.ticketTitle; e=document.getElementById('ticketDescription');if(e&&s.ticketDescription)e.value=s.ticketDescription; e=document.getElementById('ticketGifUrl');if(e&&s.ticketGif)e.value=s.ticketGif; var tog=document.getElementById('tk-ticketsEnabled');if(tog)tog.classList.toggle('on',!!s.ticketsEnabled);}catch(e){} }
+async function saveTicketSettings(){ var body={ticketTitle:document.getElementById('ticketTitle')?document.getElementById('ticketTitle').value:'Staff Support',ticketDescription:document.getElementById('ticketDescription')?document.getElementById('ticketDescription').value:'',ticketGif:document.getElementById('ticketGifUrl')?document.getElementById('ticketGifUrl').value.trim()||null:null}; try{await api('/api/ticket/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('ticket settings saved','green');}catch(e){toast('save failed: '+e.message,'red');} }
+async function loadTkChannels(){ var gid=document.getElementById('tkGuild')?document.getElementById('tkGuild').value:''; if(gid) await loadChannelsFor(gid,'tkChannel'); }
+async function sendTicketPanel(){ var guildId=document.getElementById('tkGuild')?document.getElementById('tkGuild').value:''; var channelId=document.getElementById('tkChannel')?document.getElementById('tkChannel').value:''; if(!guildId||!channelId){toast('select a server and channel','yellow');return;} await saveTicketSettings(); try{await api('/api/ticket/send-panel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId})});toast('ticket panel sent!','green');}catch(e){toast('failed: '+e.message,'red');} }
+
+// VERIFY
+async function saveVerifySettings(){ var body={verifiedRoleId:document.getElementById('verifiedRoleId').value.trim()||null,unverifiedRoleId:document.getElementById('unverifiedRoleId').value.trim()||null,verifyEmoji:document.getElementById('verifyEmoji').value.trim()||'check'}; try{await api('/api/verify/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('verify settings saved','green');}catch(e){toast('save failed','red');} }
+async function loadVerifySettings(){ try{var s=await api('/api/verify/settings');var e; e=document.getElementById('verifiedRoleId');if(e&&s.verifiedRoleId)e.value=s.verifiedRoleId; e=document.getElementById('unverifiedRoleId');if(e&&s.unverifiedRoleId)e.value=s.unverifiedRoleId; e=document.getElementById('verifyEmoji');if(e&&s.verifyEmoji)e.value=s.verifyEmoji; var tog=document.getElementById('vfy-verificationEnabled');if(tog)tog.classList.toggle('on',!!s.verificationEnabled);}catch(e){} }
+async function loadVerifyChannels(){ var gid=document.getElementById('verifyGuild').value; if(gid) await loadChannelsFor(gid,'verifyChannel'); }
+async function sendVerifyPanel(){ var gid=document.getElementById('verifyGuild').value,chid=document.getElementById('verifyChannel').value; if(!gid||!chid){toast('select server + channel','yellow');return;} try{await api('/api/verify/send-panel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid})});toast('verify panel posted','green');}catch(e){toast('failed: '+e.message,'red');} }
+function copyVerifyLink(){ navigator.clipboard.writeText('https://mia69696.github.io/verify/').then(function(){toast('verify link copied','green');}).catch(function(){toast('copy failed','red');}); }
+
+// TEMP VOICE
+async function loadTVSettings(){ try{var s=await api('/api/tempvoice/settings'); var tog=document.getElementById('tv-toggle');if(tog)tog.classList.toggle('on',!!s.tempVoiceEnabled); var e; e=document.getElementById('tvCreatorId');if(e&&s.tempVoiceCreatorId)e.value=s.tempVoiceCreatorId; e=document.getElementById('tvCategoryId');if(e&&s.tempVoiceCategoryId)e.value=s.tempVoiceCategoryId; e=document.getElementById('tvControlChannelId');if(e&&s.tempVoiceControlChannelId)e.value=s.tempVoiceControlChannelId; renderTVChannels(s.activeChannels||[]);}catch(e){} }
+function renderTVChannels(channels){ var el=document.getElementById('tvChannelList');if(!el)return; if(!channels.length){el.innerHTML='<div class="empty">no active temp voice channels</div>';return;} el.innerHTML=channels.map(function(ch){return '<div class="svr"><div class="svr-ico">VC</div><div style="flex:1"><div style="font-size:12px;font-weight:700">'+ch.name+'</div><div style="font-size:10px;color:var(--txt2)">owner: '+ch.ownerId+' | limit: '+(ch.limit||'unlimited')+'</div></div><span class="tag t-cyan">active</span></div>';}).join(''); }
+async function loadTVChannels(){ try{var s=await api('/api/tempvoice/settings');renderTVChannels(s.activeChannels||[]);toast('refreshed','green');}catch(e){toast('failed','red');} }
+function tvToggle(el){ el.classList.toggle('on'); var v=el.classList.contains('on'); api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempVoiceEnabled:v})}).then(function(){toast('temp voice '+(v?'enabled':'disabled'),v?'green':'yellow');}).catch(function(e){toast('failed','red');}); }
+async function saveTVSettings(){ var body={tempVoiceCreatorId:document.getElementById('tvCreatorId').value.trim()||null,tempVoiceCategoryId:document.getElementById('tvCategoryId').value.trim()||null,tempVoiceControlChannelId:document.getElementById('tvControlChannelId').value.trim()||null}; try{await api('/api/tempvoice/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('tv settings saved','green');}catch(e){toast('save failed','red');} }
+async function tvAutoSetup(){ var gid=document.getElementById('tvSetupGuild').value; if(!gid){toast('select a server','yellow');return;} try{var res=await api('/api/tempvoice/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid})}); var e; e=document.getElementById('tvCreatorId');if(e&&res.creatorId)e.value=res.creatorId; e=document.getElementById('tvCategoryId');if(e&&res.categoryId)e.value=res.categoryId; e=document.getElementById('tvControlChannelId');if(e&&res.controlChannelId)e.value=res.controlChannelId; var tog=document.getElementById('tv-toggle');if(tog)tog.classList.add('on'); toast('setup complete!','green');}catch(e){toast('setup failed: '+e.message,'red');} }
+async function tvControl(action,value){ var gid=document.getElementById('tvControlGuild').value,chid=document.getElementById('tvControlChannel').value.trim(); if(!chid){toast('enter channel id','yellow');return;} if(action==='delete'&&!confirm('delete this temp voice channel?'))return; try{await api('/api/tempvoice/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid,action:action,value:value})});toast(action+' done','green');loadTVChannels();}catch(e){toast('failed','red');} }
+
+// WELCOME
+async function saveWelcomeFull(){
+  var g=function(id){var el=document.getElementById(id);return el?el.value:null;};
+  var body={
+    welcomeMessage:g('welcomeMessage')||'',
+    goodbyeMessage:g('goodbyeMessage')||'',
+    welcomeGif:g('welcomeGif')?g('welcomeGif').trim()||null:null,
+    goodbyeGif:g('goodbyeGif')?g('goodbyeGif').trim()||null:null,
+    welcomeChannelId:g('welcomeChannelId')||null,
+    goodbyeChannelId:g('goodbyeChannelId')||null,
+    welcomeEnabled:document.getElementById('wlc-welcomeEnabled')?document.getElementById('wlc-welcomeEnabled').classList.contains('on'):true,
+    goodbyeEnabled:document.getElementById('wlc-goodbyeEnabled')?document.getElementById('wlc-goodbyeEnabled').classList.contains('on'):true,
+    welcomeCardText:g('welcomeCardText')||null,
+    welcomeCardSub:g('welcomeCardSub')||null,
+    welcomeCardCircleColor:g('welcomeCardCircleColorHex')||'#ffffff',
+    welcomeCardOverlay:parseFloat(g('welcomeCardOverlay'))||0.45,
+    goodbyeCardText:g('goodbyeCardText')||null,
+    goodbyeCardSub:g('goodbyeCardSub')||null,
+    goodbyeCardCircleColor:g('goodbyeCardCircleColorHex')||'#ff4455',
+  };
+  try{await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('welcome settings saved!','green');}catch(e){toast('save failed: '+e.message,'red');}
+}
+async function loadWelcomeFull(){
+  try{
+    var s=await api('/api/settings/welcome');
+    var set=function(id,v){if(v!==null&&v!==undefined&&v!==''){var el=document.getElementById(id);if(el)el.value=v;}};
+    set('welcomeMessage',s.welcomeMessage);
+    set('goodbyeMessage',s.goodbyeMessage);
+    set('welcomeGif',s.welcomeGif);
+    set('goodbyeGif',s.goodbyeGif);
+    set('welcomeCardText',s.welcomeCardText);
+    set('welcomeCardSub',s.welcomeCardSub);
+    set('welcomeCardCircleColorHex',s.welcomeCardCircleColor||'#ffffff');
+    set('welcomeCardOverlay',s.welcomeCardOverlay||0.45);
+    set('goodbyeCardText',s.goodbyeCardText);
+    set('goodbyeCardSub',s.goodbyeCardSub);
+    set('goodbyeCardCircleColorHex',s.goodbyeCardCircleColor||'#ff4455');
+    var e1=document.getElementById('welcomeCardCircleColor');if(e1)e1.value=s.welcomeCardCircleColor||'#ffffff';
+    var e2=document.getElementById('goodbyeCardCircleColor');if(e2)e2.value=s.goodbyeCardCircleColor||'#ff4455';
+    var t1=document.getElementById('wlc-welcomeEnabled');if(t1)t1.classList.toggle('on',!!s.welcomeEnabled);
+    var t2=document.getElementById('wlc-goodbyeEnabled');if(t2)t2.classList.toggle('on',!!s.goodbyeEnabled);
+  }catch(e){}
+}
+async function loadWelcomeChannels(){ var gid=document.getElementById('welcomeGuildPicker')?document.getElementById('welcomeGuildPicker').value:''; if(!gid) return; try{var chs=await api('/api/guilds/'+gid+'/channels');var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; var base=text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); var wc=document.getElementById('welcomeChannelId');if(wc)wc.innerHTML='<option value="">system channel</option>'+base; var gc=document.getElementById('goodbyeChannelId');if(gc)gc.innerHTML='<option value="">same as welcome</option>'+base;}catch(e){} }
+function previewGif(inputId,previewId,imgId){ var url=document.getElementById(inputId)?document.getElementById(inputId).value.trim():''; if(!url){toast('enter a gif url first','yellow');return;} var p=document.getElementById(previewId),i=document.getElementById(imgId); if(p&&i){p.style.display='block';i.src=url;} }
+
+// AUTOMOD SAVE
+async function saveAutomodFromPage(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold')?document.getElementById('autobanThreshold').value:3)||3,muteMinutes:parseInt(document.getElementById('muteMinutes')?document.getElementById('muteMinutes').value:10)||10}; var logId=document.getElementById('logChannelId'); if(logId) body.logChannelId=logId.value||null; try{await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('settings saved','green');}catch(e){toast('save failed','red');} }
+
+// CUSTOM COMMANDS
+async function loadCustomCommands(){ try{var cmds=await api('/api/customcommands');var el=document.getElementById('ccList');var entries=Object.entries(cmds||{});if(!entries.length){el.innerHTML='<div class="empty">no custom commands yet</div>';return;} el.innerHTML=entries.map(function(e){return '<div class="svr"><div style="flex:1"><div style="font-size:12px;font-weight:700"><span class="mono">'+e[0]+'</span></div><div style="font-size:10px;color:var(--txt2)">'+e[1].slice(0,60)+(e[1].length>60?'...':'')+'</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteCustomCommand(this)" data-trigger="'+encodeURIComponent(e[0])+'"><i class="fas fa-trash"></i></button></div>';}).join('');}catch(e){} }
+async function addCustomCommand(){ var trigger=document.getElementById('ccTrigger')?document.getElementById('ccTrigger').value.trim():''; var response=document.getElementById('ccResponse')?document.getElementById('ccResponse').value.trim():''; if(!trigger){toast('enter a trigger','yellow');return;} if(!response){toast('enter a response','yellow');return;} try{await api('/api/customcommands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trigger:trigger,response:response})});toast('command added!','green');document.getElementById('ccTrigger').value='';document.getElementById('ccResponse').value='';loadCustomCommands();}catch(e){toast('failed: '+e.message,'red');} }
+async function deleteCustomCommand(btn){ var trigger=decodeURIComponent(btn.dataset.trigger); await api('/api/customcommands/'+encodeURIComponent(trigger),{method:'DELETE'}); toast('deleted','yellow'); loadCustomCommands(); }
+
+// SLOWMODE
+async function loadSlowChannels(){ var gid=document.getElementById('slowGuild')?document.getElementById('slowGuild').value:''; if(gid) await loadChannelsFor(gid,'slowChannel'); }
+async function applySlowmode(){ var gid=document.getElementById('slowGuild')?document.getElementById('slowGuild').value:''; var chid=document.getElementById('slowChannel')?document.getElementById('slowChannel').value:''; var secs=parseInt(document.getElementById('slowSeconds')?document.getElementById('slowSeconds').value:0)||0; if(!gid||!chid){toast('select server and channel','yellow');return;} try{await api('/api/slowmode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid,seconds:secs})});toast('slowmode '+(secs>0?'set to '+secs+'s':'removed'),'green');}catch(e){toast('failed: '+e.message,'red');} }
+
+// SECURITY
+async function loadSecuritySettings(){ try{var s=await api('/api/security');var set=function(id,v){var el=document.getElementById(id);if(el&&v!==undefined&&v!==null)el.value=v;};var tog=function(id,v){var el=document.getElementById(id);if(el)el.classList.toggle('on',!!v);}; tog('sec-antiRaidEnabled',s.antiRaidEnabled);set('antiRaidThreshold',s.antiRaidThreshold);set('antiRaidWindow',s.antiRaidWindow);set('antiRaidAction',s.antiRaidAction); tog('sec-altDetectEnabled',s.altDetectEnabled);set('altDetectDays',s.altDetectDays);set('altDetectAction',s.altDetectAction); tog('sec-autoRoleEnabled',s.autoRoleEnabled);set('autoRoleDelay',s.autoRoleDelay); tog('sec-nicknameFilterEnabled',s.nicknameFilterEnabled); if(s.nicknameFilterWords&&document.getElementById('nicknameFilterWords'))document.getElementById('nicknameFilterWords').value=Array.isArray(s.nicknameFilterWords)?s.nicknameFilterWords.join(', '):s.nicknameFilterWords;}catch(e){} }
+async function loadSecurityRoles(){ var gid=document.getElementById('secGuild')?document.getElementById('secGuild').value:''; if(!gid)return; try{var roles=await api('/api/guilds/'+gid+'/roles');var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; var opts='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join(''); var ar=document.getElementById('autoRoleId');if(ar)ar.innerHTML=opts; var mr=document.getElementById('muteRoleId');if(mr)mr.innerHTML=opts; var s=await api('/api/security'); if(s.autoRoleId&&ar)ar.value=s.autoRoleId; if(s.muteRoleId&&mr)mr.value=s.muteRoleId;}catch(e){} }
+async function loadSecurityChannels(){ var gid=document.getElementById('secGuild')?document.getElementById('secGuild').value:''; if(!gid)return; try{var chs=await api('/api/guilds/'+gid+'/channels');var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); var ar=document.getElementById('antiRaidLogCh');if(ar)ar.innerHTML=opts; var al=document.getElementById('altDetectLogCh');if(al)al.innerHTML=opts; var s=await api('/api/security'); if(s.altDetectLogChannel){if(ar)ar.value=s.altDetectLogChannel||'';if(al)al.value=s.altDetectLogChannel||'';}}catch(e){} }
+async function saveSecuritySettings(){ var g=function(id){var el=document.getElementById(id);return el?el.value:null;}; var gn=function(id){var el=document.getElementById(id);return el?parseInt(el.value)||0:0;}; var body={antiRaidThreshold:gn('antiRaidThreshold'),antiRaidWindow:gn('antiRaidWindow'),antiRaidAction:g('antiRaidAction')||'kick',altDetectDays:gn('altDetectDays'),altDetectAction:g('altDetectAction')||'flag',altDetectLogChannel:g('antiRaidLogCh')||g('altDetectLogCh')||null,autoRoleId:g('autoRoleId')||null,autoRoleDelay:gn('autoRoleDelay'),muteRoleId:g('muteRoleId')||null,nicknameFilterWords:document.getElementById('nicknameFilterWords')?document.getElementById('nicknameFilterWords').value.split(',').map(function(w){return w.trim();}).filter(Boolean):[]}; try{await api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('security settings saved','green');}catch(e){toast('save failed: '+e.message,'red');} }
+async function lockdownServer(lock){ var gid=document.getElementById('secGuild')?document.getElementById('secGuild').value:''; if(!gid){toast('select a server first','yellow');return;} if(!confirm((lock?'LOCK DOWN':'UNLOCK')+' the server?')) return; try{var res=await api('/api/security/lockdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,lock:lock})});toast((lock?'server locked':'server unlocked')+' - '+res.channelsAffected+' channels',lock?'red':'green');}catch(e){toast('failed: '+e.message,'red');} }
+async function loadModPlusRoles(){ var gid=guilds.length?guilds[0].id:''; if(!gid)return; try{var roles=await api('/api/guilds/'+gid+'/roles');var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; var opts='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join(''); var mr=document.getElementById('muteRoleId');if(mr)mr.innerHTML=opts; var s=await api('/api/security');if(s.muteRoleId&&mr)mr.value=s.muteRoleId;}catch(e){} }
+async function saveMuteRole(){ var rid=document.getElementById('muteRoleId')?document.getElementById('muteRoleId').value:''; try{await api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({muteRoleId:rid||null})});toast('mute role saved','green');}catch(e){toast('failed: '+e.message,'red');} }
+
+// REACTION ROLES — multi-role support
+async function loadRRChannels(){
+  var guildId=document.getElementById('rrGuild')?document.getElementById('rrGuild').value:''; if(!guildId) return;
+  try {
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/guilds/'+guildId+'/roles')]);
+    var chs=results[0],roles=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var chOpts='<option value="">select channel</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    var rrCh=document.getElementById('rrChannel');if(rrCh)rrCh.innerHTML=chOpts;
+    var rrExCh=document.getElementById('rrExistingChannel');if(rrExCh)rrExCh.innerHTML=chOpts;
+    var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; 
+    window._rrRoleOpts='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join('');
+    window._rrRoles=filtered;
+    document.querySelectorAll('.rr-pair-role').forEach(function(el){ el.innerHTML=window._rrRoleOpts; });
+    var rrAddRole=document.getElementById('rrAddRole');if(rrAddRole)rrAddRole.innerHTML=window._rrRoleOpts;
+    toast(text.length+' channels + '+filtered.length+' roles loaded','green');
+  } catch(e){ toast('failed to load: '+e.message,'red'); }
+}
+
+function addRRPair(){
+  var idx=Date.now();
+  var pair=document.createElement('div');
+  pair.className='rr-pair';
+  pair.style.cssText='display:grid;grid-template-columns:110px 1fr 32px;gap:8px;align-items:center;animation:rowIn .2s ease both';
+  pair.innerHTML='<input class="inp rr-pair-emoji" placeholder="emoji" style="padding:7px;font-size:13px;text-align:center">'
+    +'<select class="inp rr-pair-role" style="font-size:11px">'+window._rrRoleOpts+'</select>'
+    +'<button onclick="this.closest(\'.rr-pair\').remove()" style="width:32px;height:32px;border:1px solid rgba(255,64,96,.3);background:rgba(255,64,96,.08);color:var(--red);border-radius:7px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-times"></i></button>';
+  document.getElementById('rrPairs').appendChild(pair);
+}
+
+async function createReactionRoleMulti(){
+  var guildId=document.getElementById('rrGuild')?document.getElementById('rrGuild').value.trim():'';
+  var channelId=document.getElementById('rrChannel')?document.getElementById('rrChannel').value.trim():'';
+  var description=document.getElementById('rrDesc')?document.getElementById('rrDesc').value.trim():'React below to get your roles!';
+  if(!guildId){toast('select a server first','yellow');return;}
+  if(!channelId){toast('select a channel','yellow');return;}
+  var pairs=[];
+  document.querySelectorAll('.rr-pair').forEach(function(p){
+    var emoji=p.querySelector('.rr-pair-emoji').value.trim();
+    var roleId=p.querySelector('.rr-pair-role').value.trim();
+    if(emoji&&roleId) pairs.push({emoji:emoji,roleId:roleId});
+  });
+  if(!pairs.length){toast('add at least one emoji + role pair','yellow');return;}
+  try {
+    var first=pairs[0];
+    var res=await api('/api/reactionroles/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,roleId:first.roleId,emoji:first.emoji,description:description,allPairs:pairs})});
+    if(res.messageId&&pairs.length>1){
+      for(var i=1;i<pairs.length;i++){
+        await api('/api/reactionroles/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:res.messageId,guildId:guildId,channelId:channelId,emoji:pairs[i].emoji,roleId:pairs[i].roleId})});
+      }
+    }
+    toast('created with '+pairs.length+' role'+(pairs.length>1?'s':'')+'!','green');
+    document.getElementById('rrPairs').innerHTML='';
+    document.getElementById('rrDesc').value='';
+    addRRPair();
+    loadReactionRoles();
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+async function addToExistingRR(){
+  var msgId=document.getElementById('rrExistingMsg')?document.getElementById('rrExistingMsg').value.trim():'';
+  var channelId=document.getElementById('rrExistingChannel')?document.getElementById('rrExistingChannel').value.trim():'';
+  var emoji=document.getElementById('rrAddEmoji')?document.getElementById('rrAddEmoji').value.trim():'';
+  var roleId=document.getElementById('rrAddRole')?document.getElementById('rrAddRole').value.trim():'';
+  var guildId=document.getElementById('rrGuild')?document.getElementById('rrGuild').value.trim():'';
+  if(!msgId){toast('paste the message id','yellow');return;}
+  if(!channelId||!emoji||!roleId){toast('fill all fields','yellow');return;}
+  try{await api('/api/reactionroles/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messageId:msgId,guildId:guildId,channelId:channelId,emoji:emoji,roleId:roleId})});toast('emoji + role added!','green');document.getElementById('rrAddEmoji').value='';loadReactionRoles();}
+  catch(e){toast('failed: '+e.message,'red');}
+}
+
+async function loadReactionRoles(){
+  try {
+    var rr=await api('/api/reactionroles'),el=document.getElementById('rrList');
+    var entries=Object.entries(rr||{});
+    if(!entries.length){el.innerHTML='<div class="empty">no reaction roles yet</div>';return;}
+    el.innerHTML=entries.map(function(entry){
+      var msgId=entry[0],data=entry[1];
+      var pairs=Object.entries(data.roles||{});
+      var pairsHtml=pairs.map(function(p){
+        return '<span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:10px;margin:2px;animation:badgePop .2s ease both">'
+          +p[0]+' <span style="color:var(--purple)">+role ...'+p[1].slice(-4)+'</span></span>';
+      }).join('');
+      return '<div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);animation:rowIn .2s ease both">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">'
+        +'<div style="font-size:11px;font-weight:700">msg <span class="mono" style="font-size:10px;color:var(--txt3)">...'+msgId.slice(-8)+'</span> <span class="tag t-gray">'+pairs.length+' role'+(pairs.length>1?'s':'')+'</span></div>'
+        +'<button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteRR(this)" data-id="'+msgId+'"><i class="fas fa-trash"></i></button>'
+        +'</div>'
+        +'<div>'+pairsHtml+'</div>'
+        +'</div>';
+    }).join('');
+  } catch(e){}
+}
+async function deleteRR(btn){ var msgId=btn.dataset?btn.dataset.id:btn; await api('/api/reactionroles/'+msgId,{method:'DELETE'}); toast('deleted','yellow'); loadReactionRoles(); }
+
+// BACKUP
+async function createBackup(){ var gid=document.getElementById('backupGuild').value; var name=document.getElementById('backupName')?document.getElementById('backupName').value.trim():''; if(!gid){toast('select a server','yellow');return;} try{await api('/api/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,name:name||null})});toast('backup created!','green');if(document.getElementById('backupName'))document.getElementById('backupName').value='';loadBackups();loadAllBackups();}catch(e){toast('failed: '+e.message,'red');} }
+async function loadBackups(){ var gid=document.getElementById('backupGuild').value; if(!gid)return; try{var backups=await api('/api/backup/'+gid),el=document.getElementById('backupList'); if(!backups.length){el.innerHTML='<div class="empty">no backups for this server yet</div>';return;} el.innerHTML=backups.map(function(b,idx){return '<div class="backup-card" style="padding-left:18px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="flex:1"><div class="backup-name">'+b.name+'</div><div class="backup-meta"><span>'+new Date(b.date).toLocaleString()+'</span><span>'+b.roles.length+' roles</span><span>'+b.channels.length+' channels</span></div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-trash"></i></button></div><button class="btn btn-w" style="width:100%;font-size:10px" onclick="restoreBackup(this)" data-source="'+gid+'" data-target="'+gid+'" data-idx="'+idx+'"><i class="fas fa-rotate-left"></i> load into this server</button></div>';}).join('');}catch(e){toast('failed: '+e.message,'red');} }
+async function loadAllBackups(){ try{var backups=await api('/api/backup/all'),el=document.getElementById('allBackupsList'); if(!backups.length){el.innerHTML='<div class="empty">no backups yet</div>';return;} var tg=document.getElementById('restoreTargetGuild')?document.getElementById('restoreTargetGuild').value:''; el.innerHTML=backups.map(function(b){return '<div class="backup-card" style="padding-left:18px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="flex:1"><div class="backup-name">'+b.name+'</div><div class="backup-meta"><span style="color:var(--blue)">from: '+(b.sourceGuild||'?')+'</span><span>'+new Date(b.date).toLocaleString()+'</span><span>'+b.roles.length+' roles</span><span>'+b.channels.length+' channels</span></div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px;align-self:flex-start" onclick="deleteBackup(this)" data-guild="'+b.guildId+'" data-idx="'+b.index+'"><i class="fas fa-trash"></i></button></div><button class="btn btn-w" style="width:100%;font-size:10px" onclick="restoreBackupTo(this)" data-source="'+b.guildId+'" data-idx="'+b.index+'"><i class="fas fa-rotate-left"></i> load into selected server</button></div>';}).join('');}catch(e){toast('failed: '+e.message,'red');} }
+async function restoreBackup(btn){ var src=btn.dataset.source,tgt=btn.dataset.target||btn.dataset.source,idx=btn.dataset.idx; if(!confirm('load this backup? missing roles + channels will be created.')) return; var orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> loading...'; btn.disabled=true; try{var res=await api('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:tgt,sourceGuildId:src,index:parseInt(idx)})});toast(res.rolesCreated+' roles + '+res.channelsCreated+' channels created','green');}catch(e){toast('failed: '+e.message,'red');} btn.innerHTML=orig;btn.disabled=false; }
+async function restoreBackupTo(btn){ var src=btn.dataset.source,idx=btn.dataset.idx; var tgt=document.getElementById('restoreTargetGuild')?document.getElementById('restoreTargetGuild').value:''; if(!tgt){toast('select a target server first','yellow');return;} btn.dataset.target=tgt; restoreBackup(btn); }
+async function deleteBackup(btn){ var gid=btn.dataset.guild,idx=btn.dataset.idx; if(!confirm('delete this backup?')) return; await api('/api/backup/'+gid+'/'+idx,{method:'DELETE'}); toast('deleted','yellow'); loadBackups();loadAllBackups(); }
+
+// CONFIG
+async function exportConfig(){ try{var s=await api('/api/settings');var w=await api('/api/settings/welcome');var sec=await api('/api/security');var lc=await api('/api/logchannels');var alc=await api('/api/logchannels/extra');var config={settings:s,welcome:w,security:sec,logChannels:lc,advLogChannels:alc,exportedAt:new Date().toISOString()};var blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fa11en-config.json';a.click();toast('config downloaded!','green');}catch(e){toast('export failed: '+e.message,'red');} }
+async function copyConfigToClipboard(){ try{var s=await api('/api/settings');var w=await api('/api/settings/welcome');var sec=await api('/api/security');var config={settings:s,welcome:w,security:sec};await navigator.clipboard.writeText(JSON.stringify(config,null,2));toast('config copied to clipboard','green');}catch(e){toast('copy failed','red');} }
+async function importConfig(){ var text=document.getElementById('configImportText').value.trim(); if(!text){toast('paste your config JSON first','yellow');return;} try{var config=JSON.parse(text);var promises=[]; if(config.settings)promises.push(api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.settings)})); if(config.welcome)promises.push(api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.welcome)})); if(config.security)promises.push(api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.security)})); if(config.logChannels)promises.push(api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.logChannels)})); if(config.advLogChannels)promises.push(api('/api/logchannels/extra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.advLogChannels)})); await Promise.all(promises); toast('config loaded! all settings applied','green'); initAll();}catch(e){toast('import failed: '+e.message,'red');} }
+async function loadConfigSnapshot(){ try{var results=await Promise.all([api('/api/settings'),api('/api/settings/welcome'),api('/api/security')]);var snap={settings:results[0],welcome:results[1],security:results[2]};var el=document.getElementById('configSnapshot');if(el)el.textContent=JSON.stringify(snap,null,2);toast('config loaded','green');}catch(e){toast('failed: '+e.message,'red');} }
+
+// ANIMATIONS
+function countUp(el,target,duration){ if(isNaN(target)){el.textContent=target;return;} duration=duration||800; var startTime=performance.now(); (function update(now){ var p=Math.min((now-startTime)/duration,1),e=1-Math.pow(1-p,3); el.textContent=Math.floor(e*target).toLocaleString(); if(p<1)requestAnimationFrame(update); else el.textContent=target.toLocaleString?target.toLocaleString():target; })(performance.now()); }
+function setStat(id,value){ var el=document.getElementById(id);if(!el)return; el.classList.remove('updated');void el.offsetWidth;el.classList.add('updated'); var num=parseInt(String(value).replace(/[^0-9]/g,'')); if(!isNaN(num)&&num>0)countUp(el,num);else el.textContent=value; }
+function staggerAnimate(parentEl,sel){ if(!parentEl)return; parentEl.querySelectorAll(sel||'.lgi,.svr,.mrow,.backup-card').forEach(function(el,i){ el.style.opacity='0';el.style.transform='translateY(8px)'; setTimeout(function(){el.style.transition='opacity .22s ease,transform .22s cubic-bezier(.34,1.56,.64,1)';el.style.opacity='1';el.style.transform='translateY(0)';},i*45); }); }
+
+// AUTO REFRESH + BOOT
+setInterval(loadDashLogs,8000);
+setInterval(function(){ api('/api/bot').then(function(b){var e=document.getElementById('pingTxt');if(e)e.textContent=b._ping+' ms';}).catch(function(){}); },30000);
+initAll();
+
+</script>
+</body>
+</html>
