@@ -124,7 +124,7 @@ aside.sb{
 .pd{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;animation:pulse 2s ease infinite;}
 
 /* MAIN */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 
 /* TOPBAR */
 .topbar{
@@ -154,18 +154,18 @@ aside.sb{
 }
 
 /* CONTENT AREA */
-.main > .page, .main > div.page{
-  flex:1;overflow-y:auto;padding:20px 22px;
-  scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;
-}
-.main > .page::-webkit-scrollbar{width:4px;}
-.main > .page::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px;}
-
 .page{display:none;}
-.page.active{display:block;animation:pageIn .22s ease both;overflow-y:auto;padding:20px 22px;flex:1;}
-
-/* fix: main needs to allow content to scroll */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.page.active{
+  display:block;
+  animation:pageIn .22s ease both;
+  overflow-y:auto;
+  padding:20px 22px 40px;
+  flex:1;
+  scrollbar-width:thin;
+  scrollbar-color:var(--bg4) transparent;
+}
+.page.active::-webkit-scrollbar{width:4px;}
+.page.active::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px;}
 
 /* BANNER */
 .banner{
@@ -401,6 +401,14 @@ textarea.inp{resize:vertical;min-height:72px;}
 
 /* MISC */
 .ping-pill{font-family:'DM Mono',monospace;font-size:9px;background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);color:var(--green);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;}
+/* LOG CHANNEL CARDS */
+.logch-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px;transition:border-color .15s,box-shadow .15s;animation:cardPop .25s ease both;}
+.logch-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.logch-label{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:8px;display:flex;align-items:center;gap:7px;letter-spacing:.2px;}
+.logch-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+/* LOG TABS */
+.log-tab:hover{background:rgba(255,255,255,.06) !important;color:var(--txt) !important;}
+.log-tab.active{background:var(--blue) !important;color:#fff !important;box-shadow:0 0 12px rgba(79,142,247,.3);}
 .banner-title{background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#ccc 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
 </style>
 </head>
@@ -442,8 +450,7 @@ textarea.inp{resize:vertical;min-height:72px;}
     <div class="ni" data-page="reactionroles"><i class="fas fa-face-smile"></i> Reaction Roles</div>
     <div class="ni" data-page="backup"><i class="fas fa-database"></i> Server Backup</div>
     <div class="ni" data-page="security"><i class="fas fa-lock"></i> Security</div>
-    <div class="ni" data-page="modplus"><i class="fas fa-gavel"></i> Mod++</div>
-    <div class="ni" data-page="advlogs"><i class="fas fa-list-check"></i> Adv. Logs</div>
+    <div class="ni" data-page="config"><i class="fas fa-floppy-disk"></i> Config Save</div>
   </div>
   <div class="sb-foot">
     <div class="sb-bc">
@@ -555,71 +562,91 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ AUTO MOD ══ -->
   <div class="page" id="page-automod">
-    <div class="sh"><div><h2>auto moderation</h2><p>all changes apply instantly to the bot</p></div><button class="btn btn-w" onclick="saveAutomodFull()"><i class="fas fa-check"></i> save settings</button></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ch"><div class="ct">filters</div><span class="tag t-green">live</span></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-link" style="color:var(--red)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">discord.gg links auto-deleted + warn</div></div></div><div class="tog" id="am-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--yellow)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 messages in 5 seconds = timeout</div></div></div><div class="tog" id="am-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--red)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn (edit list below)</div></div></div><div class="tog" id="am-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--yellow)"></i></div><div><div class="mi-name">Mass Mention Block</div><div class="mi-desc">3+ mentions = warning</div></div></div><div class="tog" id="am-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--yellow)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">70%+ caps = delete</div></div></div><div class="tog" id="am-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-globe" style="color:var(--red)"></i></div><div><div class="mi-name">Block All Links</div><div class="mi-desc">delete any http:// URL</div></div></div><div class="tog" id="am-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-clone" style="color:var(--yellow)"></i></div><div><div class="mi-name">Duplicate Text</div><div class="mi-desc">repeated words get deleted</div></div></div><div class="tog" id="am-blockDuplicates" data-key="blockDuplicates" onclick="toggle(this)"></div></div>
-        <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-face-grin-squint" style="color:var(--yellow)"></i></div><div><div class="mi-name">Emoji Spam</div><div class="mi-desc">too many emojis = delete</div></div></div><div class="tog" id="am-blockEmojiSpam" data-key="blockEmojiSpam" onclick="toggle(this)"></div></div>
-      </div>
-      <div>
+    <div class="sh"><div><h2>moderation</h2><p>automod filters, custom commands, slowmode manager</p></div><button class="btn btn-w" onclick="saveAutomod()"><i class="fas fa-check"></i> save</button></div>
+
+    <!-- TAB BAR -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px;">
+      <button class="log-tab active" onclick="switchModTab('filters',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:var(--bg4);color:var(--txt);transition:all .18s;">Auto Filters</button>
+      <button class="log-tab" onclick="switchModTab('commands',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Custom Commands</button>
+      <button class="log-tab" onclick="switchModTab('slowmode',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Slowmode</button>
+    </div>
+
+    <!-- FILTERS TAB -->
+    <div id="modtab-filters">
+      <div class="g2">
         <div class="card">
-          <div class="ch"><div class="ct">settings</div></div>
+          <div class="ch"><div class="ct">filters</div><span class="tag t-green">live</span></div>
+          <div class="cb">
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-link" style="color:var(--red)"></i></div><div><div class="mi-name">Block Invite Links</div><div class="mi-desc">auto-delete + warn</div></div></div><div class="tog" id="m-blockInvites" data-key="blockInvites" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-robot" style="color:var(--yellow)"></i></div><div><div class="mi-name">Anti Spam</div><div class="mi-desc">5 msgs/5sec = timeout</div></div></div><div class="tog" id="m-blockSpam" data-key="blockSpam" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-comment-slash" style="color:var(--red)"></i></div><div><div class="mi-name">Bad Words Filter</div><div class="mi-desc">delete + warn</div></div></div><div class="tog" id="m-badWordsFilter" data-key="badWordsFilter" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-at" style="color:var(--yellow)"></i></div><div><div class="mi-name">Mass Mention Block</div><div class="mi-desc">3+ mentions = warning</div></div></div><div class="tog" id="m-blockMassMentions" data-key="blockMassMentions" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-font" style="color:var(--yellow)"></i></div><div><div class="mi-name">Caps Filter</div><div class="mi-desc">70%+ caps = delete</div></div></div><div class="tog" id="m-capsFilter" data-key="capsFilter" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-globe" style="color:var(--red)"></i></div><div><div class="mi-name">Block All Links</div><div class="mi-desc">delete any http:// URL</div></div></div><div class="tog" id="m-blockLinks" data-key="blockLinks" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-clone" style="color:var(--yellow)"></i></div><div><div class="mi-name">Duplicate Text</div><div class="mi-desc">repeated words deleted</div></div></div><div class="tog" id="m-blockDuplicates" data-key="blockDuplicates" onclick="toggle(this)"></div></div>
+            <div class="mi"><div class="mi-l"><div class="mi-ico"><i class="fas fa-face-grin-squint" style="color:var(--yellow)"></i></div><div><div class="mi-name">Emoji Spam</div><div class="mi-desc">too many emojis = delete</div></div></div><div class="tog" id="m-blockEmojiSpam" data-key="blockEmojiSpam" onclick="toggle(this)"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">thresholds</div></div>
           <div class="cb">
             <label class="fl">Auto-ban after X warnings</label>
-            <input class="inp" type="number" id="autobanThreshold" value="3" min="1" max="20" style="margin-bottom:10px"><label class="fl">Emoji Spam Limit (delete if more than X emojis)</label><input class="inp" type="number" id="emojiSpamLimit" value="5" min="1" max="30" style="margin-bottom:10px">
+            <input class="inp" type="number" id="autobanThreshold" value="3" min="1" max="20" style="margin-bottom:10px">
             <label class="fl">Timeout duration (minutes)</label>
             <input class="inp" type="number" id="muteMinutes" value="10" min="1" max="1440" style="margin-bottom:10px">
-            <label class="fl">Log Channel ID</label>
-            <input class="inp" id="logChannelId" placeholder="paste channel id" style="margin-bottom:14px">
-            <button class="btn btn-w" style="width:100%" onclick="saveAutomod()"><i class="fas fa-check"></i> save &amp; apply</button>
+            <label class="fl">Emoji spam limit</label>
+            <input class="inp" type="number" id="emojiSpamLimit" value="5" min="1" max="30" style="margin-bottom:10px">
+            <label class="fl">Log Channel (optional global)</label>
+            <input class="inp" id="logChannelId" placeholder="channel id for all logs" style="margin-bottom:14px">
+            <button class="btn btn-w" style="width:100%" onclick="saveAutomodFull()"><i class="fas fa-check"></i> save thresholds</button>
           </div>
         </div>
         <div class="card">
           <div class="ch"><div class="ct">bad words list</div></div>
           <div class="cb">
             <label class="fl">Words (comma separated)</label>
-            <textarea class="inp" id="badWordsList" placeholder="word1, word2, word3" style="margin-bottom:10px"></textarea>
-            <button class="btn btn-w" style="width:100%" onclick="saveBadWords()"><i class="fas fa-check"></i> update list</button>
+            <textarea class="inp" id="badWordsList" style="margin-bottom:10px;height:80px"></textarea>
+            <button class="btn btn-w" style="width:100%" onclick="saveBadWords()"><i class="fas fa-check"></i> save words</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ══ INFRACTIONS ══ -->
-  <div class="page" id="page-infractions">
-    <div class="sh"><div><h2>infractions</h2><p>all bans, kicks, warns — from bot and dashboard</p></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-g" onclick="loadInfractions()"><i class="fas fa-sync-alt"></i> refresh</button>
-        <button class="btn btn-r" onclick="clearInfractions()"><i class="fas fa-trash"></i> clear all</button>
+    <!-- CUSTOM COMMANDS TAB -->
+    <div id="modtab-commands" style="display:none">
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ct">add command</div><span class="tag t-cyan">triggers in chat</span></div>
+          <div class="cb">
+            <label class="fl">Trigger (what user types)</label>
+            <input class="inp" id="ccTrigger" placeholder="!gg or !rules" style="margin-bottom:10px">
+            <label class="fl">Response</label>
+            <textarea class="inp" id="ccResponse" placeholder="use {user} {server} {username}" style="margin-bottom:10px;height:70px"></textarea>
+            <div style="font-size:10px;color:var(--txt3);margin-bottom:10px">variables: <span class="mono">{user}</span> = mention, <span class="mono">{username}</span> = name, <span class="mono">{server}</span> = server name</div>
+            <button class="btn btn-w" style="width:100%" onclick="addCustomCommand()"><i class="fas fa-plus"></i> add command</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">active commands</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadCustomCommands()"><i class="fas fa-sync-alt"></i></button></div>
+          <div id="ccList"><div class="empty">no custom commands yet</div></div>
+        </div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="ch"><div class="ct">issue infraction</div></div>
-      <div class="cb">
-        <div class="fr">
-          <div><label class="fl">Server</label><select class="inp" id="infGuild"></select></div>
-          <div><label class="fl">User ID</label><input class="inp" id="infUser" placeholder="paste user id"></div>
+
+    <!-- SLOWMODE TAB -->
+    <div id="modtab-slowmode" style="display:none">
+      <div class="card" style="max-width:480px">
+        <div class="ch"><div class="ct">slowmode manager</div><span class="tag t-yellow">per channel</span></div>
+        <div class="cb">
+          <label class="fl">Server</label>
+          <select class="inp" id="slowGuild" style="margin-bottom:10px" onchange="loadSlowChannels()"></select>
+          <label class="fl">Channel</label>
+          <select class="inp" id="slowChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Slowmode in seconds (0 = off)</label>
+          <input class="inp" type="number" id="slowSeconds" value="0" min="0" max="21600" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="applySlowmode()"><i class="fas fa-clock"></i> apply slowmode</button>
         </div>
-        <div class="fr">
-          <div><label class="fl">Action</label><select class="inp" id="infAct"><option value="warn">warn</option><option value="timeout">timeout (10min)</option><option value="kick">kick</option><option value="ban">ban</option></select></div>
-          <div><label class="fl">Reason</label><input class="inp" id="infReason" placeholder="reason..."></div>
-        </div>
-        <button class="btn btn-w" onclick="issueInfraction()"><i class="fas fa-gavel"></i> execute via bot</button>
       </div>
-    </div>
-    <div class="card">
-      <div class="ch"><div class="ct">history</div><span class="tag t-gray" id="infCount">0 records</span></div>
-      <table class="tbl"><thead><tr><th>#</th><th>user</th><th>action</th><th>reason</th><th>time</th><th></th></tr></thead>
-      <tbody id="infBody"></tbody></table>
-      <div class="empty" id="infEmpty">no infractions yet</div>
     </div>
   </div>
 
@@ -627,9 +654,9 @@ textarea.inp{resize:vertical;min-height:72px;}
   <div class="page" id="page-logs">
     <div class="sh">
       <div>
-        <h2>logs</h2>
+        <h2>logs &amp; channels</h2>
         <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
-          <p>full audit trail — every action, delete, join, mod action</p>
+          <p>live audit trail + configure where each log type goes</p>
           <div class="log-live"><div class="log-live-dot"></div>live</div>
         </div>
       </div>
@@ -638,203 +665,108 @@ textarea.inp{resize:vertical;min-height:72px;}
         <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear all</button>
       </div>
     </div>
-    <!-- stats bar -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #ff3555">
-        <div style="font-size:18px;font-weight:800;color:#ff3555" id="logStat-del">0</div>
-        <div style="font-size:9px;color:var(--txt3);margin-top:2px">DELETED</div>
+
+    <!-- TAB BAR -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:4px;">
+      <button class="log-tab active" onclick="switchLogTab('live',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:var(--bg4);color:var(--txt);transition:all .18s;">Live Logs</button>
+      <button class="log-tab" onclick="switchLogTab('channels',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Log Channels</button>
+      <button class="log-tab" onclick="switchLogTab('advanced',this)" style="flex:1;padding:7px;border:none;border-radius:7px;cursor:pointer;font-family:Syne,sans-serif;font-size:11px;font-weight:700;background:transparent;color:var(--txt2);transition:all .18s;">Advanced Channels</button>
+    </div>
+
+    <!-- LIVE LOGS TAB -->
+    <div id="logtab-live">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #ff3555;animation:cardPop .3s ease .05s both">
+          <div style="font-size:18px;font-weight:800;color:#ff3555" id="logStat-del">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">DELETED</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #ffb700;animation:cardPop .3s ease .1s both">
+          <div style="font-size:18px;font-weight:800;color:#ffb700" id="logStat-mod">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">MOD ACTIONS</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #00e87a;animation:cardPop .3s ease .15s both">
+          <div style="font-size:18px;font-weight:800;color:#00e87a" id="logStat-join">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">JOINS</div></div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;border-left:3px solid #9b8cff;animation:cardPop .3s ease .2s both">
+          <div style="font-size:18px;font-weight:800;color:#9b8cff" id="logStat-total">0</div><div style="font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:.5px">TOTAL</div></div>
       </div>
-      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #ffb700">
-        <div style="font-size:18px;font-weight:800;color:#ffb700" id="logStat-mod">0</div>
-        <div style="font-size:9px;color:var(--txt3);margin-top:2px">MOD ACTIONS</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #00e87a">
-        <div style="font-size:18px;font-weight:800;color:#00e87a" id="logStat-join">0</div>
-        <div style="font-size:9px;color:var(--txt3);margin-top:2px">JOINS</div>
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #9b8cff">
-        <div style="font-size:18px;font-weight:800;color:#9b8cff" id="logStat-total">0</div>
-        <div style="font-size:9px;color:var(--txt3);margin-top:2px">TOTAL</div>
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">live events</div><span class="tag t-gray" id="logCount">0 entries</span></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="inp" id="logFilter" style="width:140px" onchange="filterLogs()">
+              <option value="">all types</option>
+              <option value="DELETE">deleted msgs</option>
+              <option value="EDIT">edited msgs</option>
+              <option value="JOIN">joins</option>
+              <option value="LEAVE">leaves</option>
+              <option value="MOD">mod actions</option>
+              <option value="AUTOMOD">automod</option>
+              <option value="VOICE">voice</option>
+              <option value="ROLE">roles</option>
+              <option value="SECURITY">security</option>
+              <option value="TICKET">tickets</option>
+              <option value="BOOST">boosts</option>
+            </select>
+            <input class="inp" id="logSearch" placeholder="search..." style="width:130px" oninput="filterLogs()">
+          </div>
+        </div>
+        <div id="logsList"><div class="ld"><span></span><span></span><span></span></div></div>
       </div>
     </div>
 
-    <!-- Log Channel Config -->
-    <div class="card" style="margin-bottom:18px">
-      <div class="ch">
-        <div><div class="ct">log channels</div><div class="cs">each type can go to a different Discord channel</div></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="inp" id="logGuildPicker" style="width:160px" onchange="loadLogChannels()"></select>
-          <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save</button>
+    <!-- LOG CHANNELS TAB -->
+    <div id="logtab-channels" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <div><div class="ct">log channels</div><div class="cs">pick a Discord channel for each event type</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="inp" id="logGuildPicker" style="width:160px" onchange="loadLogChannels()"></select>
+            <button class="btn btn-w" onclick="saveLogChannels()"><i class="fas fa-check"></i> save</button>
+          </div>
         </div>
       </div>
-      <div class="cb">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Message Deleted</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-deletedMessages"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">✏️ Message Edited</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-editedMessages"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">👋 Member Joined</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-joinLeave"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">📤 Member Left</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberKicked"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔨 Member Banned</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberBanned"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">✅ Member Unbanned</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberUnbanned"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">⏱️ Timeout Given/Removed</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberTimeout"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔨 Mod Actions</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-modActions"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">📁 Channel Created</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-channelCreated"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Channel Deleted</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-channelDeleted"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🏷️ Role Created</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-roleCreated"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Role Deleted</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-roleDeleted"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🏷️ Role Changes (member)</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-roleChanges"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🎙️ Member Joined Voice</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberJoinedVoice"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔇 Member Left Voice</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-memberLeftVoice"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔀 Voice Activity (all)</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-voiceActivity"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🖼️ Images &amp; Files</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-images"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">⌨️ Commands Used</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-commands"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-          <div class="card" style="margin:0;border:1px solid var(--border2)">
-            <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">📨 Server Invites</div></div>
-            <div class="cb" style="padding:10px 14px;padding-top:0">
-              <select class="inp" id="lc-serverInvites"><option value="">disabled</option></select>
-            </div>
-          </div>
-
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Deleted Messages</div><select class="inp" id="lc-deletedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ffb700"></span>Edited Messages</div><select class="inp" id="lc-editedMessages"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00e87a"></span>Joins &amp; Leaves</div><select class="inp" id="lc-joinLeave"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Mod Actions</div><select class="inp" id="lc-modActions"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#4488ff"></span>Commands Used</div><select class="inp" id="lc-commands"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Images &amp; Files</div><select class="inp" id="lc-images"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Voice Activity</div><select class="inp" id="lc-voiceActivity"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#9b8cff"></span>Role Changes</div><select class="inp" id="lc-roleChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Member Banned</div><select class="inp" id="lc-memberBanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00e87a"></span>Member Unbanned</div><select class="inp" id="lc-memberUnbanned"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff8800"></span>Member Kicked</div><select class="inp" id="lc-memberKicked"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ffb700"></span>Member Timeout</div><select class="inp" id="lc-memberTimeout"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00e87a"></span>Channel Created</div><select class="inp" id="lc-channelCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Channel Deleted</div><select class="inp" id="lc-channelDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00e87a"></span>Role Created</div><select class="inp" id="lc-roleCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Role Deleted</div><select class="inp" id="lc-roleDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Joined Voice</div><select class="inp" id="lc-memberJoinedVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff8800"></span>Left Voice</div><select class="inp" id="lc-memberLeftVoice"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Server Invites</div><select class="inp" id="lc-serverInvites"><option value="">disabled</option></select></div>
       </div>
     </div>
 
-    <!-- Filter + Live Logs -->
-    <div class="card">
-      <div class="ch">
-        <div><div class="ct">live logs</div><span class="tag t-gray" id="logCount">0 entries</span></div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select class="inp" id="logFilter" style="width:150px" onchange="filterLogs()">
-            <option value="">all types</option>
-            <option value="DELETE">deleted msgs</option>
-            <option value="EDIT">edited msgs</option>
-            <option value="JOIN">joins</option>
-            <option value="LEAVE">leaves</option>
-            <option value="MOD">mod actions</option>
-            <option value="AUTOMOD">automod</option>
-            <option value="CMD">commands</option>
-            <option value="VOICE">voice</option>
-            <option value="ROLE">roles</option>
-            <option value="FILE">files</option>
-            <option value="VERIFY">verify</option>
-            <option value="LEVEL">levels</option>
-            <option value="SECURITY">security</option>
-            <option value="TICKET">tickets</option>
-            <option value="BOOST">boosts</option>
-          </select>
-          <input class="inp" id="logSearch" placeholder="search logs..." style="width:160px" oninput="filterLogs()">
-          <span class="tag t-gray" id="logCount">0 entries</span>
+    <!-- ADVANCED CHANNELS TAB -->
+    <div id="logtab-advanced" style="display:none">
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch">
+          <div><div class="ct">advanced log channels</div><div class="cs">extra event types — nickname changes, threads, boosts and more</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="inp" id="advLogGuild" style="width:160px" onchange="loadAdvLogChannels()"></select>
+            <button class="btn btn-w" onclick="saveAdvLogChannels()"><i class="fas fa-check"></i> save</button>
+          </div>
         </div>
       </div>
-      <div id="logsList" style="max-height:600px;overflow-y:auto"><div class="ld"><span></span><span></span><span></span></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ffd700"></span>Nickname Changes</div><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Invite Created</div><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Invite Deleted</div><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Bulk Delete</div><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#00d4ff"></span>Thread Created</div><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Thread Deleted</div><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff73fa"></span>Boost Events</div><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ffd700"></span>Emoji Created</div><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#ff3555"></span>Emoji Deleted</div><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
+        <div class="logch-card"><div class="logch-label"><span class="logch-dot" style="background:#888"></span>Webhook Changes</div><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
+      </div>
     </div>
   </div>
 
@@ -1344,6 +1276,81 @@ textarea.inp{resize:vertical;min-height:72px;}
     </div>
   </div>
 
+
+  <!-- ══ SECURITY ══ -->
+  <div class="page" id="page-security">
+    <div class="sh"><div><h2>security</h2><p>anti-raid, alt detection, auto-role, nickname filter</p></div><button class="btn btn-w" onclick="saveSecuritySettings()"><i class="fas fa-check"></i> save all</button></div>
+
+    <div class="g2">
+      <!-- ANTI-RAID -->
+      <div class="card">
+        <div class="ch"><div class="ct">anti-raid</div><div class="tog" id="sec-antiRaidEnabled" data-key="antiRaidEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">if X members join within Y seconds, auto-action all of them</div>
+          <label class="fl">Joins to trigger raid detection</label>
+          <input class="inp" type="number" id="antiRaidThreshold" value="10" min="2" max="50" style="margin-bottom:10px">
+          <label class="fl">Time window (seconds)</label>
+          <input class="inp" type="number" id="antiRaidWindow" value="10" min="3" max="60" style="margin-bottom:10px">
+          <label class="fl">Action when raid detected</label>
+          <select class="inp" id="antiRaidAction" style="margin-bottom:10px">
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (30min)</option>
+          </select>
+          <label class="fl">Log Channel (for raid alerts)</label>
+          <select class="inp" id="antiRaidLogCh" style="margin-bottom:10px"></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-r" onclick="lockdownServer(true)"><i class="fas fa-lock"></i> lockdown server</button>
+            <button class="btn btn-gr" onclick="lockdownServer(false)"><i class="fas fa-unlock"></i> unlock server</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALT DETECTOR -->
+      <div class="card">
+        <div class="ch"><div class="ct">alt account detector</div><div class="tog" id="sec-altDetectEnabled" data-key="altDetectEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">flags or actions accounts newer than X days</div>
+          <label class="fl">Account must be older than (days)</label>
+          <input class="inp" type="number" id="altDetectDays" value="7" min="1" max="365" style="margin-bottom:10px">
+          <label class="fl">Action on new accounts</label>
+          <select class="inp" id="altDetectAction" style="margin-bottom:10px">
+            <option value="flag">flag only (log + no action)</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (1 hour)</option>
+          </select>
+          <label class="fl">Alert Channel</label>
+          <select class="inp" id="altDetectLogCh" style="margin-bottom:0"></select>
+        </div>
+      </div>
+
+      <!-- AUTO ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">auto-role on join</div><div class="tog" id="sec-autoRoleEnabled" data-key="autoRoleEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">automatically give a role to every member who joins</div>
+          <label class="fl">Server</label>
+          <select class="inp" id="secGuild" style="margin-bottom:10px" onchange="loadSecurityRoles()"></select>
+          <label class="fl">Role to give</label>
+          <select class="inp" id="autoRoleId" style="margin-bottom:10px"></select>
+          <label class="fl">Delay before giving role (seconds, 0 = instant)</label>
+          <input class="inp" type="number" id="autoRoleDelay" value="0" min="0" max="600" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <!-- NICKNAME FILTER -->
+      <div class="card">
+        <div class="ch"><div class="ct">nickname filter</div><div class="tog" id="sec-nicknameFilterEnabled" data-key="nicknameFilterEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">reverts nicknames that contain blocked words</div>
+          <label class="fl">Blocked words (comma separated)</label>
+          <textarea class="inp" id="nicknameFilterWords" placeholder="word1, word2, word3..." style="margin-bottom:0;height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ MOD++ ══ -->
   <div class="page" id="page-modplus">
     <div class="sh"><div><h2>moderation++</h2><p>custom commands, slowmode manager</p></div></div>
@@ -1392,66 +1399,38 @@ textarea.inp{resize:vertical;min-height:72px;}
     </div>
   </div>
 
-  <!-- ══ ADVANCED LOGS ══ -->
-  <div class="page" id="page-advlogs">
-    <div class="sh"><div><h2>advanced logs</h2><p>nickname changes, invites, threads, boosts, emoji and more</p></div>
-      <div style="display:flex;gap:8px">
-        <select class="inp" id="advLogGuild" style="width:160px" onchange="loadAdvLogChannels()"></select>
-        <button class="btn btn-w" onclick="saveAdvLogChannels()"><i class="fas fa-check"></i> save</button>
+
+  <!-- ══ CONFIG SAVE ══ -->
+  <div class="page" id="page-config">
+    <div class="sh"><div><h2>config save</h2><p>export and import all your dashboard settings — never lose them on redeploy</p></div></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><div class="ct">export config</div><span class="tag t-green">save everything</span></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--green)">
+            saves <b style="color:var(--txt)">all settings</b> to a JSON file you download — automod, welcome, ticket, log channels, security, temp voice, verification and more.
+          </div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:10px" onclick="exportConfig()"><i class="fas fa-download"></i> download config.json</button>
+          <button class="btn btn-w" style="width:100%" onclick="copyConfigToClipboard()"><i class="fas fa-copy"></i> copy to clipboard</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">import config</div><span class="tag t-blue">load settings</span></div>
+        <div class="cb">
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--blue)">
+            paste your previously exported config JSON below and hit load — all settings will be applied immediately.
+          </div>
+          <label class="fl">Paste config JSON</label>
+          <textarea class="inp" id="configImportText" placeholder='{"blockInvites":true,...}' style="height:120px;margin-bottom:10px;font-family:DM Mono,monospace;font-size:10px"></textarea>
+          <button class="btn btn-b" style="width:100%" onclick="importConfig()"><i class="fas fa-upload"></i> load config</button>
+        </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">✏️ Nickname Changes</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
+    <div class="card">
+      <div class="ch"><div class="ct">current config snapshot</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadConfigSnapshot()"><i class="fas fa-sync-alt"></i> refresh</button></div>
+      <div class="cb">
+        <pre id="configSnapshot" style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:14px;font-family:DM Mono,monospace;font-size:9px;color:var(--txt2);overflow-x:auto;max-height:300px;overflow-y:auto;line-height:1.6;white-space:pre-wrap">click refresh to load current config</pre>
       </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">📨 Invite Created</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Invite Deleted</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Bulk Message Delete</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🧵 Thread Created</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Thread Deleted</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🚀 Boost Events</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">😀 Emoji Created</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Emoji Deleted</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
-      </div>
-
-      <div class="card" style="margin:0;border:1px solid var(--border2)">
-        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔗 Webhook Changes</div></div>
-        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
-      </div>
-
     </div>
   </div>
 
@@ -1541,8 +1520,16 @@ document.querySelectorAll('.ni[data-page]').forEach(function(el) {
     document.getElementById('pageTitle').textContent = el.textContent.replace(/\d+$/, '').trim();
     var p = el.dataset.page;
     if(p==='servers') loadServers();
-    if(p==='logs'){ fillGuildSelects(); loadLogs(); var lp=document.getElementById('logGuildPicker'); if(lp){ lp.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ lp.value=guilds[0].id; loadLogChannels(); } } }
+    if(p==='logs'){
+      fillGuildSelects();
+      loadLogs();
+      var lp=document.getElementById('logGuildPicker');
+      if(lp){ lp.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length) lp.value=guilds[0].id; }
+      var alg=document.getElementById('advLogGuild');
+      if(alg){ alg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length) alg.value=guilds[0].id; }
+    }
     if(p==='infractions'){ loadInfractions(); fillGuildSelects(); }
+    if(p==='automod'){ loadCustomCommands(); var smg=document.getElementById('slowGuild'); if(smg){ smg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ smg.value=guilds[0].id; loadSlowChannels(); } } }
     if(p==='analytics') loadAnalytics();
     if(p==='leveling') loadLeaderboard();
     if(p==='actions'){ fillGuildSelects(); if(guilds.length){ setTimeout(function(){ document.getElementById('purgeGuild').value=guilds[0].id; loadChForPurge(); },100); } }
@@ -1562,8 +1549,7 @@ document.querySelectorAll('.ni[data-page]').forEach(function(el) {
       if(guilds.length){ if(bg){ bg.value=guilds[0].id; loadBackups(); } }
     }
     if(p==='security'){ loadSecuritySettings(); var sg=document.getElementById('secGuild'); if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ sg.value=guilds[0].id; loadSecurityRoles(); loadSecurityChannels(); } } }
-    if(p==='modplus'){ loadCustomCommands(); var smg=document.getElementById('slowGuild'); if(smg){ smg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ smg.value=guilds[0].id; loadSlowChannels(); } } var mrg=document.getElementById('secGuild'); loadModPlusRoles(); }
-    if(p==='advlogs'){ var alg=document.getElementById('advLogGuild'); if(alg){ alg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ alg.value=guilds[0].id; loadAdvLogChannels(); } } }
+    if(p==='config'){ loadConfigSnapshot(); }
     if(p==='welcome'){ fillGuildSelects(); var wg=document.getElementById('welcomeGuildPicker'); if(wg) wg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadWelcomeFull(); if(guilds.length){ setTimeout(function(){ var wp=document.getElementById('welcomeGuildPicker'); if(wp){ wp.value=guilds[0].id; loadWelcomeChannels(); } },100); } }
   });
 });
@@ -2253,6 +2239,117 @@ function staggerAnimate(parentEl,sel){
       el.style.transform='translateY(0)';
     },i*45);
   });
+}
+
+// TAB SWITCHERS
+function switchLogTab(name, btn){
+  ['live','channels','advanced'].forEach(function(t){
+    var el=document.getElementById('logtab-'+t);
+    if(el) el.style.display=(t===name?'block':'none');
+  });
+  document.querySelectorAll('.log-tab').forEach(function(b){
+    b.style.background='transparent'; b.style.color='var(--txt2)';
+    b.classList.remove('active');
+  });
+  if(btn){ btn.style.background='var(--blue)'; btn.style.color='#fff'; btn.classList.add('active'); }
+  if(name==='channels' && document.getElementById('logGuildPicker') && guilds.length){
+    loadLogChannels();
+  }
+  if(name==='advanced' && document.getElementById('advLogGuild') && guilds.length){
+    loadAdvLogChannels();
+  }
+}
+
+function switchModTab(name, btn){
+  ['filters','commands','slowmode'].forEach(function(t){
+    var el=document.getElementById('modtab-'+t);
+    if(el) el.style.display=(t===name?'block':'none');
+  });
+  var tabs=document.querySelectorAll('.log-tab');
+  // find only the ones in the automod page
+  var page=document.getElementById('page-automod');
+  if(page) page.querySelectorAll('.log-tab').forEach(function(b){
+    b.style.background='transparent'; b.style.color='var(--txt2)'; b.classList.remove('active');
+  });
+  if(btn){ btn.style.background='var(--blue)'; btn.style.color='#fff'; btn.classList.add('active'); }
+  if(name==='slowmode' && guilds.length){
+    var sg=document.getElementById('slowGuild');
+    if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); sg.value=guilds[0].id; loadSlowChannels(); }
+  }
+}
+
+// CONFIG SAVE / LOAD
+async function exportConfig(){
+  try {
+    var s=await api('/api/settings');
+    var w=await api('/api/settings/welcome');
+    var sec=await api('/api/security');
+    var lc=await api('/api/logchannels');
+    var alc=await api('/api/logchannels/extra');
+    var config={settings:s, welcome:w, security:sec, logChannels:lc, advLogChannels:alc, exportedAt:new Date().toISOString()};
+    var blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='fa11en-config.json'; a.click();
+    toast('config downloaded!','green');
+  } catch(e){ toast('export failed: '+e.message,'red'); }
+}
+
+async function copyConfigToClipboard(){
+  try {
+    var s=await api('/api/settings');
+    var w=await api('/api/settings/welcome');
+    var sec=await api('/api/security');
+    var lc=await api('/api/logchannels');
+    var config={settings:s,welcome:w,security:sec,logChannels:lc};
+    await navigator.clipboard.writeText(JSON.stringify(config,null,2));
+    toast('config copied to clipboard','green');
+  } catch(e){ toast('copy failed: '+e.message,'red'); }
+}
+
+async function importConfig(){
+  var text=document.getElementById('configImportText').value.trim();
+  if(!text){toast('paste your config JSON first','yellow');return;}
+  try {
+    var config=JSON.parse(text);
+    var promises=[];
+    if(config.settings) promises.push(api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.settings)}));
+    if(config.welcome) promises.push(api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.welcome)}));
+    if(config.security) promises.push(api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.security)}));
+    if(config.logChannels) promises.push(api('/api/logchannels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.logChannels)}));
+    if(config.advLogChannels) promises.push(api('/api/logchannels/extra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config.advLogChannels)}));
+    await Promise.all(promises);
+    toast('config loaded! all settings applied','green');
+    initAll();
+  } catch(e){ toast('import failed: '+e.message,'red'); }
+}
+
+async function loadConfigSnapshot(){
+  try {
+    var results=await Promise.all([api('/api/settings'),api('/api/settings/welcome'),api('/api/security')]);
+    var snap={settings:results[0],welcome:results[1],security:results[2]};
+    var el=document.getElementById('configSnapshot');
+    if(el) el.textContent=JSON.stringify(snap,null,2);
+    toast('config loaded','green');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+// FIX: Welcome gif - make sure it saves and loads properly
+async function saveWelcomeFull(){
+  var g=function(id){var el=document.getElementById(id);return el?el.value:null;};
+  var body={
+    welcomeMessage:g('welcomeMessage')||'',
+    goodbyeMessage:g('goodbyeMessage')||'',
+    welcomeGif:g('welcomeGif')?g('welcomeGif').trim()||null:null,
+    goodbyeGif:g('goodbyeGif')?g('goodbyeGif').trim()||null:null,
+    ticketGif:g('ticketGif')?g('ticketGif').trim()||null:null,
+    welcomeChannelId:g('welcomeChannelId')||null,
+    goodbyeChannelId:g('goodbyeChannelId')||null,
+    welcomeEnabled:document.getElementById('wlc-welcomeEnabled')?document.getElementById('wlc-welcomeEnabled').classList.contains('on'):true,
+    goodbyeEnabled:document.getElementById('wlc-goodbyeEnabled')?document.getElementById('wlc-goodbyeEnabled').classList.contains('on'):true
+  };
+  try {
+    await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    toast('welcome settings saved! gif will show on next join','green');
+  } catch(e){ toast('save failed: '+e.message,'red'); }
 }
 
 // AUTO REFRESH + BOOT
