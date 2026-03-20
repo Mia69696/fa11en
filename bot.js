@@ -34,6 +34,7 @@ const state = {
   autobanThreshold:3, prefix:'!', muteMinutes:10,
   badWordsList:['badword1','badword2'],
   xpData:{}, warnings:{}, infractions:[], infId:1, logs:[], tickets:{}, ticketCount:0, ticketPanelChannels:{},
+  ticketTitle:'Staff Support', ticketDescription:'Contact our staff team privately so we can assist you with whatever you need.', ticketPanelChannelId:null,
   reactionRoles:{}, // messageId -> { guildId, roles: { emoji -> roleId } }
   serverBackups:{}, // guildId -> [ { name, date, roles[], channels[] } ]
   // temp voice
@@ -55,7 +56,7 @@ const PERSIST_KEYS = [
   'welcomeChannelId','logChannelId','autobanThreshold','prefix','muteMinutes','badWordsList',
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId',
   'verifyMessageId','verifyEmoji','logChannels','tempVoiceEnabled','tempVoiceGuilds',
-  'xpData','warnings','infractions','infId','ticketCount','ticketPanelChannels',
+  'xpData','warnings','infractions','infId','ticketCount','ticketPanelChannels','ticketTitle','ticketDescription','ticketPanelChannelId',
   'reactionRoles','serverBackups','welcomeGif','goodbyeGif','ticketGif',
   'goodbyeChannelId','blockDuplicates','blockEmojiSpam','blockMentionSpam','emojiSpamLimit','mentionSpamLimit',
 ];
@@ -257,10 +258,12 @@ async function tvUpdatePanel(guild, channelId) {
 async function tvAutoSetup(guild) {
   if (!state.tempVoiceGuilds) state.tempVoiceGuilds = {};
   const cfg = state.tempVoiceGuilds[guild.id];
+
+  // 1. check saved channel ID still exists
   if (cfg?.creatorId) {
     const exists = guild.channels.cache.get(cfg.creatorId);
     if (exists) {
-      // resend welcome if control ch is empty
+      // already set up — resend welcome if control ch is empty
       if (cfg.controlChannelId) {
         const ctrl = guild.channels.cache.get(cfg.controlChannelId);
         if (ctrl) {
@@ -268,9 +271,29 @@ async function tvAutoSetup(guild) {
           if (msgs && msgs.size === 0) await tvSendWelcome(ctrl);
         }
       }
-      return;
+      return; // already exists, do nothing
     }
   }
+
+  // 2. even if state was wiped, search by channel name — don't create duplicates
+  const existingCreator = guild.channels.cache.find(ch => ch.name === '➕ Join to Create');
+  if (existingCreator) {
+    // channels exist but state was lost — restore state from existing channels
+    const existingCtrl = guild.channels.cache.find(ch => ch.name === '🎛️-vc-controls');
+    const existingCat  = existingCreator.parent;
+    state.tempVoiceGuilds[guild.id] = {
+      categoryId: existingCat?.id || null,
+      creatorId: existingCreator.id,
+      controlChannelId: existingCtrl?.id || null,
+    };
+    state.tempVoiceEnabled = true;
+    saveState();
+    console.log('✅ temp voice state restored for:', guild.name);
+    addLog('VOICE', 'temp voice state restored (channels already existed) in '+guild.name, 'blue');
+    return;
+  }
+
+  // 3. truly doesn't exist — create it
   try {
     const category = await guild.channels.create({ name:'🔊 Temp Voice', type:4 });
     const creator  = await guild.channels.create({ name:'➕ Join to Create', type:2, parent:category.id });
@@ -314,11 +337,26 @@ async function tvSendWelcome(ctrl) {
 async function ticketAutoSetup(guild) {
   try {
     if (!state.ticketPanelChannels) state.ticketPanelChannels = {};
+
+    // 1. check saved channel ID still exists
     const existingId = state.ticketPanelChannels[guild.id];
     if (existingId) {
       const existing = guild.channels.cache.get(existingId);
-      if (existing) return;
+      if (existing) return; // already set up, skip
     }
+
+    // 2. search by name — don't create duplicates even if state was wiped
+    const existingPanel = guild.channels.cache.find(ch => ch.name === '📋-create-ticket');
+    if (existingPanel) {
+      // restore state from existing channel
+      state.ticketPanelChannels[guild.id] = existingPanel.id;
+      saveState();
+      console.log('✅ ticket panel state restored for:', guild.name);
+      addLog('TICKET', 'ticket state restored (channel already existed) in '+guild.name, 'blue');
+      return;
+    }
+
+    // 3. truly doesn't exist — create it
     let category = guild.channels.cache.find(ch => ch.type === 4 && ch.name.toLowerCase().includes('ticket'));
     if (!category) category = await guild.channels.create({ name: '🎫 Tickets', type: 4 });
     const panelCh = await guild.channels.create({
