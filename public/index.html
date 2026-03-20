@@ -7,318 +7,521 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+/* ── FONTS ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── VARS ──────────────────────────────────────────── */
 :root{
-  --bg:#000000;--bg2:#0a0a0a;--bg3:#111111;--bg4:#181818;--bg5:#222222;
-  --card:#0d0d0d;--border:#1a1a1a;--border2:#222222;
-  --a:#ffffff;--a2:#eeeeee;--txt:#e0e0e0;--txt2:#666666;--txt3:#333333;
-  --green:#00e87a;--red:#ff3555;--yellow:#ffb700;--purple:#9b8cff;--cyan:#00d4ff;--blue:#4488ff;
-  --sb:230px;
+  --bg:#0a0b0f; --bg2:#0e0f14; --bg3:#13141a; --bg4:#1a1b22; --bg5:#1f2029;
+  --border:rgba(255,255,255,.06); --border2:rgba(255,255,255,.09);
+  --txt:#f0f0f5; --txt2:#8b8fa8; --txt3:#55566a;
+  --blue:#4f8ef7; --green:#00e87a; --red:#ff3555; --yellow:#ffb700;
+  --purple:#9b8cff; --cyan:#00d4ff; --pink:#ff73fa;
+  --accent:#4f8ef7;
+  --glow-blue:0 0 20px rgba(79,142,247,.25);
+  --glow-green:0 0 20px rgba(0,232,122,.25);
+  --glow-red:0 0 20px rgba(255,53,85,.25);
+  --glow-purple:0 0 20px rgba(155,140,255,.25);
 }
-body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--txt);display:flex;min-height:100vh;overflow-x:hidden;}
-::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
-/* SIDEBAR */
-.sb{width:var(--sb);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:20px 16px;border-bottom:1px solid var(--border);}
-.sb-av{width:32px;height:32px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative;overflow:hidden;}
-.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
-.sb-av .dot{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg2);}
-.sb-name{font-size:17px;font-weight:800;color:#fff;}
-.sb-id{font-size:10px;color:var(--txt3);margin-top:1px;}
-.sb-sec{padding:12px 8px 2px;}
-.sb-lbl{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;padding:0 8px 8px;}
-.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:var(--txt2);font-size:12px;font-weight:600;transition:all .12s;margin-bottom:1px;position:relative;user-select:none;}
-.ni:hover{background:var(--bg3);color:var(--txt);}
-.ni.active{background:var(--bg4);color:#fff;}
-.ni.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:2px;background:#fff;border-radius:2px;}
-.ni i{width:15px;text-align:center;font-size:11px;flex-shrink:0;}
-.nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;min-width:16px;text-align:center;}
-.sb-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border);}
-.sb-bc{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;}
-.fav{width:28px;height:28px;background:var(--bg4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
-.fav img{width:100%;height:100%;object-fit:cover;}
-.fnm{font-size:11px;font-weight:700;}
-.fst{font-size:10px;color:var(--green);display:flex;align-items:center;gap:3px;margin-top:1px;}
-.pd{width:4px;height:4px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* ── RESET ─────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Syne',sans-serif;font-size:13px;overflow:hidden;}
+.mono{font-family:'DM Mono',monospace;}
 
-/* MAIN */
-.main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.tb-l{display:flex;align-items:center;gap:8px;}
-.tb-crumb{font-size:11px;color:var(--txt3);}
-.tb-sep{color:var(--txt3);font-size:11px;}
-.tb-title{font-size:13px;font-weight:700;color:#fff;}
-.tb-r{display:flex;align-items:center;gap:8px;}
-.tb-btn{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt2);font-size:11px;transition:all .12s;}
-.tb-btn:hover{background:var(--bg4);color:var(--txt);}
-.ping-pill{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--green);}
+/* ── KEYFRAMES ─────────────────────────────────────── */
+@keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fi2{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideRight{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popIn{from{opacity:0;transform:scale(.88);}to{opacity:1;transform:scale(1);}}
+@keyframes glow{0%,100%{opacity:.6;}50%{opacity:1;}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
+@keyframes lb{0%,80%,100%{transform:scale(.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+@keyframes cardPop{from{opacity:0;transform:translateY(12px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes togOn{0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+@keyframes rowInRight{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
+@keyframes borderGlow{0%,100%{border-color:rgba(255,255,255,.09);}50%{border-color:rgba(79,142,247,.4);}}
+@keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+@keyframes logEntry{from{opacity:0;transform:translateX(-12px);filter:blur(2px);}to{opacity:1;transform:translateX(0);filter:blur(0);}}
+@keyframes detailReveal{from{opacity:0;max-height:0;}to{opacity:1;max-height:400px;}}
+@keyframes badgePop{0%{transform:scale(.6);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+@keyframes scanLine{0%{background-position:0 -100%;}100%{background-position:0 200%;}}
+@keyframes statCount{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cardHover{from{transform:translateY(0);}to{transform:translateY(-2px);}}
+@keyframes sidebarItem{from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:translateX(0);}}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px) scale(.995);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes ripple{0%{transform:scale(0);opacity:.6;}100%{transform:scale(2.5);opacity:0;}}
+@keyframes numberPop{0%{transform:scale(.8);opacity:0;}60%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+@keyframes borderPulse{0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,0);}50%{box-shadow:0 0 0 3px rgba(79,142,247,.15);}}
+@keyframes gradientMove{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+@keyframes floatUp{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
 
-/* PAGES */
-.page{display:none;padding:20px 24px;animation:fi .15s ease;}
-.page.active{display:block;}
-@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+/* ── LAYOUT ────────────────────────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden;}
 
-/* BANNER */
-.banner{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:20px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
-.banner-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:3px;}
-.banner-sub{font-size:11px;color:var(--txt2);}
+/* ── SIDEBAR ───────────────────────────────────────── */
+.sb{
+  width:200px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  height:100vh;overflow-y:auto;overflow-x:hidden;
+  position:relative;
+}
+.sb::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(79,142,247,.04) 0%,transparent 40%);
+  pointer-events:none;
+}
+.sb-head{
+  padding:18px 14px 12px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;
+  background:var(--bg2);
+  z-index:10;
+}
+.sb-av{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;
+  margin-bottom:10px;position:relative;overflow:hidden;
+  box-shadow:0 4px 14px rgba(79,142,247,.3);
+  transition:box-shadow .3s, transform .2s;
+}
+.sb-av:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(79,142,247,.45);}
+.sb-av img{width:100%;height:100%;object-fit:cover;}
+.sb-av .dot{
+  position:absolute;bottom:2px;right:2px;
+  width:8px;height:8px;background:var(--green);border-radius:50%;
+  border:2px solid var(--bg2);
+  animation:pulse 2s ease infinite;
+}
+.sb-name{font-size:12px;font-weight:800;color:var(--txt);letter-spacing:.3px;}
+.sb-id{font-size:9px;color:var(--txt3);margin-top:1px;font-family:'DM Mono',monospace;}
 
-/* STATS */
-.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s;}
-.sc:hover{border-color:var(--border2);}
-.sc-top{display:flex;align-items:center;justify-content:space-between;}
-.sc-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg3);}
-.sc-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;background:var(--bg3);color:var(--txt2);}
-.sc-val{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;}
-.sc-lbl{font-size:10px;color:var(--txt2);font-weight:600;}
-.sc-bar{height:1px;background:var(--border2);border-radius:2px;}
-.sc-fill{height:100%;border-radius:2px;background:#fff;opacity:.3;}
+.sb-section{font-size:9px;font-weight:700;color:var(--txt3);letter-spacing:1.2px;text-transform:uppercase;padding:14px 14px 5px;}
 
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px;}
-.ch{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.ct{font-size:12px;font-weight:700;color:#fff;}
-.cs{font-size:10px;color:var(--txt2);margin-top:2px;}
-.cb{padding:16px 18px;}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.g3{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
-.gstack{display:flex;flex-direction:column;gap:14px;}
+.ni{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;font-size:11px;font-weight:600;
+  color:var(--txt2);cursor:pointer;
+  border-left:2px solid transparent;
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+  animation:sidebarItem .3s ease both;
+}
+.ni::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(79,142,247,.06));
+  opacity:0;transition:opacity .2s;
+}
+.ni:hover{color:var(--txt);background:rgba(255,255,255,.04);border-left-color:rgba(79,142,247,.4);}
+.ni:hover::before{opacity:1;}
+.ni:hover i{transform:scale(1.15);}
+.ni.active{
+  color:var(--txt);
+  background:linear-gradient(90deg,rgba(79,142,247,.12),transparent);
+  border-left-color:var(--blue);
+  box-shadow:inset 0 0 20px rgba(79,142,247,.06);
+}
+.ni.active i{color:var(--blue);}
+.ni i{font-size:11px;width:14px;text-align:center;transition:transform .2s;}
 
-/* TOGGLE */
-.tog{width:34px;height:18px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;position:relative;cursor:pointer;transition:all .2s;flex-shrink:0;}
-.tog.on{background:#fff;border-color:#fff;}
-.tog::after{content:'';position:absolute;width:12px;height:12px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:left .2s;}
-.tog.on::after{left:18px;background:#000;}
+.sb-foot{
+  margin-top:auto;padding:12px 14px;
+  border-top:1px solid var(--border);
+  font-size:10px;color:var(--txt3);
+  display:flex;align-items:center;gap:7px;
+}
+.sb-foot img{width:16px;height:16px;border-radius:4px;}
+#footName{font-weight:700;color:var(--txt2);}
 
-/* MODULE ITEM */
-.mi{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;transition:background .1s;cursor:default;}
-.mi:hover{background:var(--bg3);}
-.mi-l{display:flex;align-items:center;gap:10px;}
-.mi-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--bg3);}
-.mi-name{font-size:12px;font-weight:700;}
-.mi-desc{font-size:10px;color:var(--txt2);margin-top:1px;}
+/* ── MAIN ──────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-/* TAGS */
-.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:700;}
-.t-white{background:rgba(255,255,255,.08);color:#fff;}
-.t-green{background:rgba(0,232,122,.1);color:var(--green);}
-.t-red{background:rgba(255,53,85,.1);color:var(--red);}
-.t-yellow{background:rgba(255,183,0,.1);color:var(--yellow);}
-.t-blue{background:rgba(68,136,255,.1);color:var(--blue);}
-.t-purple{background:rgba(155,140,255,.1);color:var(--purple);}
-.t-cyan{background:rgba(0,212,255,.1);color:var(--cyan);}
-.t-gray{background:rgba(100,100,100,.15);color:var(--txt2);}
+.top{
+  padding:12px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:rgba(10,11,15,.8);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:5;
+}
+#pageTitle{font-size:13px;font-weight:800;letter-spacing:.3px;}
+.top-r{display:flex;align-items:center;gap:8px;}
+.ping-pill{
+  font-family:'DM Mono',monospace;font-size:10px;
+  background:rgba(0,232,122,.08);border:1px solid rgba(0,232,122,.2);
+  color:var(--green);border-radius:6px;padding:3px 8px;
+  animation:pulse 3s ease infinite;
+}
+#statusTag{font-size:9px;padding:2px 7px;}
 
-/* TABLE */
-.tbl{width:100%;border-collapse:collapse;}
-.tbl th{text-align:left;font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;padding:0 12px 8px;border-bottom:1px solid var(--border);}
-.tbl td{padding:9px 12px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;}
-.tbl tr:last-child td{border-bottom:none;}
-.tbl tr:hover td{background:var(--bg3);}
-.mono{font-family:'DM Mono',monospace;color:var(--txt2);font-size:11px;}
+.content{flex:1;overflow-y:auto;padding:20px 22px;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-track{background:transparent;}
+.content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px;}
 
-/* BUTTONS */
-.btn{padding:7px 14px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .12s;display:inline-flex;align-items:center;gap:5px;}
-.btn-w{background:#fff;color:#000;}
-.btn-w:hover{background:var(--a2);}
-.btn-g{background:transparent;border:1px solid var(--border2);color:var(--txt2);}
-.btn-g:hover{background:var(--bg3);color:var(--txt);}
-.btn-r{background:rgba(255,53,85,.12);border:1px solid rgba(255,53,85,.2);color:var(--red);}
-.btn-r:hover{background:rgba(255,53,85,.2);}
-.btn-y{background:rgba(255,183,0,.1);border:1px solid rgba(255,183,0,.2);color:var(--yellow);}
-.btn-y:hover{background:rgba(255,183,0,.18);}
-.btn-gr{background:rgba(0,232,122,.1);border:1px solid rgba(0,232,122,.2);color:var(--green);}
-.btn-gr:hover{background:rgba(0,232,122,.18);}
+/* ── PAGES ─────────────────────────────────────────── */
+.page{display:none;}
+.page.active{display:block;animation:pageIn .22s ease both;}
 
-/* INPUTS */
-.inp{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 11px;color:var(--txt);font-size:11px;font-family:'Syne',sans-serif;outline:none;width:100%;transition:border .12s;}
-.inp:focus{border-color:rgba(255,255,255,.3);}
-.inp::placeholder{color:var(--txt3);}
+/* ── CARDS ─────────────────────────────────────────── */
+.card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:14px;overflow:hidden;
+  transition:border-color .2s, box-shadow .2s, transform .2s;
+  animation:cardPop .3s ease both;
+}
+.card:hover{
+  border-color:var(--border2);
+  box-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.ch{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.015);
+}
+.ct{font-size:11px;font-weight:800;letter-spacing:.3px;color:var(--txt);}
+.cs{font-size:9px;color:var(--txt3);margin-top:2px;}
+.cb{padding:14px 16px;}
+
+/* ── STAT CARDS ────────────────────────────────────── */
+.sc{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  padding:16px;position:relative;overflow:hidden;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  cursor:default;
+  animation:cardPop .35s ease both;
+}
+.sc::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);
+  pointer-events:none;
+}
+.sc::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+}
+.sc:hover{
+  transform:translateY(-3px) scale(1.01);
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  border-color:var(--border2);
+}
+.sc:nth-child(1){animation-delay:.05s;}
+.sc:nth-child(2){animation-delay:.1s;}
+.sc:nth-child(3){animation-delay:.15s;}
+.sc:nth-child(4){animation-delay:.2s;}
+.sv{font-size:26px;font-weight:800;color:#fff;transition:all .3s;animation:numberPop .4s ease both;}
+.sb2{font-size:9px;color:var(--txt3);margin-top:3px;text-transform:uppercase;letter-spacing:.6px;}
+.si{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:22px;opacity:.12;transition:opacity .2s;}
+.sc:hover .si{opacity:.22;}
+.sc:hover .sv{transform:scale(1.05);}
+.updated{animation:numberPop .4s cubic-bezier(.34,1.56,.64,1);}
+
+/* ── INPUTS ────────────────────────────────────────── */
+.inp{
+  width:100%;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:7px;padding:8px 11px;color:var(--txt);font-size:11px;
+  font-family:'Syne',sans-serif;outline:none;transition:all .2s;
+}
+.inp:focus{
+  border-color:rgba(79,142,247,.5);
+  box-shadow:0 0 0 3px rgba(79,142,247,.1);
+  background:var(--bg5);
+}
+.inp:hover:not(:focus){border-color:rgba(255,255,255,.12);}
 select.inp{cursor:pointer;}
 textarea.inp{resize:vertical;min-height:72px;}
-.fl{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:4px;display:block;}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fl{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:4px;display:block;letter-spacing:.3px;}
 
-/* STATUS ROW */
+/* ── TAGS ──────────────────────────────────────────── */
+.tag{
+  display:inline-flex;align-items:center;
+  font-size:9px;font-weight:700;letter-spacing:.5px;
+  padding:2px 7px;border-radius:5px;text-transform:uppercase;
+  transition:all .15s;
+}
+.t-green{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.2);}
+.t-red{background:rgba(255,53,85,.1);color:var(--red);border:1px solid rgba(255,53,85,.2);}
+.t-blue{background:rgba(79,142,247,.1);color:var(--blue);border:1px solid rgba(79,142,247,.2);}
+.t-yellow{background:rgba(255,183,0,.1);color:var(--yellow);border:1px solid rgba(255,183,0,.2);}
+.t-purple{background:rgba(155,140,255,.1);color:var(--purple);border:1px solid rgba(155,140,255,.2);}
+.t-cyan{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.2);}
+.t-gray{background:rgba(255,255,255,.06);color:var(--txt2);border:1px solid rgba(255,255,255,.08);}
+.t-white{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12);}
+.t-pink{background:rgba(255,115,250,.1);color:var(--pink);border:1px solid rgba(255,115,250,.2);}
+
+/* ── TOGGLES ───────────────────────────────────────── */
+.tog{
+  width:36px;height:20px;border-radius:10px;background:var(--bg5);
+  border:1px solid var(--border2);cursor:pointer;position:relative;
+  transition:background .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;flex-shrink:0;
+}
+.tog::after{
+  content:'';position:absolute;width:13px;height:13px;
+  background:#fff;border-radius:50%;top:3px;left:3px;
+  transition:left .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.tog.on{background:var(--blue);border-color:var(--blue);box-shadow:0 0 12px rgba(79,142,247,.4);animation:togOn .25s cubic-bezier(.34,1.56,.64,1);}
+.tog.on::after{left:19px;box-shadow:0 2px 8px rgba(79,142,247,.5);}
+
+/* ── BUTTONS ───────────────────────────────────────── */
+.btn{
+  border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:'Syne',sans-serif;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .15s;}
+.btn:hover::after{background:rgba(255,255,255,.06);}
+.btn:active{transform:scale(.93);}
+.btn-w{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.1);}
+.btn-w:hover{background:rgba(255,255,255,.13);transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.1);}
+.btn-g{background:rgba(0,232,122,.08);color:var(--green);border:1px solid rgba(0,232,122,.2);}
+.btn-g:hover{background:rgba(0,232,122,.15);transform:translateY(-1px);box-shadow:var(--glow-green);}
+.btn-r{background:rgba(255,53,85,.08);color:var(--red);border:1px solid rgba(255,53,85,.2);}
+.btn-r:hover{background:rgba(255,53,85,.15);transform:translateY(-1px);box-shadow:var(--glow-red);}
+.btn-b{background:rgba(79,142,247,.1);color:var(--blue);border:1px solid rgba(79,142,247,.25);}
+.btn-b:hover{background:rgba(79,142,247,.18);transform:translateY(-1px);box-shadow:var(--glow-blue);}
+.btn-y{background:rgba(255,183,0,.08);color:var(--yellow);border:1px solid rgba(255,183,0,.2);}
+.btn-y:hover{background:rgba(255,183,0,.15);transform:translateY(-1px);}
+.btn-gr{background:rgba(155,140,255,.08);color:var(--purple);border:1px solid rgba(155,140,255,.2);}
+.btn-gr:hover{background:rgba(155,140,255,.15);transform:translateY(-1px);box-shadow:var(--glow-purple);}
+
+/* ── BANNER ────────────────────────────────────────── */
+.bn{
+  background:linear-gradient(135deg,#0e1420 0%,#0f0e1f 50%,#100e1a 100%);
+  border:1px solid var(--border);border-radius:12px;
+  padding:20px 22px;margin-bottom:14px;
+  position:relative;overflow:hidden;
+  animation:fi .3s ease both;
+}
+.bn::before{
+  content:'';position:absolute;top:-40%;right:-10%;
+  width:300px;height:300px;
+  background:radial-gradient(circle,rgba(79,142,247,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.bn::after{
+  content:'';position:absolute;bottom:-30%;left:20%;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(155,140,255,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.banner-title{
+  font-size:22px;font-weight:800;letter-spacing:-.3px;
+  background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#ccc 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 5s linear infinite;
+}
+.bn-sub{font-size:10px;color:var(--txt3);margin-top:4px;font-family:'DM Mono',monospace;}
+.bn-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+/* ── STATUS ROW ────────────────────────────────────── */
 .sr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
 .sr:last-child{border-bottom:none;padding-bottom:0;}
 .sr-l{font-size:10px;color:var(--txt2);font-weight:600;width:110px;flex-shrink:0;}
 .sr-v{font-size:11px;font-weight:700;}
 
-/* LOGS */
-.lgi{display:flex;gap:10px;padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:11px;}
+/* ── LOGS ──────────────────────────────────────────── */
+@keyframes logEntry{from{opacity:0;transform:translateX(-12px);filter:blur(2px);}to{opacity:1;transform:translateX(0);filter:blur(0);}}
+@keyframes detailReveal{from{opacity:0;max-height:0;}to{opacity:1;max-height:500px;}}
+@keyframes badgePop{0%{transform:scale(.6);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+@keyframes scanLine{0%{background-position:0 -100%;}100%{background-position:0 200%;}}
+
+.lgi{
+  display:flex;gap:0;padding:0;
+  border-bottom:1px solid rgba(255,255,255,.025);
+  font-size:11px;position:relative;
+  transition:background .15s;overflow:hidden;
+}
 .lgi:last-child{border-bottom:none;}
-.lgt{font-family:'DM Mono',monospace;font-size:9px;color:var(--txt3);width:60px;flex-shrink:0;margin-top:1px;}
-.lgk{width:62px;flex-shrink:0;}
+.lgi:hover{background:rgba(255,255,255,.022);}
+.lgi-bar{width:3px;flex-shrink:0;background:var(--log-color,var(--txt3));opacity:.5;transition:opacity .15s;}
+.lgi:hover .lgi-bar{opacity:1;}
+.lgi-inner{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;flex:1;}
+.lgt{font-family:'DM Mono',monospace;font-size:9px;color:var(--txt3);width:52px;flex-shrink:0;margin-top:2px;}
+.lgk{width:58px;flex-shrink:0;}
+.lgk .tag{animation:badgePop .25s cubic-bezier(.34,1.56,.64,1) both;font-size:9px;}
 .lgm{color:var(--txt2);flex:1;line-height:1.5;}
 .lgm b{color:var(--txt);}
+.lgi-detail{animation:detailReveal .2s ease both;overflow:hidden;}
+.lgi-more{
+  background:var(--bg4);border:1px solid var(--border2);border-radius:4px;
+  padding:2px 8px;font-size:9px;color:var(--txt2);cursor:pointer;
+  transition:all .15s;flex-shrink:0;font-family:'Syne',sans-serif;font-weight:600;
+}
+.lgi-more:hover{background:var(--bg5);color:var(--txt);transform:scale(1.05);}
+.lgi[data-type="DELETE"] .lgi-bar{background:#ff3555;}
+.lgi[data-type="EDIT"]   .lgi-bar{background:#ffb700;}
+.lgi[data-type="JOIN"]   .lgi-bar{background:#00e87a;}
+.lgi[data-type="LEAVE"]  .lgi-bar{background:#ff8800;}
+.lgi[data-type="MOD"]    .lgi-bar{background:#ff3555;}
+.lgi[data-type="AUTOMOD"].lgi-bar{background:#ff8800;}
+.lgi[data-type="VOICE"]  .lgi-bar{background:#00d4ff;}
+.lgi[data-type="ROLE"]   .lgi-bar{background:#9b8cff;}
+.lgi[data-type="SECURITY"].lgi-bar{background:#ff0044;}
+.lgi[data-type="TICKET"] .lgi-bar{background:#5865f2;}
+.lgi[data-type="VERIFY"] .lgi-bar{background:#00e87a;}
+.lgi[data-type="LEVEL"]  .lgi-bar{background:#ffb700;}
+.lgi[data-type="BOOST"]  .lgi-bar{background:#ff73fa;}
+.log-live{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--green);font-weight:700;}
+.log-live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:liveDot 1.4s ease infinite;}
+@keyframes liveDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
 
-/* CHART */
+/* ── CHART ─────────────────────────────────────────── */
 .bars{display:flex;align-items:flex-end;gap:3px;height:44px;}
-.bar{flex:1;border-radius:2px 2px 0 0;background:#fff;opacity:.15;transition:opacity .12s;min-height:3px;}
-.bar:hover{opacity:.4;}
+.bar{flex:1;border-radius:2px 2px 0 0;background:#fff;opacity:.15;transition:all .3s cubic-bezier(.34,1.56,.64,1);min-height:3px;}
+.bar:hover{opacity:.5;transform:scaleY(1.05);transform-origin:bottom;}
 .barlbls{display:flex;gap:3px;margin-top:3px;}
 .barlbl{flex:1;font-size:8px;color:var(--txt3);text-align:center;}
 
-/* SERVER / MEMBER ROWS */
-.svr{display:flex;align-items:center;gap:11px;padding:11px 18px;transition:background .1s;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.03);}
+/* ── SERVER / MEMBER ROWS ──────────────────────────── */
+.svr{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 18px;
+  transition:background .15s, transform .15s;
+  border-bottom:1px solid rgba(255,255,255,.03);
+  animation:rowIn .25s ease both;
+  position:relative;overflow:hidden;
+}
+.svr::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  background:linear-gradient(90deg,rgba(79,142,247,.1),transparent);
+  transition:width .2s;
+}
+.svr:hover::before{width:100%;}
 .svr:last-child{border-bottom:none;}
-.svr:hover{background:var(--bg3);}
-.svr-ico{width:36px;height:36px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
+.svr:hover{background:rgba(255,255,255,.022);}
+.svr-ico{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--bg4),var(--bg5));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;transition:transform .2s;}
+.svr:hover .svr-ico{transform:scale(1.08);}
 .svr-ico img{width:100%;height:100%;object-fit:cover;}
-.mrow{display:flex;align-items:center;gap:10px;padding:8px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;}
+.mrow{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 18px;border-bottom:1px solid rgba(255,255,255,.03);
+  transition:background .12s;
+  animation:rowIn .2s ease both;
+}
 .mrow:last-child{border-bottom:none;}
-.mrow:hover{background:var(--bg3);}
+.mrow:hover{background:rgba(255,255,255,.022);}
 .mav{width:26px;height:26px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;}
 .mav img{width:100%;height:100%;object-fit:cover;}
 
-/* LOADER */
+/* ── LOADER ────────────────────────────────────────── */
 .ld{display:flex;align-items:center;justify-content:center;padding:26px;gap:5px;}
 .ld span{width:5px;height:5px;background:var(--txt3);border-radius:50%;animation:lb 1.2s infinite;}
 .ld span:nth-child(2){animation-delay:.2s;}
 .ld span:nth-child(3){animation-delay:.4s;}
-@keyframes lb{0%,80%,100%{transform:scale(.5);opacity:.3;}40%{transform:scale(1);opacity:1;}}
-.empty{padding:24px;text-align:center;color:var(--txt3);font-size:11px;}
+.empty{padding:28px;text-align:center;color:var(--txt3);font-size:11px;animation:fi .3s ease;}
 
-/* SH */
-.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-.sh h2{font-size:15px;font-weight:800;color:#fff;}
+/* ── SH (page header) ──────────────────────────────── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;animation:slideLeft .25s ease both;}
+.sh h2{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.2px;}
 .sh p{font-size:10px;color:var(--txt2);margin-top:2px;}
-.scrollarea{max-height:400px;overflow-y:auto;}
+.scrollarea{max-height:400px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
 
-/* TOAST */
-.toast{position:fixed;bottom:18px;right:18px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:11px 15px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.8);transform:translateY(80px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:300px;}
-.toast.show{transform:translateY(0);opacity:1;}
+/* ── TABLE ─────────────────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.tbl th{padding:9px 14px;text-align:left;font-size:9px;font-weight:700;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--txt2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr{animation:rowIn .22s ease both;transition:background .1s;}
+.tbl tbody tr:hover{background:rgba(255,255,255,.025);}
+.tbl tbody tr:nth-child(1){animation-delay:.02s;}
+.tbl tbody tr:nth-child(2){animation-delay:.04s;}
+.tbl tbody tr:nth-child(3){animation-delay:.06s;}
+.tbl tbody tr:nth-child(4){animation-delay:.08s;}
+.tbl tbody tr:nth-child(5){animation-delay:.10s;}
+.tbl tbody tr:nth-child(6){animation-delay:.12s;}
+.tbl tbody tr:nth-child(7){animation-delay:.14s;}
+.tbl tbody tr:nth-child(8){animation-delay:.16s;}
 
-/* MODAL */
-.mbg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;}
-.mbg.open{display:flex;}
-.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:22px;width:400px;max-width:92vw;}
+/* ── TOAST ─────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:18px;right:18px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:10px;
+  padding:12px 16px;font-size:11px;font-weight:600;
+  display:flex;align-items:center;gap:9px;z-index:9999;
+  box-shadow:0 8px 40px rgba(0,0,0,.7);
+  transform:translateY(90px) scale(.9);opacity:0;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:320px;
+}
+.toast.show{transform:translateY(0) scale(1);opacity:1;}
+
+/* ── MODAL ─────────────────────────────────────────── */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.mbg.open{display:flex;animation:fi .15s ease;}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:13px;padding:22px;width:420px;max-width:92vw;animation:popIn .2s cubic-bezier(.34,1.56,.64,1) both;}
 .modal-t{font-size:14px;font-weight:800;color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-.modal-t span{cursor:pointer;color:var(--txt2);font-size:12px;}
-.modal-t span:hover{color:var(--txt);}
-.modal-b{font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.6;}
+.modal-t span{cursor:pointer;color:var(--txt2);font-size:12px;padding:2px 6px;border-radius:5px;transition:all .15s;}
+.modal-t span:hover{background:rgba(255,255,255,.06);color:var(--txt);}
+.modal-b{font-size:12px;color:var(--txt2);margin-bottom:18px;line-height:1.7;}
 .modal-b b{color:var(--txt);}
 
-/* ── ANIMATIONS ─────────────────────────────────────── */
-
-/* page fade in */
-@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.page.active{animation:fi .2s ease;}
-
-/* stat cards pop in staggered */
-@keyframes cardPop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
-.sc{animation:cardPop .35s ease both;}
-.sc:nth-child(1){animation-delay:.05s;}
-.sc:nth-child(2){animation-delay:.1s;}
-.sc:nth-child(3){animation-delay:.15s;}
-.sc:nth-child(4){animation-delay:.2s;}
-
-/* sidebar nav items slide in */
-@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
-.ni{animation:slideIn .25s ease both;}
-.ni:nth-child(1){animation-delay:.03s;}.ni:nth-child(2){animation-delay:.06s;}
-.ni:nth-child(3){animation-delay:.09s;}.ni:nth-child(4){animation-delay:.12s;}
-.ni:nth-child(5){animation-delay:.15s;}.ni:nth-child(6){animation-delay:.18s;}
-
-/* card reveal */
-@keyframes cardReveal{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.card{animation:cardReveal .3s ease both;}
-
-/* banner shimmer */
-@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
-.banner-title{
-  background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#aaa 100%);
-  background-size:200% auto;
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  animation:shimmer 4s linear infinite;
+/* ── MODULE ITEM ───────────────────────────────────── */
+.mi{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);
+  animation:rowIn .2s ease both;
+  transition:background .15s;
+  border-radius:6px;padding-left:6px;padding-right:6px;
+  margin:0 -6px;
 }
+.mi:last-child{border-bottom:none;}
+.mi:hover{background:rgba(255,255,255,.025);}
+.mi-l{display:flex;align-items:center;gap:10px;}
+.mi-ico{width:30px;height:30px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:transform .2s;}
+.mi:hover .mi-ico{transform:scale(1.1);}
+.mi-name{font-size:11px;font-weight:700;color:var(--txt);}
+.mi-desc{font-size:9px;color:var(--txt3);margin-top:1px;}
 
-/* toggle bounce */
-.tog{transition:background .2s cubic-bezier(.34,1.56,.64,1);}
-.tog::after{transition:left .25s cubic-bezier(.34,1.56,.64,1);}
-.tog.on{animation:togOn .25s cubic-bezier(.34,1.56,.64,1);}
-@keyframes togOn{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+/* ── BACKUP CARDS ──────────────────────────────────── */
+.backup-card{
+  background:var(--bg4);border:1px solid var(--border2);border-radius:10px;
+  padding:14px;margin-bottom:10px;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  animation:cardPop .3s ease both;
+  position:relative;overflow:hidden;
+}
+.backup-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--blue),var(--purple));
+}
+.backup-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 24px rgba(0,0,0,.4),0 0 0 1px rgba(79,142,247,.1);
+  border-color:rgba(79,142,247,.2);
+}
+.backup-name{font-size:12px;font-weight:800;color:var(--txt);margin-bottom:4px;}
+.backup-meta{font-size:10px;color:var(--txt3);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.backup-meta span{display:flex;align-items:center;gap:4px;}
+.backup-actions{display:flex;gap:8px;}
 
-/* button press */
-.btn{transition:all .15s cubic-bezier(.34,1.56,.64,1);}
-.btn:active{transform:scale(.94);}
-.btn-w:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.1);}
+/* ── REACTION ROLE ROWS ────────────────────────────── */
+.rr-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03);
+  animation:rowIn .2s ease both;transition:background .15s;
+  position:relative;
+}
+.rr-item:last-child{border-bottom:none;}
+.rr-item:hover{background:rgba(255,255,255,.022);}
+.rr-emoji{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
 
-/* log items slide in */
-@keyframes logSlide{from{opacity:0;transform:translateX(-6px);}to{opacity:1;transform:translateX(0);}}
-.lgi{animation:logSlide .2s ease both;}
-
-/* table rows fade */
-@keyframes rowFade{from{opacity:0;}to{opacity:1;}}
-.tbl tbody tr{animation:rowFade .25s ease both;}
-.tbl tbody tr:nth-child(1){animation-delay:.03s;}
-.tbl tbody tr:nth-child(2){animation-delay:.06s;}
-.tbl tbody tr:nth-child(3){animation-delay:.09s;}
-.tbl tbody tr:nth-child(4){animation-delay:.12s;}
-.tbl tbody tr:nth-child(5){animation-delay:.15s;}
-.tbl tbody tr:nth-child(6){animation-delay:.18s;}
-.tbl tbody tr:nth-child(7){animation-delay:.21s;}
-.tbl tbody tr:nth-child(8){animation-delay:.24s;}
-
-/* ping pill pulse */
-@keyframes pingPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
-.ping-pill{animation:pingPulse 2.5s ease infinite;}
-
-/* stat value count up flash */
-@keyframes valFlash{0%{color:#fff;}50%{color:var(--green);}100%{color:#fff;}}
-.sc-val.updated{animation:valFlash .6s ease;}
-
-/* server/member rows slide in */
-.svr{animation:slideIn .2s ease both;}
-.mrow{animation:slideIn .2s ease both;}
-
-/* active nav item glow pulse */
-@keyframes navGlow{0%,100%{box-shadow:none;}50%{box-shadow:inset 2px 0 8px rgba(255,255,255,.05);}}
-.ni.active{animation:navGlow 3s ease infinite;}
-
-/* modal pop */
-@keyframes modalPop{from{opacity:0;transform:scale(.95) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
-.mbg.open .modal{animation:modalPop .2s cubic-bezier(.34,1.56,.64,1);}
-
-/* toast slide */
-@keyframes toastIn{from{transform:translateY(80px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.toast.show{animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);}
-
-/* banner entrance */
-@keyframes bannerIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
-.banner{animation:bannerIn .4s ease;}
-
-/* sidebar footer bounce in */
-@keyframes footerIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.sb-foot{animation:footerIn .5s ease .3s both;}
-
-/* online dot breathe */
-@keyframes breathe{0%,100%{box-shadow:0 0 4px var(--green);}50%{box-shadow:0 0 10px var(--green),0 0 20px rgba(0,232,122,.3);}}
-.dot,.pd{animation:breathe 2s ease infinite;}
-
-/* stat bar fill animation */
-@keyframes barFill{from{width:0!important;}to{}}
-.sc-fill{animation:barFill .8s cubic-bezier(.4,0,.2,1) .3s both;}
-
-/* card hover lift */
-.card{transition:border-color .15s,transform .15s,box-shadow .15s;}
-.card:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
-
-/* module item hover */
-.mi{transition:background .12s,padding-left .12s;}
-.mi:hover{padding-left:22px;}
-
-/* topbar slide down */
-@keyframes topbarIn{from{transform:translateY(-100%);}to{transform:translateY(0);}}
-.topbar{animation:topbarIn .3s ease;}
-
-/* number count-up effect via JS hook */
-.counting{transition:all .3s ease;}
-
+/* ── MISC ──────────────────────────────────────────── */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.ping-pill{animation:pulse 3s ease infinite;}
+.banner-title{background:linear-gradient(90deg,#fff 0%,#aaa 40%,#fff 60%,#ccc 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;}
+.counting{animation:numberPop .4s cubic-bezier(.34,1.56,.64,1);}
 </style>
 </head>
 <body>
@@ -358,6 +561,9 @@ textarea.inp{resize:vertical;min-height:72px;}
     <div class="ni" data-page="settings"><i class="fas fa-sliders"></i> Settings</div>
     <div class="ni" data-page="reactionroles"><i class="fas fa-face-smile"></i> Reaction Roles</div>
     <div class="ni" data-page="backup"><i class="fas fa-database"></i> Server Backup</div>
+    <div class="ni" data-page="security"><i class="fas fa-lock"></i> Security</div>
+    <div class="ni" data-page="modplus"><i class="fas fa-gavel"></i> Mod++</div>
+    <div class="ni" data-page="advlogs"><i class="fas fa-list-check"></i> Adv. Logs</div>
   </div>
   <div class="sb-foot">
     <div class="sb-bc">
@@ -539,10 +745,36 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ LOGS ══ -->
   <div class="page" id="page-logs">
-    <div class="sh"><div><h2>logs</h2><p>full audit trail — every deleted message, edit, join, command</p></div>
-      <div style="display:flex;gap:8px">
+    <div class="sh">
+      <div>
+        <h2>logs</h2>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:3px">
+          <p>full audit trail — every action, delete, join, mod action</p>
+          <div class="log-live"><div class="log-live-dot"></div>live</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-g" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> refresh</button>
         <button class="btn btn-r" onclick="clearLogs()"><i class="fas fa-trash"></i> clear all</button>
+      </div>
+    </div>
+    <!-- stats bar -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #ff3555">
+        <div style="font-size:18px;font-weight:800;color:#ff3555" id="logStat-del">0</div>
+        <div style="font-size:9px;color:var(--txt3);margin-top:2px">DELETED</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #ffb700">
+        <div style="font-size:18px;font-weight:800;color:#ffb700" id="logStat-mod">0</div>
+        <div style="font-size:9px;color:var(--txt3);margin-top:2px">MOD ACTIONS</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #00e87a">
+        <div style="font-size:18px;font-weight:800;color:#00e87a" id="logStat-join">0</div>
+        <div style="font-size:9px;color:var(--txt3);margin-top:2px">JOINS</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;border-left:3px solid #9b8cff">
+        <div style="font-size:18px;font-weight:800;color:#9b8cff" id="logStat-total">0</div>
+        <div style="font-size:9px;color:var(--txt3);margin-top:2px">TOTAL</div>
       </div>
     </div>
 
@@ -699,22 +931,27 @@ textarea.inp{resize:vertical;min-height:72px;}
     <div class="card">
       <div class="ch">
         <div><div class="ct">live logs</div><span class="tag t-gray" id="logCount">0 entries</span></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select class="inp" id="logFilter" style="width:140px" onchange="filterLogs()">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select class="inp" id="logFilter" style="width:150px" onchange="filterLogs()">
             <option value="">all types</option>
-            <option value="DELETE">🗑️ deleted</option>
-            <option value="EDIT">✏️ edited</option>
-            <option value="JOIN">👋 joins</option>
-            <option value="LEAVE">📤 leaves</option>
-            <option value="MOD">🔨 mod</option>
-            <option value="AUTOMOD">🛡️ automod</option>
-            <option value="CMD">⌨️ commands</option>
-            <option value="VOICE">🎙️ voice</option>
-            <option value="ROLE">🏷️ roles</option>
-            <option value="FILE">📎 files</option>
-            <option value="VERIFY">✅ verify</option>
-            <option value="LEVEL">⭐ levels</option>
+            <option value="DELETE">deleted msgs</option>
+            <option value="EDIT">edited msgs</option>
+            <option value="JOIN">joins</option>
+            <option value="LEAVE">leaves</option>
+            <option value="MOD">mod actions</option>
+            <option value="AUTOMOD">automod</option>
+            <option value="CMD">commands</option>
+            <option value="VOICE">voice</option>
+            <option value="ROLE">roles</option>
+            <option value="FILE">files</option>
+            <option value="VERIFY">verify</option>
+            <option value="LEVEL">levels</option>
+            <option value="SECURITY">security</option>
+            <option value="TICKET">tickets</option>
+            <option value="BOOST">boosts</option>
           </select>
+          <input class="inp" id="logSearch" placeholder="search logs..." style="width:160px" oninput="filterLogs()">
+          <span class="tag t-gray" id="logCount">0 entries</span>
         </div>
       </div>
       <div id="logsList" style="max-height:600px;overflow-y:auto"><div class="ld"><span></span><span></span><span></span></div></div>
@@ -782,45 +1019,97 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ WELCOME ══ -->
   <div class="page" id="page-welcome">
-    <div class="sh"><div><h2>welcome & goodbye</h2><p>separate channels, custom GIFs, saving applies instantly</p></div><button class="btn btn-w" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save all</button></div>
+    <div class="sh"><div><h2>welcome & goodbye</h2><p>custom card with pfp on background — fully customisable</p></div><button class="btn btn-w" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save all</button></div>
+
+    <!-- how it works banner -->
+    <div style="background:linear-gradient(135deg,#1a1f2e,#0d1117);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:center">
+      <div style="font-size:28px">🎨</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:3px">custom welcome card</div>
+        <div style="font-size:11px;color:var(--txt2);line-height:1.5">bot generates a card with the <b style="color:var(--txt)">user&apos;s pfp in a circle</b> over your background gif. text + circle color are fully customisable.</div>
+      </div>
+    </div>
+
     <div class="g2">
+      <!-- WELCOME -->
       <div class="card">
-        <div class="ch"><div class="ct">welcome settings</div><div class="tog" id="wlc-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
+        <div class="ch"><div class="ct">welcome card</div><div class="tog" id="wlc-welcomeEnabled" data-key="welcomeEnabled" onclick="toggle(this)"></div></div>
         <div class="cb">
-          <label class="fl">Welcome Channel</label>
+          <label class="fl">Server &amp; Channel</label>
           <select class="inp" id="welcomeGuildPicker" style="margin-bottom:6px" onchange="loadWelcomeChannels()"></select>
           <select class="inp" id="welcomeChannelId" style="margin-bottom:10px"><option value="">system channel</option></select>
-          <label class="fl">Welcome Message</label>
+          <label class="fl">Welcome Message <span style="color:var(--txt2)">({user} {count} {server})</span></label>
           <textarea class="inp" id="welcomeMessage" placeholder="welcome {user}! you are member #{count}" style="margin-bottom:10px"></textarea>
-          <label class="fl">Welcome GIF URL <span style="color:var(--txt2)">(paste any gif link)</span></label>
+          <label class="fl">Background Image/GIF URL <span style="color:var(--txt2)">(shown behind the pfp)</span></label>
           <input class="inp" id="welcomeGif" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
-          <div style="font-size:10px;color:var(--txt3);margin-bottom:10px">tip: right click any gif → copy image address</div>
-          <div id="welcomeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="welcomeGifImg" style="width:100%;max-height:120px;object-fit:cover"></div>
-          <button class="btn btn-g" style="width:100%;margin-bottom:0" onclick="previewGif('welcomeGif','welcomeGifPreview','welcomeGifImg')"><i class="fas fa-eye"></i> preview gif</button>
+          <div id="welcomeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="welcomeGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:12px" onclick="previewGif('welcomeGif','welcomeGifPreview','welcomeGifImg')"><i class="fas fa-eye"></i> preview background</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label class="fl">Main card text</label>
+              <input class="inp" id="welcomeCardText" placeholder="{username} is now a member >_<">
+            </div>
+            <div>
+              <label class="fl">Sub text</label>
+              <input class="inp" id="welcomeCardSub" placeholder="member #{count}">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label class="fl">Circle border color</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="color" id="welcomeCardCircleColor" value="#ffffff" style="width:40px;height:32px;border:none;background:none;cursor:pointer;padding:0">
+                <input class="inp" id="welcomeCardCircleColorHex" placeholder="#ffffff" style="flex:1" oninput="document.getElementById('welcomeCardCircleColor').value=this.value">
+              </div>
+            </div>
+            <div>
+              <label class="fl">Overlay darkness (0-1)</label>
+              <input class="inp" id="welcomeCardOverlay" type="number" min="0" max="1" step="0.05" value="0.45" placeholder="0.45">
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- GOODBYE -->
       <div class="card">
-        <div class="ch"><div class="ct">goodbye settings</div><div class="tog" id="wlc-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div></div>
+        <div class="ch"><div class="ct">goodbye card</div><div class="tog" id="wlc-goodbyeEnabled" data-key="goodbyeEnabled" onclick="toggle(this)"></div></div>
         <div class="cb">
-          <label class="fl">Goodbye Channel <span style="color:var(--txt2)">(can be different from welcome)</span></label>
+          <label class="fl">Goodbye Channel <span style="color:var(--txt2)">(can be different)</span></label>
           <select class="inp" id="goodbyeChannelId" style="margin-bottom:10px"><option value="">same as welcome</option></select>
           <label class="fl">Goodbye Message</label>
           <textarea class="inp" id="goodbyeMessage" placeholder="{user} has left the server." style="margin-bottom:10px"></textarea>
-          <label class="fl">Goodbye GIF URL</label>
+          <label class="fl">Background Image/GIF URL</label>
           <input class="inp" id="goodbyeGif" placeholder="https://media.giphy.com/..." style="margin-bottom:4px">
-          <div id="goodbyeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="goodbyeGifImg" style="width:100%;max-height:120px;object-fit:cover"></div>
-          <button class="btn btn-g" style="width:100%;margin-bottom:0" onclick="previewGif('goodbyeGif','goodbyeGifPreview','goodbyeGifImg')"><i class="fas fa-eye"></i> preview gif</button>
+          <div id="goodbyeGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="goodbyeGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
+          <button class="btn btn-g" style="width:100%;margin-bottom:12px" onclick="previewGif('goodbyeGif','goodbyeGifPreview','goodbyeGifImg')"><i class="fas fa-eye"></i> preview background</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label class="fl">Main card text</label>
+              <input class="inp" id="goodbyeCardText" placeholder="{username} has left >_<">
+            </div>
+            <div>
+              <label class="fl">Sub text</label>
+              <input class="inp" id="goodbyeCardSub" placeholder="members remaining: {count}">
+            </div>
+          </div>
+          <div>
+            <label class="fl">Circle border color</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="color" id="goodbyeCardCircleColor" value="#ff3555" style="width:40px;height:32px;border:none;background:none;cursor:pointer;padding:0">
+              <input class="inp" id="goodbyeCardCircleColorHex" placeholder="#ff3555" style="flex:1" oninput="document.getElementById('goodbyeCardCircleColor').value=this.value">
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="card" style="max-width:480px">
+    <div class="card" style="max-width:480px;margin-top:0">
       <div class="ch"><div class="ct">ticket gif</div></div>
       <div class="cb">
         <label class="fl">Ticket Panel GIF URL</label>
         <input class="inp" id="ticketGif" placeholder="https://..." style="margin-bottom:4px">
         <div id="ticketGifPreview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden"><img id="ticketGifImg" style="width:100%;max-height:100px;object-fit:cover"></div>
         <button class="btn btn-g" style="width:100%;margin-bottom:10px" onclick="previewGif('ticketGif','ticketGifPreview','ticketGifImg')"><i class="fas fa-eye"></i> preview</button>
-        <button class="btn btn-w" style="width:100%" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save ticket gif</button>
+        <button class="btn btn-w" style="width:100%" onclick="saveWelcomeFull()"><i class="fas fa-check"></i> save all settings</button>
       </div>
     </div>
   </div>
@@ -1065,23 +1354,224 @@ textarea.inp{resize:vertical;min-height:72px;}
 
   <!-- ══ SERVER BACKUP ══ -->
   <div class="page" id="page-backup">
-    <div class="sh"><div><h2>server backup</h2><p>save your server roles and channels — restore anywhere</p></div></div>
+    <div class="sh"><div><h2>server backup</h2><p>save roles &amp; channels — load into any server you want</p></div>
+      <button class="btn btn-g" onclick="loadAllBackups()"><i class="fas fa-sync-alt"></i> refresh all</button>
+    </div>
     <div class="g2">
       <div class="card">
-        <div class="ch"><div class="ct">create backup</div><span class="tag t-yellow">saves roles & channels</span></div>
+        <div class="ch"><div class="ct">create new backup</div><span class="tag t-yellow">up to 5 per server</span></div>
         <div class="cb">
-          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.6">
-            saves all your server roles (name, color, permissions) and channels (name, type, category). you can keep up to <b style="color:var(--txt)">5 backups</b> per server.
+          <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:var(--txt2);line-height:1.7;border-left:3px solid var(--blue)">
+            saves all roles (name, color, permissions, position) and channels (name, type, category, topic). load into any server the bot is in.
           </div>
-          <label class="fl">Select Server</label>
-          <select class="inp" id="backupGuild" style="margin-bottom:14px"></select>
-          <button class="btn btn-w" style="width:100%" onclick="createBackup()"><i class="fas fa-database"></i> create backup now</button>
+          <label class="fl">Server to backup</label>
+          <select class="inp" id="backupGuild" style="margin-bottom:10px" onchange="loadBackups()"></select>
+          <label class="fl">Backup name (optional)</label>
+          <input class="inp" id="backupName" placeholder="e.g. before-redesign, v2-layout..." style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="createBackup()"><i class="fas fa-database"></i> create backup</button>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ct">saved backups</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadBackups()"><i class="fas fa-sync-alt"></i> refresh</button></div>
-        <div id="backupList"><div class="empty">select a server and click refresh</div></div>
+        <div class="ch"><div class="ct">backups for selected server</div></div>
+        <div id="backupList"><div class="empty">select a server above</div></div>
       </div>
+    </div>
+
+    <!-- ALL BACKUPS -->
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">all saved backups</div><div class="cs">load any backup into any server</div></div>
+      </div>
+      <div class="cb">
+        <label class="fl">Load into server</label>
+        <select class="inp" id="restoreTargetGuild" style="margin-bottom:14px"></select>
+        <div id="allBackupsList"><div class="empty">click refresh to load backups</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECURITY ══ -->
+  <div class="page" id="page-security">
+    <div class="sh"><div><h2>security</h2><p>anti-raid, alt detection, auto-role, nickname filter</p></div><button class="btn btn-w" onclick="saveSecuritySettings()"><i class="fas fa-check"></i> save all</button></div>
+
+    <div class="g2">
+      <!-- ANTI-RAID -->
+      <div class="card">
+        <div class="ch"><div class="ct">anti-raid</div><div class="tog" id="sec-antiRaidEnabled" data-key="antiRaidEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">if X members join within Y seconds, auto-action all of them</div>
+          <label class="fl">Joins to trigger raid detection</label>
+          <input class="inp" type="number" id="antiRaidThreshold" value="10" min="2" max="50" style="margin-bottom:10px">
+          <label class="fl">Time window (seconds)</label>
+          <input class="inp" type="number" id="antiRaidWindow" value="10" min="3" max="60" style="margin-bottom:10px">
+          <label class="fl">Action when raid detected</label>
+          <select class="inp" id="antiRaidAction" style="margin-bottom:10px">
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (30min)</option>
+          </select>
+          <label class="fl">Log Channel (for raid alerts)</label>
+          <select class="inp" id="antiRaidLogCh" style="margin-bottom:10px"></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-r" onclick="lockdownServer(true)"><i class="fas fa-lock"></i> lockdown server</button>
+            <button class="btn btn-gr" onclick="lockdownServer(false)"><i class="fas fa-unlock"></i> unlock server</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALT DETECTOR -->
+      <div class="card">
+        <div class="ch"><div class="ct">alt account detector</div><div class="tog" id="sec-altDetectEnabled" data-key="altDetectEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">flags or actions accounts newer than X days</div>
+          <label class="fl">Account must be older than (days)</label>
+          <input class="inp" type="number" id="altDetectDays" value="7" min="1" max="365" style="margin-bottom:10px">
+          <label class="fl">Action on new accounts</label>
+          <select class="inp" id="altDetectAction" style="margin-bottom:10px">
+            <option value="flag">flag only (log + no action)</option>
+            <option value="kick">kick</option>
+            <option value="ban">ban</option>
+            <option value="mute">timeout (1 hour)</option>
+          </select>
+          <label class="fl">Alert Channel</label>
+          <select class="inp" id="altDetectLogCh" style="margin-bottom:0"></select>
+        </div>
+      </div>
+
+      <!-- AUTO ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">auto-role on join</div><div class="tog" id="sec-autoRoleEnabled" data-key="autoRoleEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">automatically give a role to every member who joins</div>
+          <label class="fl">Server</label>
+          <select class="inp" id="secGuild" style="margin-bottom:10px" onchange="loadSecurityRoles()"></select>
+          <label class="fl">Role to give</label>
+          <select class="inp" id="autoRoleId" style="margin-bottom:10px"></select>
+          <label class="fl">Delay before giving role (seconds, 0 = instant)</label>
+          <input class="inp" type="number" id="autoRoleDelay" value="0" min="0" max="600" style="margin-bottom:0">
+        </div>
+      </div>
+
+      <!-- NICKNAME FILTER -->
+      <div class="card">
+        <div class="ch"><div class="ct">nickname filter</div><div class="tog" id="sec-nicknameFilterEnabled" data-key="nicknameFilterEnabled" onclick="toggle(this)"></div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">reverts nicknames that contain blocked words</div>
+          <label class="fl">Blocked words (comma separated)</label>
+          <textarea class="inp" id="nicknameFilterWords" placeholder="word1, word2, word3..." style="margin-bottom:0;height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOD++ ══ -->
+  <div class="page" id="page-modplus">
+    <div class="sh"><div><h2>moderation++</h2><p>custom commands, slowmode manager</p></div></div>
+    <div class="g2">
+      <!-- CUSTOM COMMANDS -->
+      <div class="card">
+        <div class="ch"><div class="ct">custom commands</div><span class="tag t-cyan">triggers in chat</span></div>
+        <div class="cb">
+          <label class="fl">Trigger (what user types)</label>
+          <input class="inp" id="ccTrigger" placeholder="!gg or !rules" style="margin-bottom:10px">
+          <label class="fl">Response</label>
+          <textarea class="inp" id="ccResponse" placeholder="use {user} {server} {username}" style="margin-bottom:10px;height:70px"></textarea>
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:10px">variables: <span class="mono">{user}</span> = mention, <span class="mono">{username}</span> = name, <span class="mono">{server}</span> = server name</div>
+          <button class="btn btn-w" style="width:100%" onclick="addCustomCommand()"><i class="fas fa-plus"></i> add command</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">active custom commands</div><button class="btn btn-g" style="font-size:10px;padding:4px 9px" onclick="loadCustomCommands()"><i class="fas fa-sync-alt"></i></button></div>
+        <div id="ccList"><div class="empty">no custom commands yet</div></div>
+      </div>
+
+      <!-- SLOWMODE -->
+      <div class="card">
+        <div class="ch"><div class="ct">slowmode manager</div><span class="tag t-yellow">per channel</span></div>
+        <div class="cb">
+          <label class="fl">Server</label>
+          <select class="inp" id="slowGuild" style="margin-bottom:10px" onchange="loadSlowChannels()"></select>
+          <label class="fl">Channel</label>
+          <select class="inp" id="slowChannel" style="margin-bottom:10px"></select>
+          <label class="fl">Slowmode (seconds, 0 = off)</label>
+          <input class="inp" type="number" id="slowSeconds" value="0" min="0" max="21600" style="margin-bottom:14px">
+          <button class="btn btn-w" style="width:100%" onclick="applySlowmode()"><i class="fas fa-clock"></i> apply slowmode</button>
+        </div>
+      </div>
+
+      <!-- MUTE ROLE -->
+      <div class="card">
+        <div class="ch"><div class="ct">mute role</div></div>
+        <div class="cb">
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:var(--txt2)">set which role gets assigned when a user is muted via dashboard or automod</div>
+          <label class="fl">Mute Role</label>
+          <select class="inp" id="muteRoleId" style="margin-bottom:14px"></select>
+          <button class="btn btn-w" style="width:100%" onclick="saveMuteRole()"><i class="fas fa-check"></i> save mute role</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ADVANCED LOGS ══ -->
+  <div class="page" id="page-advlogs">
+    <div class="sh"><div><h2>advanced logs</h2><p>nickname changes, invites, threads, boosts, emoji and more</p></div>
+      <div style="display:flex;gap:8px">
+        <select class="inp" id="advLogGuild" style="width:160px" onchange="loadAdvLogChannels()"></select>
+        <button class="btn btn-w" onclick="saveAdvLogChannels()"><i class="fas fa-check"></i> save</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">✏️ Nickname Changes</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-nicknameChanges"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">📨 Invite Created</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-inviteCreated"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Invite Deleted</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-inviteDeleted"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Bulk Message Delete</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-messagesBulkDelete"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🧵 Thread Created</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-threadCreated"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Thread Deleted</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-threadDeleted"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🚀 Boost Events</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-boostEvents"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">😀 Emoji Created</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-emojiCreated"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🗑️ Emoji Deleted</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-emojiDeleted"><option value="">disabled</option></select></div>
+      </div>
+
+      <div class="card" style="margin:0;border:1px solid var(--border2)">
+        <div class="ch" style="padding:10px 14px"><div class="ct" style="font-size:11px">🔗 Webhook Changes</div></div>
+        <div class="cb" style="padding:10px 14px;padding-top:0"><select class="inp" id="alc-webhookChanges"><option value="">disabled</option></select></div>
+      </div>
+
     </div>
   </div>
 
@@ -1182,7 +1672,18 @@ document.querySelectorAll('.ni[data-page]').forEach(function(el) {
     if(p==='tempvoice'){ fillGuildSelects(); loadTVSettings(); }
     if(p==='tickets'){ fillGuildSelects(); loadTicketSettings(); var tg=document.getElementById('tkGuild'); if(tg){ tg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ tg.value=guilds[0].id; loadTkChannels(); } } }
     if(p==='reactionroles'){ fillGuildSelects(); var rg=document.getElementById('rrGuild'); if(rg){ rg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ rg.value=guilds[0].id; loadRRChannels(); } } loadReactionRoles(); }
-    if(p==='backup'){ var bg=document.getElementById('backupGuild'); if(bg){ bg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); } }
+    if(p==='backup'){
+      var bg=document.getElementById('backupGuild');
+      var rt=document.getElementById('restoreTargetGuild');
+      var opts=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join('');
+      if(bg) bg.innerHTML=opts;
+      if(rt) rt.innerHTML=opts;
+      loadAllBackups();
+      if(guilds.length){ if(bg){ bg.value=guilds[0].id; loadBackups(); } }
+    }
+    if(p==='security'){ loadSecuritySettings(); var sg=document.getElementById('secGuild'); if(sg){ sg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ sg.value=guilds[0].id; loadSecurityRoles(); loadSecurityChannels(); } } }
+    if(p==='modplus'){ loadCustomCommands(); var smg=document.getElementById('slowGuild'); if(smg){ smg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ smg.value=guilds[0].id; loadSlowChannels(); } } var mrg=document.getElementById('secGuild'); loadModPlusRoles(); }
+    if(p==='advlogs'){ var alg=document.getElementById('advLogGuild'); if(alg){ alg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); if(guilds.length){ alg.value=guilds[0].id; loadAdvLogChannels(); } } }
     if(p==='welcome'){ fillGuildSelects(); var wg=document.getElementById('welcomeGuildPicker'); if(wg) wg.innerHTML=guilds.map(function(g){return '<option value="'+g.id+'">'+g.name+'</option>';}).join(''); loadWelcomeFull(); if(guilds.length){ setTimeout(function(){ var wp=document.getElementById('welcomeGuildPicker'); if(wp){ wp.value=guilds[0].id; loadWelcomeChannels(); } },100); } }
   });
 });
@@ -1298,14 +1799,70 @@ function renderLogs(logs,id){
   var ce=document.getElementById('logCount'); if(ce) ce.textContent=logs.length+' entries';
 }
 function displayLogs(logs,el){
-  var cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan'};
+  var cls={red:'t-red',blue:'t-blue',green:'t-green',yellow:'t-yellow',purple:'t-purple',cyan:'t-cyan',white:'t-white'};
+  var typeColor={
+    DELETE:'#ff3555',EDIT:'#ffb700',JOIN:'#00e87a',LEAVE:'#ff8800',
+    MOD:'#ff3555',AUTOMOD:'#ff8800',CMD:'#4488ff',VOICE:'#00d4ff',
+    ROLE:'#9b8cff',FILE:'#00d4ff',VERIFY:'#00e87a',LEVEL:'#ffb700',
+    SECURITY:'#ff0044',TICKET:'#5865f2',BOOST:'#ff73fa',INVITE:'#00d4ff',
+    CHANNEL:'#ffb700',EMOJI:'#ffb700',START:'#00e87a'
+  };
   el.innerHTML=logs.map(function(l,i){
     var hasD=!!l.detail;
-    return '<div class="lgi" style="flex-direction:column;align-items:flex-start;gap:0;padding:10px 18px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div class="lgt" style="width:52px;font-size:9px">'+l.time+'</div><span class="tag '+(cls[l.color]||'t-gray')+'">'+l.type+'</span><div class="lgm" style="flex:1">'+l.msg+'</div>'+(hasD?'<button onclick="toggleDetail('+i+')" style="background:var(--bg4);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-size:9px;color:var(--txt2);cursor:pointer">more</button>':'')+'</div>'+(hasD?'<div id="detail-'+i+'" style="display:none;margin-top:8px;margin-left:62px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:11px;color:var(--txt2);word-break:break-all;white-space:pre-wrap">'+String(l.detail).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>':'')+'</div>';
+    var col=typeColor[l.type]||'#888';
+    var tagCls=cls[l.color]||'t-gray';
+    var delay=(i%20)*28;
+    return '<div class="lgi" data-type="'+l.type+'" style="animation:logEntry .25s ease '+delay+'ms both">'
+      +'<div class="lgi-bar"></div>'
+      +'<div class="lgi-inner">'
+      +'<div class="lgt">'+l.time+'</div>'
+      +'<div class="lgk"><span class="tag '+tagCls+'" style="font-size:9px;letter-spacing:.3px">'+l.type+'</span></div>'
+      +'<div class="lgm">'+l.msg+'</div>'
+      +(hasD?'<button class="lgi-more" onclick="toggleDetail('+i+')">more</button>':'')
+      +'</div>'
+      +(hasD?'<div class="lgi-detail" id="detail-'+i+'" style="display:none;padding:0 16px 10px 81px">'
+        +'<div style="background:var(--bg3);border:1px solid var(--border2);border-left:3px solid '+col+';border-radius:7px;padding:10px;font-family:DM Mono,monospace;font-size:10px;color:var(--txt2);word-break:break-all;white-space:pre-wrap;line-height:1.7">'
+        +String(l.detail).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        +'</div></div>':'')
+      +'</div>';
   }).join('');
+  // update stats
+  updateLogStats(logs);
 }
-function toggleDetail(i){ var el=document.getElementById('detail-'+i); if(!el) return; var b=el.previousElementSibling?el.previousElementSibling.querySelector('button'):null; if(el.style.display==='none'){el.style.display='block';if(b)b.textContent='less';}else{el.style.display='none';if(b)b.textContent='more';} }
-function filterLogs(){ var f=document.getElementById('logFilter')?document.getElementById('logFilter').value:''; var fd=f?allLogs.filter(function(l){return l.type===f;}):allLogs; var el=document.getElementById('logsList'); if(el) displayLogs(fd,el); var ce=document.getElementById('logCount'); if(ce) ce.textContent=fd.length+' entries'+(f?' (filtered)':''); }
+
+function updateLogStats(logs){
+  var del=logs.filter(function(l){return l.type==='DELETE';}).length;
+  var mod=logs.filter(function(l){return l.type==='MOD'||l.type==='AUTOMOD';}).length;
+  var join=logs.filter(function(l){return l.type==='JOIN';}).length;
+  var sd=document.getElementById('logStat-del'); if(sd) sd.textContent=del;
+  var sm=document.getElementById('logStat-mod'); if(sm) sm.textContent=mod;
+  var sj=document.getElementById('logStat-join'); if(sj) sj.textContent=join;
+  var st=document.getElementById('logStat-total'); if(st) st.textContent=logs.length;
+}
+function toggleDetail(i){
+  var el=document.getElementById('detail-'+i); if(!el) return;
+  var parent=el.closest('.lgi');
+  var b=parent?parent.querySelector('.lgi-more'):null;
+  if(el.style.display==='none'){
+    el.style.display='block';
+    el.style.animation='detailReveal .2s ease both';
+    if(b)b.textContent='less';
+    if(parent) parent.style.background='rgba(255,255,255,.018)';
+  } else {
+    el.style.display='none';
+    if(b)b.textContent='more';
+    if(parent) parent.style.background='';
+  }
+}
+function filterLogs(){
+  var f=document.getElementById('logFilter')?document.getElementById('logFilter').value:'';
+  var search=(document.getElementById('logSearch')?document.getElementById('logSearch').value:'').toLowerCase().trim();
+  var fd=allLogs;
+  if(f) fd=fd.filter(function(l){return l.type===f;});
+  if(search) fd=fd.filter(function(l){return (l.msg||'').toLowerCase().includes(search)||(l.type||'').toLowerCase().includes(search)||(l.detail||'').toLowerCase().includes(search);});
+  var el=document.getElementById('logsList'); if(el) displayLogs(fd,el);
+  var ce=document.getElementById('logCount'); if(ce) ce.textContent=fd.length+' entries'+((f||search)?' (filtered)':'');
+}
 
 // LOG CHANNELS
 async function loadLogChannels(){
@@ -1453,8 +2010,42 @@ async function tvAutoSetup(){ var gid=document.getElementById('tvSetupGuild').va
 async function tvControl(action,value){ var gid=document.getElementById('tvControlGuild').value,chid=document.getElementById('tvControlChannel').value.trim(); if(!chid){toast('enter channel id','yellow');return;} if(action==='delete'&&!confirm('delete this temp voice channel?'))return; try{await api('/api/tempvoice/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,channelId:chid,action:action,value:value})});toast(action+' done','green');loadTVChannels();}catch(e){toast('failed','red');} }
 
 // WELCOME
-async function saveWelcomeFull(){ var g=function(id){var el=document.getElementById(id);return el?el.value:null;}; var body={welcomeMessage:g('welcomeMessage')||'',goodbyeMessage:g('goodbyeMessage')||'',welcomeGif:g('welcomeGif')?g('welcomeGif').trim()||null:null,goodbyeGif:g('goodbyeGif')?g('goodbyeGif').trim()||null:null,ticketGif:g('ticketGif')?g('ticketGif').trim()||null:null,welcomeChannelId:g('welcomeChannelId')||null,goodbyeChannelId:g('goodbyeChannelId')||null}; try{await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('welcome settings saved','green');}catch(e){toast('save failed','red');} }
-async function loadWelcomeFull(){ try{var s=await api('/api/settings/welcome');var set=function(id,v){if(v){var el=document.getElementById(id);if(el)el.value=v;}}; set('welcomeMessage',s.welcomeMessage);set('goodbyeMessage',s.goodbyeMessage);set('welcomeGif',s.welcomeGif);set('goodbyeGif',s.goodbyeGif);set('ticketGif',s.ticketGif); var t1=document.getElementById('wlc-welcomeEnabled');if(t1)t1.classList.toggle('on',!!s.welcomeEnabled); var t2=document.getElementById('wlc-goodbyeEnabled');if(t2)t2.classList.toggle('on',!!s.goodbyeEnabled);}catch(e){} }
+async function saveWelcomeFull(){
+  var g=function(id){var el=document.getElementById(id);return el?el.value:null;};
+  var body={
+    welcomeMessage:g('welcomeMessage')||'',
+    goodbyeMessage:g('goodbyeMessage')||'',
+    welcomeGif:g('welcomeGif')?g('welcomeGif').trim()||null:null,
+    goodbyeGif:g('goodbyeGif')?g('goodbyeGif').trim()||null:null,
+    ticketGif:g('ticketGif')?g('ticketGif').trim()||null:null,
+    welcomeChannelId:g('welcomeChannelId')||null,
+    goodbyeChannelId:g('goodbyeChannelId')||null,
+    welcomeCardText:g('welcomeCardText')||null,
+    welcomeCardSub:g('welcomeCardSub')||null,
+    welcomeCardCircleColor:g('welcomeCardCircleColorHex')||g('welcomeCardCircleColor')||'#ffffff',
+    welcomeCardOverlay:parseFloat(g('welcomeCardOverlay')||'0.45')||0.45,
+    goodbyeCardText:g('goodbyeCardText')||null,
+    goodbyeCardSub:g('goodbyeCardSub')||null,
+    goodbyeCardCircleColor:g('goodbyeCardCircleColorHex')||g('goodbyeCardCircleColor')||'#ff3555',
+  };
+  try{await api('/api/settings/welcome',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('welcome settings saved','green');}
+  catch(e){toast('save failed','red');}
+}
+async function loadWelcomeFull(){
+  try {
+    var s=await api('/api/settings/welcome');
+    var set=function(id,v){if(v!==null&&v!==undefined){var el=document.getElementById(id);if(el)el.value=v;}};
+    set('welcomeMessage',s.welcomeMessage);set('goodbyeMessage',s.goodbyeMessage);
+    set('welcomeGif',s.welcomeGif);set('goodbyeGif',s.goodbyeGif);set('ticketGif',s.ticketGif);
+    set('welcomeCardText',s.welcomeCardText);set('welcomeCardSub',s.welcomeCardSub);
+    set('welcomeCardOverlay',s.welcomeCardOverlay);
+    set('goodbyeCardText',s.goodbyeCardText);set('goodbyeCardSub',s.goodbyeCardSub);
+    if(s.welcomeCardCircleColor){ set('welcomeCardCircleColor',s.welcomeCardCircleColor); set('welcomeCardCircleColorHex',s.welcomeCardCircleColor); }
+    if(s.goodbyeCardCircleColor){ set('goodbyeCardCircleColor',s.goodbyeCardCircleColor); set('goodbyeCardCircleColorHex',s.goodbyeCardCircleColor); }
+    var t1=document.getElementById('wlc-welcomeEnabled');if(t1)t1.classList.toggle('on',!!s.welcomeEnabled);
+    var t2=document.getElementById('wlc-goodbyeEnabled');if(t2)t2.classList.toggle('on',!!s.goodbyeEnabled);
+  } catch(e){}
+}
 async function loadWelcomeChannels(){ var gid=document.getElementById('welcomeGuildPicker')?document.getElementById('welcomeGuildPicker').value:''; if(!gid) return; try{var chs=await api('/api/guilds/'+gid+'/channels');var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; var base=text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join(''); var wc=document.getElementById('welcomeChannelId');if(wc)wc.innerHTML='<option value="">system channel</option>'+base; var gc=document.getElementById('goodbyeChannelId');if(gc)gc.innerHTML='<option value="">same as welcome</option>'+base;}catch(e){} }
 function previewGif(inputId,previewId,imgId){ var url=document.getElementById(inputId)?document.getElementById(inputId).value.trim():''; if(!url){toast('enter a gif url first','yellow');return;} var p=document.getElementById(previewId),i=document.getElementById(imgId); if(p&&i){p.style.display='block';i.src=url;} }
 async function saveAutomodFull(){ var body={autobanThreshold:parseInt(document.getElementById('autobanThreshold')?document.getElementById('autobanThreshold').value:3)||3,muteMinutes:parseInt(document.getElementById('muteMinutes')?document.getElementById('muteMinutes').value:10)||10,emojiSpamLimit:parseInt(document.getElementById('emojiSpamLimit')?document.getElementById('emojiSpamLimit').value:5)||5}; try{await api('/api/automod/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast('automod settings saved','green');}catch(e){toast('save failed','red');} }
@@ -1503,31 +2094,266 @@ async function loadReactionRoles(){
 }
 async function deleteRR(btn){ var msgId=btn.dataset?btn.dataset.id:btn; await api('/api/reactionroles/'+msgId,{method:'DELETE'}); toast('deleted','yellow'); loadReactionRoles(); }
 
-// BACKUP (FIX 3 — add restore button)
-async function createBackup(){ var gid=document.getElementById('backupGuild').value; if(!gid){toast('select a server','yellow');return;} try{await api('/api/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid})});toast('backup created!','green');loadBackups();}catch(e){toast('failed: '+e.message,'red');} }
+// BACKUP — full cross-server support
+async function createBackup(){
+  var gid=document.getElementById('backupGuild').value;
+  var name=document.getElementById('backupName')?document.getElementById('backupName').value.trim():'';
+  if(!gid){toast('select a server','yellow');return;}
+  try {
+    await api('/api/backup/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,name:name||null})});
+    toast('backup created!','green');
+    if(document.getElementById('backupName')) document.getElementById('backupName').value='';
+    loadBackups(); loadAllBackups();
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
 async function loadBackups(){
-  var gid=document.getElementById('backupGuild').value; if(!gid){toast('select a server first','yellow');return;}
+  var gid=document.getElementById('backupGuild').value;
+  if(!gid){ return; }
   try {
     var backups=await api('/api/backup/'+gid),el=document.getElementById('backupList');
-    if(!backups.length){el.innerHTML='<div class="empty">no backups yet</div>';return;}
+    if(!backups.length){el.innerHTML='<div class="empty">no backups for this server yet</div>';return;}
     el.innerHTML=backups.map(function(b,idx){
-      return '<div class="svr" style="flex-direction:column;align-items:flex-start;gap:8px;padding:14px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div style="flex:1"><div style="font-size:12px;font-weight:700">'+b.name+'</div><div style="font-size:10px;color:var(--txt2)">'+new Date(b.date).toLocaleString()+' | '+b.roles.length+' roles | '+b.channels.length+' channels</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-trash"></i></button></div><button class="btn btn-w" style="width:100%;font-size:10px;padding:6px" onclick="restoreBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-rotate-left"></i> load this backup into server</button></div>';
+      return '<div class="backup-card" style="padding-left:18px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<div style="flex:1"><div class="backup-name">'+b.name+'</div>'
+        +'<div class="backup-meta">'
+        +'<span><i class="fas fa-clock" style="color:var(--txt3)"></i> '+new Date(b.date).toLocaleString()+'</span>'
+        +'<span><i class="fas fa-tag" style="color:var(--purple)"></i> '+b.roles.length+' roles</span>'
+        +'<span><i class="fas fa-hashtag" style="color:var(--cyan)"></i> '+b.channels.length+' channels</span>'
+        +'</div></div>'
+        +'<button class="btn btn-r" style="font-size:9px;padding:3px 8px;align-self:flex-start" onclick="deleteBackup(this)" data-guild="'+gid+'" data-idx="'+idx+'"><i class="fas fa-trash"></i></button>'
+        +'</div>'
+        +'<div class="backup-actions">'
+        +'<button class="btn btn-w" style="flex:1;font-size:10px" onclick="restoreBackup(this)" data-source="'+gid+'" data-target="'+gid+'" data-idx="'+idx+'"><i class="fas fa-rotate-left"></i> load into this server</button>'
+        +'</div>'
+        +'</div>';
     }).join('');
   } catch(e){ toast('failed: '+e.message,'red'); }
 }
-async function restoreBackup(btn){
-  var gid=btn.dataset.guild,idx=btn.dataset.idx;
-  if(!confirm('load this backup? missing roles + channels will be created. existing ones stay.')) return;
-  var orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> restoring...'; btn.disabled=true;
+
+async function loadAllBackups(){
   try {
-    var res=await api('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:gid,index:parseInt(idx)})});
-    var msg='loaded: '+res.rolesCreated+' roles + '+res.channelsCreated+' channels created';
+    var backups=await api('/api/backup/all'),el=document.getElementById('allBackupsList');
+    if(!backups.length){el.innerHTML='<div class="empty">no backups saved yet — create one above</div>';return;}
+    var targetGuild=document.getElementById('restoreTargetGuild')?document.getElementById('restoreTargetGuild').value:'';
+    el.innerHTML=backups.map(function(b){
+      return '<div class="backup-card" style="padding-left:18px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+        +'<div style="flex:1"><div class="backup-name">'+b.name+'</div>'
+        +'<div class="backup-meta">'
+        +'<span><i class="fas fa-server" style="color:var(--blue)"></i> from: '+(b.sourceGuild||'unknown')+'</span>'
+        +'<span><i class="fas fa-clock" style="color:var(--txt3)"></i> '+new Date(b.date).toLocaleString()+'</span>'
+        +'<span><i class="fas fa-tag" style="color:var(--purple)"></i> '+b.roles.length+' roles</span>'
+        +'<span><i class="fas fa-hashtag" style="color:var(--cyan)"></i> '+b.channels.length+' channels</span>'
+        +'</div></div>'
+        +'<button class="btn btn-r" style="font-size:9px;padding:3px 8px;align-self:flex-start" onclick="deleteBackup(this)" data-guild="'+b.guildId+'" data-idx="'+b.index+'"><i class="fas fa-trash"></i></button>'
+        +'</div>'
+        +'<button class="btn btn-w" style="width:100%;font-size:10px" onclick="restoreBackupTo(this)" data-source="'+b.guildId+'" data-idx="'+b.index+'">'
+        +'<i class="fas fa-rotate-left"></i> load into selected server</button>'
+        +'</div>';
+    }).join('');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+async function restoreBackup(btn){
+  var sourceGuild=btn.dataset.source, targetGuild=btn.dataset.target||btn.dataset.source, idx=btn.dataset.idx;
+  if(!confirm('load this backup into the server? missing roles + channels will be created. existing ones stay unchanged.')) return;
+  var orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> loading...'; btn.disabled=true;
+  try {
+    var res=await api('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:targetGuild,sourceGuildId:sourceGuild,index:parseInt(idx)})});
+    var msg=res.rolesCreated+' roles + '+res.channelsCreated+' channels created';
     if(res.errors&&res.errors.length) msg+=' ('+res.errors.length+' skipped)';
-    toast(msg,'green');
-  } catch(e){ toast('restore failed: '+e.message,'red'); }
+    toast('backup loaded! '+msg,'green');
+  } catch(e){ toast('failed: '+e.message,'red'); }
   btn.innerHTML=orig; btn.disabled=false;
 }
-async function deleteBackup(btn){ var gid=btn.dataset.guild,idx=btn.dataset.idx; if(!confirm('delete this backup?')) return; await api('/api/backup/'+gid+'/'+idx,{method:'DELETE'}); toast('backup deleted','yellow'); loadBackups(); }
+
+async function restoreBackupTo(btn){
+  var sourceGuild=btn.dataset.source, idx=btn.dataset.idx;
+  var targetGuild=document.getElementById('restoreTargetGuild')?document.getElementById('restoreTargetGuild').value:'';
+  if(!targetGuild){toast('select a target server first','yellow');return;}
+  btn.dataset.target=targetGuild;
+  restoreBackup(btn);
+}
+
+async function deleteBackup(btn){
+  var gid=btn.dataset.guild,idx=btn.dataset.idx;
+  if(!confirm('delete this backup permanently?')) return;
+  await api('/api/backup/'+gid+'/'+idx,{method:'DELETE'});
+  toast('backup deleted','yellow');
+  loadBackups(); loadAllBackups();
+}
+
+// SECURITY
+async function loadSecuritySettings(){
+  try {
+    var s=await api('/api/security');
+    var set=function(id,v){ var el=document.getElementById(id); if(el&&v!==undefined&&v!==null) el.value=v; };
+    var tog=function(id,v){ var el=document.getElementById(id); if(el) el.classList.toggle('on',!!v); };
+    tog('sec-antiRaidEnabled',s.antiRaidEnabled); set('antiRaidThreshold',s.antiRaidThreshold); set('antiRaidWindow',s.antiRaidWindow); set('antiRaidAction',s.antiRaidAction);
+    tog('sec-altDetectEnabled',s.altDetectEnabled); set('altDetectDays',s.altDetectDays); set('altDetectAction',s.altDetectAction);
+    tog('sec-autoRoleEnabled',s.autoRoleEnabled); set('autoRoleDelay',s.autoRoleDelay);
+    tog('sec-nicknameFilterEnabled',s.nicknameFilterEnabled);
+    if(s.nicknameFilterWords&&document.getElementById('nicknameFilterWords')) document.getElementById('nicknameFilterWords').value=Array.isArray(s.nicknameFilterWords)?s.nicknameFilterWords.join(', '):s.nicknameFilterWords;
+  } catch(e){}
+}
+
+async function loadSecurityRoles(){
+  var guildId=document.getElementById('secGuild')?document.getElementById('secGuild').value:'';
+  if(!guildId) return;
+  try {
+    var roles=await api('/api/guilds/'+guildId+'/roles');
+    var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; 
+    var opts='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join('');
+    var ar=document.getElementById('autoRoleId'); if(ar) ar.innerHTML=opts;
+    var mr=document.getElementById('muteRoleId'); if(mr) mr.innerHTML=opts;
+    // load saved values
+    var s=await api('/api/security');
+    if(s.autoRoleId&&ar) ar.value=s.autoRoleId;
+    if(s.muteRoleId&&mr) mr.value=s.muteRoleId;
+  } catch(e){}
+}
+
+async function loadSecurityChannels(){
+  var guildId=document.getElementById('secGuild')?document.getElementById('secGuild').value:'';
+  if(!guildId) return;
+  try {
+    var chs=await api('/api/guilds/'+guildId+'/channels');
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    var ar=document.getElementById('antiRaidLogCh'); if(ar) ar.innerHTML=opts;
+    var al=document.getElementById('altDetectLogCh'); if(al) al.innerHTML=opts;
+    // load saved
+    var s=await api('/api/security');
+    if(s.altDetectLogChannel){ if(ar) ar.value=s.altDetectLogChannel||''; if(al) al.value=s.altDetectLogChannel||''; }
+  } catch(e){}
+}
+
+async function saveSecuritySettings(){
+  var g=function(id){var el=document.getElementById(id);return el?el.value:null;};
+  var gn=function(id){var el=document.getElementById(id);return el?parseInt(el.value)||0:0;};
+  var body={
+    antiRaidThreshold:gn('antiRaidThreshold'), antiRaidWindow:gn('antiRaidWindow'),
+    antiRaidAction:g('antiRaidAction')||'kick',
+    altDetectDays:gn('altDetectDays'), altDetectAction:g('altDetectAction')||'flag',
+    altDetectLogChannel:g('antiRaidLogCh')||g('altDetectLogCh')||null,
+    autoRoleId:g('autoRoleId')||null, autoRoleDelay:gn('autoRoleDelay'),
+    muteRoleId:g('muteRoleId')||null,
+    nicknameFilterWords:document.getElementById('nicknameFilterWords')?document.getElementById('nicknameFilterWords').value.split(',').map(function(w){return w.trim();}).filter(Boolean):[],
+  };
+  try {
+    await api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    toast('security settings saved','green');
+  } catch(e){ toast('save failed: '+e.message,'red'); }
+}
+
+async function lockdownServer(lock){
+  var guildId=document.getElementById('secGuild')?document.getElementById('secGuild').value:'';
+  if(!guildId){toast('select a server first','yellow');return;}
+  if(!confirm((lock?'LOCK DOWN':'UNLOCK')+' the server? This affects all channels.')) return;
+  try {
+    var res=await api('/api/security/lockdown',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,lock:lock})});
+    toast((lock?'server locked down':'server unlocked')+' — '+res.channelsAffected+' channels affected',lock?'red':'green');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+// MOD++
+async function loadCustomCommands(){
+  try {
+    var cmds=await api('/api/customcommands');
+    var el=document.getElementById('ccList');
+    var entries=Object.entries(cmds||{});
+    if(!entries.length){el.innerHTML='<div class="empty">no custom commands yet</div>';return;}
+    el.innerHTML=entries.map(function(e){
+      return '<div class="svr"><div style="flex:1"><div style="font-size:12px;font-weight:700"><span class="mono">'+e[0]+'</span></div><div style="font-size:10px;color:var(--txt2)">'+e[1].slice(0,60)+(e[1].length>60?'...':'')+'</div></div><button class="btn btn-r" style="font-size:9px;padding:3px 8px" onclick="deleteCustomCommand(this)" data-trigger="'+encodeURIComponent(e[0])+'"><i class="fas fa-trash"></i></button></div>';
+    }).join('');
+  } catch(e){}
+}
+
+async function addCustomCommand(){
+  var trigger=document.getElementById('ccTrigger')?document.getElementById('ccTrigger').value.trim():'';
+  var response=document.getElementById('ccResponse')?document.getElementById('ccResponse').value.trim():'';
+  if(!trigger){toast('enter a trigger','yellow');return;}
+  if(!response){toast('enter a response','yellow');return;}
+  try {
+    await api('/api/customcommands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trigger:trigger,response:response})});
+    toast('custom command added!','green');
+    document.getElementById('ccTrigger').value='';
+    document.getElementById('ccResponse').value='';
+    loadCustomCommands();
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+async function deleteCustomCommand(btn){
+  var trigger=decodeURIComponent(btn.dataset.trigger);
+  await api('/api/customcommands/'+encodeURIComponent(trigger),{method:'DELETE'});
+  toast('command deleted','yellow');
+  loadCustomCommands();
+}
+
+async function loadSlowChannels(){
+  var guildId=document.getElementById('slowGuild')?document.getElementById('slowGuild').value:'';
+  if(!guildId) return;
+  await loadChannelsFor(guildId,'slowChannel');
+}
+
+async function applySlowmode(){
+  var guildId=document.getElementById('slowGuild')?document.getElementById('slowGuild').value:'';
+  var channelId=document.getElementById('slowChannel')?document.getElementById('slowChannel').value:'';
+  var seconds=parseInt(document.getElementById('slowSeconds')?document.getElementById('slowSeconds').value:0)||0;
+  if(!guildId||!channelId){toast('select server and channel','yellow');return;}
+  try {
+    await api('/api/slowmode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({guildId:guildId,channelId:channelId,seconds:seconds})});
+    toast('slowmode '+(seconds>0?'set to '+seconds+'s':'removed')+' in selected channel','green');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+async function loadModPlusRoles(){
+  // Load roles for mute role picker using secGuild if available
+  var guildId=guilds.length?guilds[0].id:'';
+  if(!guildId) return;
+  try {
+    var roles=await api('/api/guilds/'+guildId+'/roles');
+    var filtered=Array.isArray(roles)?roles.filter(function(r){return r.name!=='@everyone'&&!r.managed;}).sort(function(a,b){return b.position-a.position;}):[]; 
+    var opts='<option value="">select role</option>'+filtered.map(function(r){return '<option value="'+r.id+'">@'+r.name+'</option>';}).join('');
+    var mr=document.getElementById('muteRoleId'); if(mr) mr.innerHTML=opts;
+    var s=await api('/api/security'); if(s.muteRoleId&&mr) mr.value=s.muteRoleId;
+  } catch(e){}
+}
+
+async function saveMuteRole(){
+  var roleId=document.getElementById('muteRoleId')?document.getElementById('muteRoleId').value:'';
+  try {
+    await api('/api/security',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({muteRoleId:roleId||null})});
+    toast('mute role saved','green');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+// ADVANCED LOGS
+async function loadAdvLogChannels(){
+  var guildId=document.getElementById('advLogGuild')?document.getElementById('advLogGuild').value:'';
+  if(!guildId) return;
+  try {
+    var results=await Promise.all([api('/api/guilds/'+guildId+'/channels'),api('/api/logchannels/extra')]);
+    var chs=results[0], saved=results[1];
+    var text=Array.isArray(chs)?chs.filter(function(c){return c.type===0;}):[]; 
+    var opts='<option value="">disabled</option>'+text.map(function(c){return '<option value="'+c.id+'">#'+c.name+'</option>';}).join('');
+    ['nicknameChanges','inviteCreated','inviteDeleted','messagesBulkDelete','stageEvents','threadCreated','threadDeleted','boostEvents','emojiCreated','emojiDeleted','webhookChanges'].forEach(function(k){
+      var el=document.getElementById('alc-'+k); if(el){el.innerHTML=opts;if(saved[k])el.value=saved[k];}
+    });
+    toast(text.length+' channels loaded — pick a channel for each log type then save','blue');
+  } catch(e){ toast('failed: '+e.message,'red'); }
+}
+
+async function saveAdvLogChannels(){
+  var body={};
+  ['nicknameChanges','inviteCreated','inviteDeleted','messagesBulkDelete','stageEvents','threadCreated','threadDeleted','boostEvents','emojiCreated','emojiDeleted','webhookChanges'].forEach(function(k){
+    var el=document.getElementById('alc-'+k); if(el) body[k]=el.value||null;
+  });
+  try {
+    await api('/api/logchannels/extra',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    toast('advanced log channels saved!','green');
+  } catch(e){ toast('save failed: '+e.message,'red'); }
+}
 
 // ANIMATIONS
 function countUp(el,target,duration){
@@ -1536,7 +2362,18 @@ function countUp(el,target,duration){
   (function update(now){ var p=Math.min((now-startTime)/duration,1),e=1-Math.pow(1-p,3); el.textContent=Math.floor(e*target).toLocaleString(); if(p<1)requestAnimationFrame(update); else el.textContent=target.toLocaleString?target.toLocaleString():target; })(performance.now());
 }
 function setStat(id,value){ var el=document.getElementById(id);if(!el)return; el.classList.remove('updated');void el.offsetWidth;el.classList.add('updated'); var num=parseInt(String(value).replace(/[^0-9]/g,'')); if(!isNaN(num)&&num>0)countUp(el,num);else el.textContent=value; }
-function staggerAnimate(parentEl,sel){ if(!parentEl)return; parentEl.querySelectorAll(sel||'.lgi,.svr,.mrow').forEach(function(el,i){ el.style.opacity='0';el.style.transform='translateX(-8px)'; setTimeout(function(){el.style.transition='opacity .2s ease,transform .2s ease';el.style.opacity='1';el.style.transform='translateX(0)';},i*40); }); }
+function staggerAnimate(parentEl,sel){
+  if(!parentEl)return;
+  parentEl.querySelectorAll(sel||'.lgi,.svr,.mrow,.backup-card,.rr-item').forEach(function(el,i){
+    el.style.opacity='0';
+    el.style.transform='translateY(8px)';
+    setTimeout(function(){
+      el.style.transition='opacity .22s ease,transform .22s cubic-bezier(.34,1.56,.64,1)';
+      el.style.opacity='1';
+      el.style.transform='translateY(0)';
+    },i*45);
+  });
+}
 
 // AUTO REFRESH + BOOT
 setInterval(loadDashLogs,8000);
