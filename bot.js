@@ -11,18 +11,31 @@ const TOKEN = process.env.BOT_TOKEN;
 
 // ── STATE ─────────────────────────────────────────────
 const state = {
+  // automod
   blockInvites:true, blockSpam:true, badWordsFilter:true,
   blockMassMentions:true, capsFilter:false, blockLinks:false,
+  blockDuplicates:false, blockEmojiSpam:false, blockMentionSpam:false,
+  emojiSpamLimit:5, mentionSpamLimit:3,
   welcomeEnabled:true, goodbyeEnabled:true, levelingEnabled:true, ticketsEnabled:true,
   welcomeMessage:"welcome to the server, {user}! you're member #{count}.",
   goodbyeMessage:'{user} has left the server.',
   levelUpMessage:'gg {user}, you hit level {level}!',
-  welcomeChannelId:null, logChannelId:null,
-  logChannels:{ deletedMessages:null, editedMessages:null, joinLeave:null,
-    modActions:null, commands:null, images:null, voiceActivity:null, roleChanges:null },
+  welcomeChannelId:null, goodbyeChannelId:null, logChannelId:null,
+  welcomeGif:null, goodbyeGif:null, ticketGif:null,
+  logChannels:{
+    deletedMessages:null, editedMessages:null, joinLeave:null, modActions:null,
+    commands:null, images:null, voiceActivity:null, roleChanges:null,
+    memberBanned:null, memberUnbanned:null, memberKicked:null, memberTimeout:null,
+    channelCreated:null, channelDeleted:null, channelUpdated:null,
+    roleCreated:null, roleDeleted:null, roleUpdated:null,
+    memberJoinedVoice:null, memberLeftVoice:null, memberSwitchedVoice:null,
+    voiceStateMuteDeafen:null, serverInvites:null,
+  },
   autobanThreshold:3, prefix:'!', muteMinutes:10,
   badWordsList:['badword1','badword2'],
   xpData:{}, warnings:{}, infractions:[], infId:1, logs:[], tickets:{}, ticketCount:0, ticketPanelChannels:{},
+  reactionRoles:{}, // messageId -> { guildId, roles: { emoji -> roleId } }
+  serverBackups:{}, // guildId -> [ { name, date, roles[], channels[] } ]
   // temp voice
   tempVoiceEnabled:true,
   tempVoiceGuilds:{},    // guildId -> { categoryId, creatorId, controlChannelId }
@@ -43,6 +56,8 @@ const PERSIST_KEYS = [
   'verificationEnabled','verifiedRoleId','unverifiedRoleId','verificationChannelId',
   'verifyMessageId','verifyEmoji','logChannels','tempVoiceEnabled','tempVoiceGuilds',
   'xpData','warnings','infractions','infId','ticketCount','ticketPanelChannels',
+  'reactionRoles','serverBackups','welcomeGif','goodbyeGif','ticketGif',
+  'goodbyeChannelId','blockDuplicates','blockEmojiSpam','blockMentionSpam','emojiSpamLimit','mentionSpamLimit',
 ];
 
 function saveState() {
@@ -320,7 +335,7 @@ async function ticketAutoSetup(guild) {
       .setAuthor({ name: 'Staff Support', iconURL: botAvatar })
       .setTitle('Do you need help with something?')
       .setDescription('Contact our staff team privately so we can assist you with whatever you need.')
-      .setImage('https://fa11en-production.up.railway.app/welcome.gif')
+      .setImage(state.welcomeGif || 'https://fa11en-production.up.railway.app/welcome.gif')
       .setThumbnail(botAvatar)
       .setFooter({ text: 'fa11en \u00b7 support system', iconURL: botAvatar })
       .setTimestamp();
@@ -377,7 +392,9 @@ client.on('guildMemberAdd', async member => {
 
 client.on('guildMemberRemove', async member => {
   if (!state.goodbyeEnabled) return;
-  const ch = state.welcomeChannelId ? member.guild.channels.cache.get(state.welcomeChannelId) : member.guild.systemChannel;
+  const ch = (state.goodbyeChannelId || state.welcomeChannelId)
+    ? member.guild.channels.cache.get(state.goodbyeChannelId || state.welcomeChannelId)
+    : member.guild.systemChannel;
   if (!ch) return;
   const msg = state.goodbyeMessage.replace(/{user}/g,member.user.username).replace(/{server}/g,member.guild.name);
   const goodbyeEmbed = new EmbedBuilder()
@@ -439,6 +456,25 @@ client.on('messageCreate', async message => {
       const w=addWarning(message.guild.id,message.author.id);
       const r=await message.channel.send({embeds:[makeEmbed(0xff8800,'⚠️ mass mention',`<@${message.author.id}> warning **${w}/${state.autobanThreshold}**`)]});
       setTimeout(()=>r.delete().catch(()=>{}),5000); return;
+    }
+    // emoji spam
+    if (state.blockEmojiSpam) {
+      const emojiCount = (content.match(/\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu)||[]).length + (content.match(/<a?:[a-zA-Z0-9_]+:[0-9]+>/g)||[]).length;
+      if (emojiCount > (state.emojiSpamLimit||5)) {
+        await message.delete().catch(()=>{});
+        const r=await message.channel.send({embeds:[makeEmbed(0xff8800,'⚠️ emoji spam',`<@${message.author.id}> too many emojis!`)]});
+        setTimeout(()=>r.delete().catch(()=>{}),4000); return;
+      }
+    }
+    // duplicate/repeated text
+    if (state.blockDuplicates && content.length > 10) {
+      const words = content.toLowerCase().split(' ');
+      const unique = new Set(words);
+      if (words.length > 4 && unique.size / words.length < 0.4) {
+        await message.delete().catch(()=>{});
+        const r=await message.channel.send({embeds:[makeEmbed(0xff8800,'⚠️ duplicate text',`<@${message.author.id}> stop repeating yourself!`)]});
+        setTimeout(()=>r.delete().catch(()=>{}),4000); return;
+      }
     }
     if (state.capsFilter && content.length>8) {
       const letters=content.replace(/[^a-zA-Z]/g,'');
@@ -822,6 +858,41 @@ client.on('messageReactionAdd', async (reaction, user) => {
   } catch(e) { addLog('VERIFY','verify failed: '+e.message,'red'); }
 });
 
+// ── REACTION ROLES ────────────────────────────────────
+client.on('messageReactionAdd', async (reaction, user) => {
+  if (user.bot) return;
+  if (reaction.partial) { try { await reaction.fetch(); } catch(e) { return; } }
+  const msgId = reaction.message.id;
+  const rr = state.reactionRoles[msgId];
+  if (!rr) return;
+  const emoji = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;
+  const roleId = rr.roles[emoji];
+  if (!roleId) return;
+  try {
+    const guild = reaction.message.guild;
+    const member = await guild.members.fetch(user.id);
+    await member.roles.add(roleId);
+    addLog('ROLE', user.username + ' got role via reaction', 'green');
+  } catch(e) { console.error('rr add err:', e.message); }
+});
+
+client.on('messageReactionRemove', async (reaction, user) => {
+  if (user.bot) return;
+  if (reaction.partial) { try { await reaction.fetch(); } catch(e) { return; } }
+  const msgId = reaction.message.id;
+  const rr = state.reactionRoles[msgId];
+  if (!rr) return;
+  const emoji = reaction.emoji.id ? reaction.emoji.id : reaction.emoji.name;
+  const roleId = rr.roles[emoji];
+  if (!roleId) return;
+  try {
+    const guild = reaction.message.guild;
+    const member = await guild.members.fetch(user.id);
+    await member.roles.remove(roleId);
+    addLog('ROLE', user.username + ' removed role via reaction', 'yellow');
+  } catch(e) { console.error('rr remove err:', e.message); }
+});
+
 // ── SLASH COMMAND HANDLER ─────────────────────────────
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
@@ -1087,6 +1158,74 @@ async function completeVerification(token) {
 }
 setInterval(()=>{ const now=Date.now(); Object.keys(state.pendingVerifications).forEach(t=>{ if(state.pendingVerifications[t].expires<now) delete state.pendingVerifications[t]; }); }, 5*60*1000);
 
+// ── EXTENDED AUDIT LOGS ──────────────────────────────
+client.on('guildBanAdd', async (ban) => {
+  const embed = new EmbedBuilder().setColor(0xff3555).setTitle('🔨 member banned')
+    .setAuthor({name:ban.user.username,iconURL:ban.user.displayAvatarURL()})
+    .addFields({name:'👤 user',value:'<@'+ban.user.id+'>',inline:true},{name:'📋 reason',value:ban.reason||'no reason',inline:true},{name:'🆔 id',value:ban.user.id,inline:true})
+    .setThumbnail(ban.user.displayAvatarURL()).setTimestamp();
+  await sendAuditLog(ban.guild,'memberBanned',embed);
+  addLog('MOD',ban.user.username+' was banned','red',`user: ${ban.user.username} (${ban.user.id})\nreason: ${ban.reason||'none'}`);
+});
+
+client.on('guildBanRemove', async (ban) => {
+  const embed = new EmbedBuilder().setColor(0x00e87a).setTitle('✅ member unbanned')
+    .setAuthor({name:ban.user.username,iconURL:ban.user.displayAvatarURL()})
+    .addFields({name:'👤 user',value:'<@'+ban.user.id+'>',inline:true},{name:'🆔 id',value:ban.user.id,inline:true})
+    .setTimestamp();
+  await sendAuditLog(ban.guild,'memberUnbanned',embed);
+});
+
+client.on('channelCreate', async ch => {
+  if (!ch.guild) return;
+  const embed = new EmbedBuilder().setColor(0x00e87a).setTitle('📁 channel created')
+    .addFields({name:'📺 channel',value:'<#'+ch.id+'>',inline:true},{name:'🔤 type',value:String(ch.type),inline:true},{name:'🆔 id',value:ch.id,inline:true}).setTimestamp();
+  await sendAuditLog(ch.guild,'channelCreated',embed);
+  addLog('CHANNEL','#'+ch.name+' created','green');
+});
+
+client.on('channelDelete', async ch => {
+  if (!ch.guild) return;
+  const embed = new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ channel deleted')
+    .addFields({name:'📺 name',value:'#'+ch.name,inline:true},{name:'🆔 id',value:ch.id,inline:true}).setTimestamp();
+  await sendAuditLog(ch.guild,'channelDeleted',embed);
+  addLog('CHANNEL','#'+ch.name+' deleted','red');
+});
+
+client.on('roleCreate', async role => {
+  const embed = new EmbedBuilder().setColor(0x00e87a).setTitle('🏷️ role created')
+    .addFields({name:'🏷️ role',value:'<@&'+role.id+'>',inline:true},{name:'🆔 id',value:role.id,inline:true}).setTimestamp();
+  await sendAuditLog(role.guild,'roleCreated',embed);
+  addLog('ROLE',role.name+' role created','green');
+});
+
+client.on('roleDelete', async role => {
+  const embed = new EmbedBuilder().setColor(0xff3555).setTitle('🗑️ role deleted')
+    .addFields({name:'🏷️ name',value:role.name,inline:true},{name:'🆔 id',value:role.id,inline:true}).setTimestamp();
+  await sendAuditLog(role.guild,'roleDeleted',embed);
+  addLog('ROLE',role.name+' role deleted','red');
+});
+
+// server backup system
+async function createBackup(guild) {
+  const roles = guild.roles.cache.filter(r=>!r.managed&&r.id!==guild.id).map(r=>({
+    id:r.id, name:r.name, color:r.hexColor, hoist:r.hoist,
+    mentionable:r.mentionable, position:r.position, permissions:r.permissions.bitfield.toString(),
+  }));
+  const channels = guild.channels.cache.map(c=>({
+    id:c.id, name:c.name, type:c.type, position:c.rawPosition,
+    parent:c.parentId, topic:c.topic||null,
+  }));
+  if (!state.serverBackups) state.serverBackups = {};
+  if (!state.serverBackups[guild.id]) state.serverBackups[guild.id] = [];
+  const backup = { name:'backup-'+new Date().toLocaleDateString('en-GB').replace(/\//g,'-'), date:new Date().toISOString(), roles, channels };
+  state.serverBackups[guild.id].unshift(backup);
+  if (state.serverBackups[guild.id].length > 5) state.serverBackups[guild.id].pop(); // keep max 5
+  saveState();
+  return backup;
+}
+
+client.login(TOKEN).catch(e=>console.error('❌ login failed:',e.message));
 client.login(TOKEN).catch(e=>console.error('❌ login failed:',e.message));
 
-module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState };
+module.exports = { client, state, addLog, addWarning, getWarnings, clearWarnings, addInfraction, createVerifyToken, completeVerification, saveState, createBackup };
